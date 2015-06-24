@@ -12,7 +12,7 @@ import sys, os, argparse
 import core
 
 #BABOON
-#"ENSBTA:cow,ENSCJA:marmoset,ENSCAF:dog,ENSECA:horse,ENSP00:human,ENSMMU:macaque,ENSMUS:mouse,ENSNLE:gibbon,ENSPTR:chimp,ENSPAN:baboon,ENSPPY:orang,ENSRNO:rat"
+#"ENSBTA:cow,ENSCJA:marmoset,ENSCAF:dog,ENSECA:horse,ENSP00:human,ENSMMU:macaque,ENSMUS:mouse,ENSNLE:gibbon,ENSPTR:chimp,ENSPAN:baboon,ENSPPY:orang,ENSRNO:rat,ENSMOD:possum"
 
 #ARANEAE
 #"LHESP:Latrodectus_hesperus WesternBlackWidow,LRECL:Loxosceles_reclusa BrownRecluseSpider,PTEPI:Parasteatoda_tepidariorum CommonHouseSpider,407821:Stegodyphus_mimosarum AfricanSocialVelvetSpider"
@@ -139,6 +139,8 @@ else:
 if os.path.isfile(ins):
 	print "Writing output to the following file:\t\t" + outs;
 else:
+	if outs[len(outs)-1] != "/":
+		outs = outs + "/";
 	print "Writing output to the following directory:\t\t" + outs;
 	if not os.path.exists(outs):
 		print "+Creating output directory.";
