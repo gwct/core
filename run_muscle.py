@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #############################################################################
-#Makes muscle alignment(s) from an input directory or file.
+#Makes muscle alignments from an input directory.
 #
 #Dependencies: muscle, core
 #
@@ -17,7 +17,7 @@ import core
 def IO_fileParse():
 #This function handles the command line options.
 
-	parser = argparse.ArgumentParser(description="Makes muscle alignment(s) from an input directory or file. Dependencies: core, muscle");
+	parser = argparse.ArgumentParser(description="Makes muscle alignments from an input directory. Dependencies: core, muscle");
 
 	parser.add_argument("-i", dest="input_dir", help="A directory containing multiple multi-FASTA files to be aligned.");
 	parser.add_argument("-v", dest="verbosity", help="An option to control the output printed to the screen. -v 1: print all muscle output, -v 0: print only a progress bar. Default: 1", type=int, default=1);
@@ -43,6 +43,9 @@ def IO_fileParse():
 ############################################
 
 indir, v, outdir = IO_fileParse();
+
+if outdir[len(outdir)-1] != "/":
+	outdir = outdir + "/";
 
 print "=======================================================================";
 print "Aligning all files in:\t\t" + indir;
