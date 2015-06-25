@@ -8,6 +8,7 @@
 #############################################################################
 
 import sys, os, argparse
+sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
 import core
 
 ############################################
@@ -48,6 +49,8 @@ if outdir[len(outdir)-1] != "/":
 	outdir = outdir + "/";
 
 print "=======================================================================";
+print "\t\t\tAligning with PASTA";
+print "\t\t\t" + core.getDateTime();
 print "Aligning all files in:\t\t" + indir;
 print "Writing alignments to:\t\t" + outdir;
 print "-------------------------------------";
@@ -93,7 +96,7 @@ for each in filelist:
 if v == 0:
 	pstring = "100.0% complete.";
 	sys.stderr.write('\b' * len(pstring) + pstring);
-print "\nDone!";
+print "\n" + core.getTime() + " Done!";
 print "=======================================================================";
 
 

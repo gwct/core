@@ -8,6 +8,7 @@
 #############################################################################
 
 import sys, os, argparse
+sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
 import core
 
 ############################################
@@ -44,6 +45,8 @@ outfile.close();
 seqs = {};
 
 if os.path.isfile(ins):
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
 	print "Input type is:\tFile"
 	print "Converting to Nexus format..."
 
@@ -56,6 +59,8 @@ if os.path.isfile(ins):
 			seqs[title] = inseqs[title].replace(" ","");
 
 else:
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();	
 	print "Input type is:\tDirectory"
 	print "Reading all FASTA sequences..."
 
@@ -117,7 +122,8 @@ outline = "end;";
 outfile.write(outline);
 
 outfile.close();
-print "\nDone!";
+print "\n" + core.getTime() + " Done!";
+print "=======================================================================";
 
 
 

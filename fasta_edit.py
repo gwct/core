@@ -9,6 +9,7 @@
 ########################################################################################
 
 import sys, os, argparse
+sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
 import core
 
 #BABOON

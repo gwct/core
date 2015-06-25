@@ -1,5 +1,5 @@
 #!/usr/bin/python
-
+#############################################################################
 #Script to count the total number of positions in a fasta file or a directory full of fasta files.
 #
 #Usage: python count_pos.py [input file or directory] [1,0]
@@ -8,12 +8,15 @@
 #positions in that file and display. If it is a directory it will count the number of positions in
 #all files and print the sum. If the second parameter is set to 1, it will also print the number of
 #positions in each file separately.
-
-import sys
-import os
+#############################################################################
+import sys, os
+sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
 import core
 
 ins = sys.argv[1];
+print "=======================================================================";
+print "\t\t\t" + core.getDateTime();
+print "Counting the total number of positions (AAs or NTs) in:\t" + ins;
 
 if os.path.isfile(ins):
 	inseqs = core.fastaGetDict(ins);
@@ -65,7 +68,8 @@ else:
 	if disp_file == 0:
 		pstring = "100.0% complete.";
 		sys.stderr.write('\b' * len(pstring) + pstring);
-	print "\nDone!";
-	print "Total positions:\t", tot_pos;
-
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print "Total residues:\t", tot_pos;
+	print "=======================================================================";
 

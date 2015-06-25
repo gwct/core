@@ -12,6 +12,7 @@
 #############################################################################
 
 import sys, os
+sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
 import core
 
 ############################################
@@ -70,11 +71,20 @@ def alignCounter(ifile):
 ins = sys.argv[1];
 
 if os.path.isfile(ins):
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "Gathering alignment stats from file:\t" + ins;
+	print "-----";
 	disp_file = 1;
 	print "Filename\t# Seqs\tTotal # Positions\tAlignment Length\t# Invariant Sites\t# Variant Sites\t# Gaps\t# Sites with Gaps\tGap Distribution";
 	numseqs, totpos, seqlen, invsites, varsites, gap, gapsites, gapdist = alignCounter(ins);
+	print core.getTime() + " Done!";
+	print "=======================================================================";
 
 else:
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "Gathering alignment stats from all .fa files in:\t" + ins;
 	filelist = os.listdir(ins);
 	disp_file = 0;
 	if len(sys.argv) > 2:
@@ -121,9 +131,10 @@ else:
 	if disp_file == 0:
 		pstring = "100.0% complete.";
 		sys.stderr.write('\b' * len(pstring) + pstring);
-	print "\nDone!";
+	print "\n" + core.getTime() + " Done!";
 	#print "# Seqs\tTotal # Positions\tTotal # Columns\t# Invariant Sites\t# Variant Sites\t# Gaps\t# Sites with Gaps";
 	#print str(totseqs) + "\t" + str(allpos) + "\t" + str(alllen) + "\t" + str(totinv) + "\t" + str(totvar) + "\t" + str(totgap) + "\t" + str(totgapsite);
+	print "-----";
 	print "Total # Seqs\t" + str(totseqs);
 	print "Total # Positions\t" + str(allpos);
 	print "Total # Columns\t" + str(alllen);
@@ -131,6 +142,7 @@ else:
 	print "# Variant Sites\t" + str(totvar);
 	print "Total # Gaps\t" + str(totgap);
 	print "# Sites with Gaps\t" + str(totgapsite);
+	print "=======================================================================";
 
 
 

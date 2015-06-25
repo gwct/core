@@ -8,6 +8,7 @@
 #############################################################################
 
 import sys, os, argparse
+sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
 import core
 
 ############################################
@@ -58,14 +59,19 @@ def fp_Converter(i,o):
 ins, outs = IO_fileParse();
 
 if os.path.isfile(ins):
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
 	print "Input type is:\tFile"
 	print "Converting to Phylip format..."
 
 	fp_Converter(ins,outs);
 
-	print "Done!";
+	print core.getTime() + " Done!";
+	print "=======================================================================";
 
 else:
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
 	print "Input type is:\tDirectory"
 	print "Converting all FASTA files to Phylip format..."
 
@@ -97,6 +103,6 @@ else:
 
 	pstring = "100.0% complete.";
 	sys.stderr.write('\b' * len(pstring) + pstring);
-	print "\nDone!";
-
+	print "\n" + core.getTime() + " Done!";
+	print "=======================================================================";
 
