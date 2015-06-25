@@ -12,7 +12,7 @@ Please note that many of these scripts handle FASTA files. For my scripts, all F
 4. count_pos.py
   * This script simply counts the number of amino acids or nucleotides in a file or directory.
 5. fa2nex.py
-  * A FASTA to Nexus converter. If input is a directory of .fa files, they will all be concatenated and written to a single Nexus file.
+  * A FASTA to Nexus converter.
 6. fa2phy.py
   * A FASTA to Phylip converter.
 7. fasta_edit.py
