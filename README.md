@@ -17,11 +17,12 @@ Please note that many of these scripts handle FASTA files. For my scripts, all F
   * A FASTA to Phylip converter.
 7. fasta_edit.py
   * A general purpose FASTA handling script. Can relabel and trim headers and remove start and stop AAs.
-8. how`_many_`trees
+8. how\_many\_trees
   * Just a little script to show the number of possible rooted tree topologies for a given number of species.
 9. nj_tree.r
-  * This will create a neighbor joining tree from a given distance matrix in a certain format. I made this for a very specific purpose, so probably not too useful at this point...
-  * Usage: `rscript nj_tree.r [input file with distance matrix] [outgroup for rooting] [output file name]`
+  * This will create a neighbor joining tree from a given distance matrix in a certain format. I made this for a very specific purpose, so it's probably not too useful at this point...
+  * Usage:
+  * `rscript nj_tree.r [input file with distance matrix] [outgroup for rooting] [output file name]`
 10. phy2fa.py
   * A Phylip to FASTA converter.
 11. run_muscle.py
