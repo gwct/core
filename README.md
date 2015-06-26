@@ -2,9 +2,10 @@
 ### A mixture of scripts and libraries to help with sequence data manipulation, tree parsing, and other things.
 
 ## Author
-### Gregg Thomas
+#### Gregg Thomas
 
 ##### Please note that many of these scripts handle FASTA files. For my scripts, all FASTA files *must* have the extension .fa.
+##### For any script, use the -h flag for specific usage details.
 
 1. concatenate_fa.py
   * Concatenates many FASTA formatted sequence files into a single FASTA file.
