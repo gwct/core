@@ -24,13 +24,19 @@ print "\t\t\t" + core.getDateTime();
 print "Counting the total number of positions (AAs or NTs) in:\t" + ins;
 
 if os.path.isfile(ins):
+	print "----------";
+	print "Sequence\tLength";
 	inseqs = core.fastaGetDict(ins);
 	tot_pos = 0;
 	for seq in inseqs:
+		print seq + "\t" + str(len(inseqs[seq]));
 		tot_pos = tot_pos + len(inseqs[seq]);
-	print ins + "\t" + str(tot_pos);
+	print "----------";
+	print "Total\t" + str(tot_pos);
 
 else:
+	if not ins.endswith("/"):
+		ins = ins + "/";
 	filelist = os.listdir(ins);
 	disp_file = 0;
 	if len(sys.argv) > 2:
@@ -51,6 +57,10 @@ else:
 
 		if disp_file == 0:
 			numbars, donepercent = core.loadingBar(i, numlines, donepercent, numbars);
+		elif disp_file == 1:
+			print "----------";
+			print each;
+			print "Sequence\tLength";
 		i = i + 1;
 
 		if each.find(".fa") == -1:
@@ -66,13 +76,16 @@ else:
 			tot_pos = tot_pos + len(inseqs[seq]);
 			if disp_file == 1:
 				specpos = specpos + len(inseqs[seq]);
+				print seq + "\t" + str(len(inseqs[seq]));
 
 		if disp_file == 1:
-			print each + "\t" + str(specpos);
+			print "Total\t" + str(specpos);
 
 	if disp_file == 0:
 		pstring = "100.0% complete.";
 		sys.stderr.write('\b' * len(pstring) + pstring);
+	elif disp_file == 1:
+		print "----------";
 	print "\n" + core.getTime() + " Done!";
 	print "-----";
 	print "Total residues:\t", tot_pos;
