@@ -8,7 +8,12 @@
 #positions in that file and display. If it is a directory it will count the number of positions in
 #all files and print the sum. If the second parameter is set to 1, it will also print the number of
 #positions in each file separately.
+#
+#Dependencies: core
+#
+#Gregg Thomas, Summer 2015
 #############################################################################
+
 import sys, os
 sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
 import core

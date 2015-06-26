@@ -9,6 +9,8 @@
 #positions in each file separately.
 #
 #Depenencies: core
+#
+#Gregg Thomas, Summer 2015
 #############################################################################
 
 import sys, os
