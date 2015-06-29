@@ -24,7 +24,18 @@ print "-------------------------------------";
 
 filelist = os.listdir(ins);
 
+if outs.find("/") != -1:
+	pos = outs.rfind('/');
+	outdir = outs[:pos] + '/';
+	partfile = outdir + "partitions.txt";
+else:
+	partfile = "partitions.txt";
+
+pfile = open(partfile, "w");
+pfile.write("");
+
 concats = {};
+numpos = 0;
 
 i = 0;
 numbars = 0;
@@ -40,6 +51,10 @@ for each in filelist:
 	infilename = ins + each;
 
 	inseqs = core.fastaGetDict(infilename);
+	seqlen = len(inseqs[inseqs.keys()[0]]);
+
+	pfile.write(each[:each.index("_")] + " = " + str(numpos+1) + "-" + str(numpos+seqlen) + "\n");
+	numpos = numpos + seqlen;
 
 	for title in inseqs:
 		newtitle = title[:title.index(" ")];
@@ -48,6 +63,7 @@ for each in filelist:
 		else:
 			concats[newtitle] = concats[newtitle] + inseqs[title];
 
+pfile.close();
 outfile = open(outs, "w");
 for spec in concats:
 	outfile.write(spec);
@@ -60,3 +76,4 @@ pstring = "100.0% complete.";
 sys.stderr.write('\b' * len(pstring) + pstring);
 print "\nDone!";
 print "=======================================================================";
+print numpos;
