@@ -21,7 +21,7 @@
   * A FASTA to Nexus converter.
 7. fa2phy.py
   * A FASTA to Phylip converter.
-8. fasta_edit.py
+8. fa_edit.py
   * A general purpose FASTA handling script. Can relabel and trim headers and remove start and stop AAs.
 9. how\_many\_trees
   * Just a little script to show the number of possible rooted tree topologies for a given number of species.
