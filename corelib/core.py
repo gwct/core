@@ -178,11 +178,7 @@ def loadingBar(counter, length, done, bars):
 #	sys.stderr.write('\b' * len(pstring) + pstring);
 #	print "\nDone!";
 #
-#If length is lines in a file use the following to count the lines without opening the file:
-#import subprocess
-#countcmd = "wc -l " + inFilename;
-#count = subprocess.check_output(countcmd, shell=True);
-#count = int(count[4:count.index(" ", 5)]);
+#If length is lines in a file use the core.getFileLen function to get the number of lines in the file
 
 	percent = float(counter) / float(length) * 100.0;
 	percentdone = int(percent);
