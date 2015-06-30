@@ -1,4 +1,4 @@
-# core
+# CORE: Code fOr Romps in Evolutionary data
 ### A mixture of scripts and libraries to help with sequence data manipulation, tree parsing, and other things.
 
 ## Author
