@@ -410,3 +410,16 @@ def getTime():
 	return datetime.datetime.now().strftime("%I:%M:%S");
 
 #############################################################################
+
+def getLogTime():
+	return datetime.datetime.now().strftime("%m.%d.%Y-%I:%M:%S");
+
+#############################################################################
+
+def printWrite(outfilename, oline):
+	print oline;
+	outfile = open(outfilename, "a");
+	outfile.write(oline + "\n");
+	outfile.close();
+
+#############################################################################
