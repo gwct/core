@@ -35,3 +35,5 @@
   * This will make MUSCLE alignments out of a directory of FASTA files. Obviously, you'll need MUSCLE installed and in your PATH.
 13. run_pasta.py	
   * This will make PASTA alignments out of a directory of FASTA files. Again, you'll need PASTA installed and in your PATH.
+14. run_raxml.py
+  * Runs some basic RAxML analyses on a directory full of FASTA files. RAxML will need to be installed as 'raxml' and in your PATH.
