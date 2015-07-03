@@ -21,7 +21,8 @@ def IO_fileParse():
 	parser = argparse.ArgumentParser(description="Runs RAxML on a single .fa file or a directory full of .fa files. Dependencies: core, RAxML");
 
 	parser.add_argument("-i", dest="input", help="Input. Either a directory containing many FASTA files or a single FASTA file.");
-	parser.add_argument("-m", dest="rax_model", help="The DNA or AA model you wish RAxML to use.");
+	parser.add_argument("-r", dest="raxml_path", help="You can specify the full path to your RAxML executable here. Default: raxml (assumes you either have an alias or it is in your PATH.", default="raxml");
+	parser.add_argument("-m", dest="raxml_model", help="The DNA or AA model you wish RAxML to use.");
 	parser.add_argument("-b", dest="bootstrap_reps", help="The number of bootstrap replicates you wish RAxML to run with its rapid bootstrapping algorithm. Default: 0", type=int, default=0);
 	parser.add_argument("-t", dest="num_threads", help="The number of threads you wish to use for the analysis. Default: 1", type=int, default=1);
 	parser.add_argument("-v", dest="verbosity", help="An option to control the output printed to the screen. 1: print all RAxML output, 0: print only a progress bar. Default: 1", type=int, default=1);
@@ -30,7 +31,7 @@ def IO_fileParse():
 
 	args = parser.parse_args();
 
-	if args.input == None or args.rax_model == None:
+	if args.input == None or args.raxml_model == None:
 		parser.print_help();
 		sys.exit();
 
@@ -76,7 +77,7 @@ def IO_fileParse():
 		parser.print_help();
 		sys.exit();
 
-	return args.input, args.rax_model, args.bootstrap_reps, args.num_threads, args.verbosity, args.tree_combine, args.log_opt;
+	return args.input, args.raxml_path args.raxml_model, args.bootstrap_reps, args.num_threads, args.verbosity, args.tree_combine, args.log_opt;
 
 #####
 
@@ -90,7 +91,7 @@ def logCheck(lopt, lfilename, outline):
 #Main Block
 ############################################
 
-ins, model, b, t, v, c, l = IO_fileParse();
+ins, rax_path, model, b, t, v, c, l = IO_fileParse();
 
 starttime = core.getLogTime();
 
@@ -214,7 +215,7 @@ for each in filelist:
 		sFile.close();
 	##Generate the starting seed and bootstrap seeds (if applicable).
 
-	rax_cmd = "raxml ";
+	rax_cmd = rax_path + " ";
 	if b > 0:
 		rax_cmd = rax_cmd + "-f a ";
 	rax_cmd = rax_cmd + " -m " + model + " -p " + seed;
