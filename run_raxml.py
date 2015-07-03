@@ -99,21 +99,21 @@ if os.path.isfile(ins):
 	fileflag = 1;
 	indir = os.path.dirname(os.path.realpath(ins)) + "/";
 	script_outdir = indir + starttime + "-run_raxml/";
-	bestdir = script_outdir + starttime + "-raxml_best/";
-	outdir = script_outdir + starttime + "-raxml_out/";
+	bestdir = script_outdir + "raxml_best/";
+	outdir = script_outdir + "raxml_out/";
 	filelist = [ins];
 else:
 	fileflag = 0;
 	indir = ins;
 	script_outdir = ins + starttime + "-run_raxml/";
-	bestdir = script_outdir + starttime + "-raxml_best/";
-	outdir = script_outdir + starttime + "-raxml_out/";
+	bestdir = script_outdir + "raxml_best/";
+	outdir = script_outdir + "raxml_out/";
 	filelist = os.listdir(ins);
 
 print core.getTime() + " | Creating main output directory:\t" + script_outdir;
 os.system("mkdir " + script_outdir);
 
-logfilename = script_outdir + starttime + "-run_raxml.log";
+logfilename = script_outdir + "run_raxml.log";
 logfile = open(logfilename, "w");
 logfile.write("");
 logfile.close();
@@ -143,11 +143,11 @@ if c == 1:
 	logCheck(l, logfilename, "INFO     | Combining RAxML best trees into a file in the input directory called raxml_best_trees.txt");
 else:
 	logCheck(l, logfilename, "INFO     | Not combining best trees to a file.");
-logCheck(l, logfilename, "OUTPUT   | All output file and directory names will be prefixed the start time:\t" + starttime);
 if fileflag == 1:
-	logCheck(l, logfilename, "OUTPUT   | Saving all output to current directory. Best trees will be placed in raxml_best/, all other RAxML output will be placed in raxml_out/");
+	logCheck(l, logfilename, "OUTPUT   | An output directory has been created within the current directory called:\t" + starttime + "-run_raxml");
 else:
-	logCheck(l, logfilename, "OUTPUT   | Saving all output to subdirectories of the input directory. Best trees will be placed in raxml_best/, all other RAxML output will be placed in raxml_out/");
+	logCheck(l, logfilename, "OUTPUT   | An output directory has been created within the input directory called:\t" + starttime + "-run_raxml");
+logCheck(l, logfilename, "OUTPUT   | Best trees will be placed in raxml_best/, all other RAxML output will be placed in raxml_out/");
 logCheck(l, logfilename, "-------------------------------------");
 
 if not os.path.exists(outdir):
@@ -159,21 +159,22 @@ if not os.path.exists(bestdir):
 	cmd = "mkdir " + bestdir;
 	os.system(cmd);
 
-seedFile = script_outdir + core.getLogTime() + "-raxml_seeds.txt";
+seedFile = script_outdir + "raxml_seeds.txt";
 logCheck(l, logfilename, core.getTime() + " | Creating seeds file:\t\t\t" + seedFile);
 sFile = open(seedFile, "w");
 sFile.write("");
 sFile.close();
 
 if b > 0:
-	bseedFile = script_outdir +  starttime + "-raxml_bseeds.txt";
+	bseedFile = script_outdir + "raxml_bseeds.txt";
 	logCheck(l, logfilename, core.getTime() + " | Creating bootstrap seeds file:\t\t" + bseedFile);
 	sFile = open(bseedFile, "w");
 	sFile.write("");
 	sFile.close();
 
 logCheck(l, logfilename, core.getTime() + " | Starting RAxML runs...\n");
-rax_logfile = script_outdir +  starttime + "-raxml.log";
+if v == 0:
+	rax_logfile = script_outdir + "raxml.log";
 
 i = 0;
 numbars = 0;
@@ -257,7 +258,7 @@ if i > 1 and c == 1:
 	##Combine best trees into a single file.
 	logCheck(l, logfilename, "\n" + core.getTime() + " | Combining best trees...");
 	filelist = os.listdir(bestdir);
-	tree_combine = script_outdir + starttime + "-raxml_best_trees.txt";
+	tree_combine = script_outdir + "raxml_best_trees.txt";
 
 	if ".DS_Store" in filelist:
 		numtrees = len(filelist)-1;
