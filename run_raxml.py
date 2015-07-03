@@ -125,7 +125,7 @@ if fileflag == 1:
 	logCheck(l, logfilename, "INPUT    | Making tree from file:\t\t\t" + ins);
 else:
 	logCheck(l, logfilename, "INPUT    | Making trees from all files in:\t" + ins);
-logCheck(l, logfilename, "INPUT    | RAxML path set to:\t" + rax_path);
+logCheck(l, logfilename, "INPUT    | RAxML path set to:\t\t\t" + rax_path);
 logCheck(l, logfilename, "INFO     | Using the following DNA or AA model:\t" + model);
 if b > 0:
 	logCheck(l, logfilename, "INFO     | Performing " + str(b) + " bootstrap replicates per tree.");
@@ -143,10 +143,7 @@ if c == 1:
 	logCheck(l, logfilename, "INFO     | Combining RAxML best trees into a file in the input directory called raxml_best_trees.txt");
 else:
 	logCheck(l, logfilename, "INFO     | Not combining best trees to a file.");
-if fileflag == 1:
-	logCheck(l, logfilename, "OUTPUT   | An output directory has been created within the current directory called:\t" + starttime + "-run_raxml");
-else:
-	logCheck(l, logfilename, "OUTPUT   | An output directory has been created within the input directory called:\t" + starttime + "-run_raxml");
+logCheck(l, logfilename, "OUTPUT   | An output directory has been created within the input directory called:\t" + starttime + "-run_raxml");
 logCheck(l, logfilename, "OUTPUT   | Best trees will be placed in raxml_best/, all other RAxML output will be placed in raxml_out/");
 logCheck(l, logfilename, "-------------------------------------");
 
@@ -167,7 +164,7 @@ sFile.close();
 
 if b > 0:
 	bseedFile = script_outdir + "raxml_bseeds.txt";
-	logCheck(l, logfilename, core.getTime() + " | Creating bootstrap seeds file:\t\t" + bseedFile);
+	logCheck(l, logfilename, core.getTime() + " | Creating bootstrap seeds file:\t" + bseedFile);
 	sFile = open(bseedFile, "w");
 	sFile.write("");
 	sFile.close();
