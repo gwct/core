@@ -125,6 +125,7 @@ if fileflag == 1:
 	logCheck(l, logfilename, "INPUT    | Making tree from file:\t\t\t" + ins);
 else:
 	logCheck(l, logfilename, "INPUT    | Making trees from all files in:\t" + ins);
+logCheck(l, logfilename, "INPUT    | RAxML path set to:\t" + rax_path);
 logCheck(l, logfilename, "INFO     | Using the following DNA or AA model:\t" + model);
 if b > 0:
 	logCheck(l, logfilename, "INFO     | Performing " + str(b) + " bootstrap replicates per tree.");
