@@ -77,7 +77,7 @@ def IO_fileParse():
 		parser.print_help();
 		sys.exit();
 
-	return args.input, args.raxml_path args.raxml_model, args.bootstrap_reps, args.num_threads, args.verbosity, args.tree_combine, args.log_opt;
+	return args.input, args.raxml_path, args.raxml_model, args.bootstrap_reps, args.num_threads, args.verbosity, args.tree_combine, args.log_opt;
 
 #####
 
