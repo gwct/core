@@ -44,13 +44,13 @@ def IO_fileParse():
 
 	parser = argparse.ArgumentParser(description="A general purpose FASTA editing script.");
 
-	parser.add_argument("-i", dest="input", help="A directory containing FASTA formatted alignments.");
+	parser.add_argument("-i", dest="input", help="A directory containing FASTA formatted files or a single FASTA file.");
 	parser.add_argument("-r", dest="relabel_opt", help="Boolean to tell the script whether to relabel the FASTA headers (1) or not (0). Default: 1", type=int, default=1);
 	parser.add_argument("-s", dest="spec_dict", help="A string formatted as a Python dictionary with the current species ID as the key and the label to add to the beginning of the FASTA header as the value. Must be provided if -r set to 1.");
 	parser.add_argument("-t", dest="trim_opt", help="Boolean to tell the script whether to trim the FASTA headers (1) or not (0). Default: 0", type=int, default=0);
 	parser.add_argument("-d", dest="trim_delim", help="The character string at which to trim the FASTA headers if -t is set to 1. Default: \" \"", default=" ");
 	parser.add_argument("-p", dest="ss_opt", help="Boolean to tell the script whether to remove start and stops from the alignment (1) or not (0). Default: 0", type=int, default=0);
-	parser.add_argument("-o", dest="output", help="The directory to which the relabeled and/or trimmed FASTA sequences are written.");
+	parser.add_argument("-o", dest="output", help="The directory or file to which the relabeled and/or trimmed FASTA sequences are written.");
 
 	args = parser.parse_args();
 
