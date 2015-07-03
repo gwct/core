@@ -122,7 +122,7 @@ logCheck(l, logfilename, "======================================================
 logCheck(l, logfilename, "\t\t\tBuilding trees with RAxML");
 logCheck(l, logfilename, "\t\t\t" + core.getDateTime());
 if fileflag == 1:
-	logCheck(l, logfilename, "INPUT    | Making tree from file:\t\t\t" + ins);
+	logCheck(l, logfilename, "INPUT    | Making tree from file:\t\t" + ins);
 else:
 	logCheck(l, logfilename, "INPUT    | Making trees from all files in:\t" + ins);
 logCheck(l, logfilename, "INPUT    | RAxML path set to:\t\t\t" + rax_path);
@@ -188,7 +188,7 @@ for each in filelist:
 	if fileflag == 1:
 		rax_infile = each;
 		if each.find("/") != -1:
-			rax_outfile = each[each.index("/")+1:each.index("_aln.fa")];
+			rax_outfile = each[each.rfind("/")+1:each.index("_aln.fa")];
 		else:
 			rax_outfile = each[:each.index("_aln.fa")];
 	else:
