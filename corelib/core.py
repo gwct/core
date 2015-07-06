@@ -270,6 +270,44 @@ def bioTranslator(inFileName):
 #This is a simple line to remove all return characters from a string. Must remember to import re above.
 #############################################################################
 
+def newbioTranslator(seq):
+
+	codons = [''] * 5;
+	codons[0] = "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG";
+	codons[1] = "---M---------------M---------------M----------------------------";
+	codons[2] = "TTTTTTTTTTTTTTTTCCCCCCCCCCCCCCCCAAAAAAAAAAAAAAAAGGGGGGGGGGGGGGGG";
+	codons[3] = "TTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGGTTTTCCCCAAAAGGGG";
+	codons[4] = "TCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAGTCAG";
+
+	aaSeq = "";
+
+	if len(seq) % 3 == 0:
+		end = len(seq) - 3;		
+		k = 0;
+
+		while k <= end:
+			currentCodon = seq[k:k+3]
+
+			if len(currentCodon) < 3:
+				currentAA = ' ';
+			elif "-" in currentCodon or "N" in currentCodon or "?" in currentCodon:
+				currentAA = "X";
+			elif "*" in currentCodon:
+				currentAA = "*";
+			else:
+				first = codons[2].index(currentCodon[0]);
+				second = codons[3].index(currentCodon[1], first);
+				final = codons[4].index(currentCodon[2], second);
+
+				currentAA = codons[0][final];
+
+			aaSeq = aaSeq + currentAA;
+			k = k + 3;
+
+	return aaSeq;
+
+#############################################################################
+
 def phylipGetDict(inputFileName):
 #fastaGetDicts reads a FASTA file and returns a dictionary containing all sequences in the file with 
 #the key:value format as title:sequence.
@@ -408,18 +446,5 @@ def getDateTime():
 
 def getTime():
 	return datetime.datetime.now().strftime("%I:%M:%S");
-
-#############################################################################
-
-def getLogTime():
-	return datetime.datetime.now().strftime("%m.%d.%Y-%I:%M:%S");
-
-#############################################################################
-
-def printWrite(outfilename, oline):
-	print oline;
-	outfile = open(outfilename, "a");
-	outfile.write(oline + "\n");
-	outfile.close();
 
 #############################################################################
