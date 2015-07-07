@@ -448,3 +448,11 @@ def getTime():
 	return datetime.datetime.now().strftime("%I:%M:%S");
 
 #############################################################################
+
+def printWrite(filename, oline):
+	print oline;
+	f = open(filename, "a");
+	f.write(oline + "\n");
+	f.close();
+
+#############################################################################
