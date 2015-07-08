@@ -449,6 +449,11 @@ def getTime():
 
 #############################################################################
 
+def getLogTime():
+	return datetime.datetime.now().strftime("%m.%d.%Y-%I:%M:%S");
+
+#############################################################################
+
 def printWrite(filename, oline):
 	print oline;
 	f = open(filename, "a");
