@@ -32,7 +32,7 @@
 11. phy2fa.py
   * A Phylip to FASTA converter.
 12. run_gblocks.py
-  * A script to run GBlocks to mask alignments. Note: This currently runs GBlocks at the most relaxed settings for phylogenetic tree inference. It will reject any masks that remove more than 20% of the columns from the original alignment.
+  * A script to run GBlocks to mask a directory full of alignments in FASTA format. Note: This currently runs GBlocks at the most relaxed settings for phylogenetic tree inference. It will reject any masks that remove more than 20% of the columns from the original alignment.
 13. run_muscle.py
   * This will make MUSCLE alignments out of a directory of FASTA files. Obviously, you'll need MUSCLE installed and in your PATH.
 14. run_pasta.py	
