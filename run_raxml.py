@@ -250,6 +250,10 @@ for each in filelist:
 			mv_cmd = "mv " + neweach + " " + rax_outdir;
 			os.system(mv_cmd);
 
+if v == 0:
+	pstring = "100.0% complete.\n";
+	sys.stderr.write('\b' * len(pstring) + pstring);
+
 
 if i > 1 and c == 1:
 	##Combine best trees into a single file.
