@@ -7,35 +7,27 @@
 ###### Please note that many of these scripts handle FASTA files. For my scripts, all FASTA files *must* have the extension .fa.
 ###### For any script, use the -h flag for specific usage details.
 
-1. concatenate_fa.py
-  * Concatenates many FASTA formatted sequence files into a single FASTA file.
-2. corelib/core.py
+1. corelib/core.py
   * General helper functions such as reading sequences to a dictionary. You'll have to look to see what all is there.
-3. corelib/treeparse.py
+2. corelib/treeparse.py
   * A couple functions that read newick formatted trees and return all relevant information in a more useful way to code with.
-4. count_aln.py
+3. count_aln.py
   * This script gathers statistics about a single alignment file, or a directory full of alignment files.
-5. count_pos.py
+4. count_pos.py
   * This script simply counts the number of amino acids or nucleotides in a file or directory.
-6. fa2nex.py
-  * A FASTA to Nexus converter.
-7. fa2phy.py
-  * A FASTA to Phylip converter.
-8. fa_edit.py
+5. fa_concat.py
+  * Concatenates many FASTA formatted sequence files into a single FASTA file.
+6. fa_edit.py
   * A general purpose FASTA handling script. Can relabel and trim headers and remove start and stop AAs.
-9. how\_many\_trees
+7. how\_many\_trees
   * Just a little script to show the number of possible rooted tree topologies for a given number of species.
-10. nj_tree.r
-  * This will create a neighbor joining tree from a given distance matrix in a certain format. I made this for a very specific purpose, so it's probably not too useful at this point...
-  * Usage:
-  * `rscript nj_tree.r [input file with distance matrix] [outgroup for rooting] [output file name]`
-11. phy2fa.py
-  * A Phylip to FASTA converter.
-12. run_gblocks.py
+8. run_gblocks.py
   * A script to run GBlocks to mask a directory full of alignments in FASTA format. Note: This currently runs GBlocks at the most relaxed settings for phylogenetic tree inference. It will reject any masks that remove more than 20% of the columns from the original alignment.
-13. run_muscle.py
+9. run_muscle.py
   * This will make MUSCLE alignments out of a directory of FASTA files. Obviously, you'll need MUSCLE installed and in your PATH.
-14. run_pasta.py	
+10. run_pasta.py	
   * This will make PASTA alignments out of a directory of FASTA files. Again, you'll need PASTA installed and in your PATH.
-15. run_raxml.py
+11. run_raxml.py
   * Runs some basic RAxML analyses on a directory full of FASTA files.
+12. seq_convert.py
+  * A sequence file format conversion tool. Currently converts between FASTA (.fa), Phylip (.ph), and Nexus (.nex) formats. It assumes files will have those extensions. Remember, these formats vary a lot in the details, so they might not work right away for everything. Let me know if you run into problems and I'll try to fix it.
