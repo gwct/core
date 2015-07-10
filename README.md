@@ -9,9 +9,9 @@
 
 1. concatenate_fa.py
   * Concatenates many FASTA formatted sequence files into a single FASTA file.
-2. corelib/core.py(c)
+2. corelib/core.py
   * General helper functions such as reading sequences to a dictionary. You'll have to look to see what all is there.
-3. corelib/treeparse.py(c)
+3. corelib/treeparse.py
   * A couple functions that read newick formatted trees and return all relevant information in a more useful way to code with.
 4. count_aln.py
   * This script gathers statistics about a single alignment file, or a directory full of alignment files.
@@ -38,4 +38,4 @@
 14. run_pasta.py	
   * This will make PASTA alignments out of a directory of FASTA files. Again, you'll need PASTA installed and in your PATH.
 15. run_raxml.py
-  * Runs some basic RAxML analyses on a directory full of FASTA files. RAxML will need to be installed as 'raxml' and in your PATH.
+  * Runs some basic RAxML analyses on a directory full of FASTA files.
