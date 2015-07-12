@@ -249,6 +249,9 @@ for each in filelist:
 		elif neweach.find("RAxML") != -1 and neweach != "RAxML_best" and neweach != "raxml_seeds" and neweach != "RAxML_out" and neweach != "raxml_bseeds":
 			mv_cmd = "mv " + neweach + " " + rax_outdir;
 			os.system(mv_cmd);
+	if os.path.exists(rax_infile + ".reduced"):
+		mv_cmd = "mv " + rax_infile + ".reduced" + " " + rax_outdir;
+		os.system(mv_cmd);
 
 if v == 0:
 	pstring = "100.0% complete.\n";
