@@ -342,7 +342,7 @@ def getFastafromInd(i_name, titlestart, titleend, seqstart, seqend):
 	infile.seek(titlestart);
 	title = infile.read(titleend - titlestart);
 
-	inFile.seek(seqstart);
+	infile.seek(seqstart);
 	seq = infile.read(seqend - seqstart);
 
 	infile.close();
