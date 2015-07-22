@@ -8,7 +8,7 @@
 #Gregg Thomas, Summer 2015
 ########################################################################################
 
-import sys, os, argparse
+import sys, os, random, argparse
 sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
 import core
 
@@ -36,6 +36,9 @@ import core
 #ARTHROPODA
 #"LHESP:Latrodectus_hesperus WesternBlackWidow,LRECL:Loxosceles_reclusa BrownRecluseSpider,PTEPI:Parasteatoda_tepidariorum CommonHouseSpider,407821:Stegodyphus_mimosarum AfricanSocialVelvetSpider,217634:Anoplophora_glabripennis AsianLonghornedBeetle,APLAN:Agrilus_planipennis EmeraldAshBorer,77166:Dendroctonus_ponderosae MountainPineBeetle,7539:Leptinotarsa_decemlineata ColoradoPotatoBeetle,OTAUR:Onthophagus_taurus BullHeadedDungBeetle,7070:Tribolium_castaneum RedFlourBeetle,7159:Aedes_egypti YellowfeverMosquito,7167:Anopheles_albimanus NewWorldMalariaMosquito,62324:Anopheles_funestus AfricanMalariaMosquito,7165:Anopheles_gambiae AfricanMalariaMosquito,7213:Ceratitis_capitata MediterraneanFruitFly,7176:Culex_quinquefasciatus SouthernHouseMosquito,7222:Drosophila_grimshawi FruitFly,7227:Drosophila_melanogaster FruitFly,7237:Drosophila_pseudoobscura FruitFly,7394:Glossina_morsitans SavannahTsetseFly,LCUP2:Lucilia_cuprina SheepBlowfly,7200:Lutzomyia_longipalpis SandFly,39758:Mayetiola_destructor HessianFly,7370:Musca_domestica HouseFly,HVITR:Homalodisca_vitripennis GlassyWingedSharpshooter,HHALY:Halyomorpha_halys BrownMarmoratedStinkBug,OFAS2:Oncopeltus_fasciatus MilkweedBug,PVENU:Pachypsylla_venusta HackberryPetioleGallPsyllid,GBUEN:Gerris_buenoi WaterStrider,7029:Acyrthosiphon_pisu PeaAphid,79782:Cimex_lectularius BedBug,12957:Atta_cephalotes LeafcutterAnt,103372:Acromyrmex_echinatior PanamanianLeafcutterAnt,7463:Apis_florea LittleHoneyBee,7460:Apis_mellifera HoneyBee,37344:Athalia_rosae TurnipSawfly,132113:Bombus_impatiens CommonEasternBumbleBee,30195:Bombus_terrestris Buff-tailedBumbleBee,211228:Cephus_cinctus WheatStemSawfly,104421:Camponotus_floridanus FloridaCarpenterAnt,286306:Cardiocondyla_obscurior TrampAnt,COPFL:Copidosoma_floridanum Wasp,178035:Dufourea_novaeangliae SolitaryUnivoltineBee,516756:Eufriesea_mexicana OrchidBee,597456:Habropoda_laboriosa SoutheasternBlueberryBee,610380:Harpegnathos_saltator JerdonsJumpingAnt,88501:Lasioglossum_albipes HalictidBee,83485:Linepithema_humile ArgentineAnt,166423:Melipona_quadrifasciata NeotropicalStinglessBee,143995:Megachile_rotundata AlfalfaLeafcuttingBee,7425:Nasonia_vitripennis ParasiticJewelWasp,222816:Orussus_abietinus ParasiticWoodWasp,144034:Pogonomyrmex_barbatus RedHarvesterAnt,13686:Solenopsis_invicta RedFireAnt,7493:Trichogramma_pretiosum ParasiticStinglessWasp,7091:Bombyx_mori DomesticSilkwormMoth,13037:Danaus_plexippus MonarchButterfly,34740:Heliconius_melpomene PostmanButterfly,7130:Manduca_sexta TobaccoHornwormMoth,51655:Plutella_xylostella DiamondbackMoth,BGERM:Blatella_germanica GermanCockroachm,CAQUI:Catajapyx_aquilonaris SilvestrisNorthernForcepstail,CSCUL:Centruroides_sculpturatus BarkScorpion,6669:Daphnia_pulex WaterFlea,EAFFI:Eurytemora_affinis CalanoidCopepod,1049336:Ephemera_danica GreenDrakeMayfly,133901:Frankliniella_occidentalis WesternFlowerThrip,6945:Ixodes_scapularis BlackLeggedDeerTick,123851:Ladona_fulva ScarceChaserDragonfly,LLUNA:Limnephilus_lunatus Caddisfly,34638:Metaseiulus_occidentalis WesternPredatoryMite,121225:Pediculus_humanus BodyLouse,126957:Strigamia_maritima GeophilomorphCentipede,32264:Tetranychus_urticae TwoSpottedSpiderMite,136037:Zootermopsis_nevadensis DampwoodTermite,HAZTE:Hyalella_azteca FreshwaterEpibenthicAmphipod"
 
+aas = ["G","A","V","L","I","P","F","Y","W","S","T","C","M","N","Q","K","R","H","D","E"];
+nts = ["A","T","C","G"];
+
 ############################################
 #Function Definitions
 ############################################
@@ -50,6 +53,7 @@ def IO_fileParse():
 	parser.add_argument("-t", dest="trim_opt", help="Boolean to tell the script whether to trim the FASTA headers (1) or not (0). Default: 0", type=int, default=0);
 	parser.add_argument("-d", dest="trim_delim", help="The character string at which to trim the FASTA headers if -t is set to 1. Default: \" \"", default=" ");
 	parser.add_argument("-p", dest="ss_opt", help="Boolean to tell the script whether to remove start and stops from the alignment (1) or not (0). Default: 0", type=int, default=0);
+	parser.add_argument("-m", dest="replacement", help="This option will replace all characters in each sequence with another character. For example, AB will replace all As with Bs. If the input is an alignment, if A: is entered, all As will be replaced with another AA that is not present in the column.", default="");
 	parser.add_argument("-o", dest="output", help="The directory or file to which the relabeled and/or trimmed FASTA sequences are written.");
 
 	args = parser.parse_args();
@@ -94,58 +98,73 @@ def IO_fileParse():
 		parser.print_help();
 		sys.exit();
 
+	replacement = args.replacement;
+	if args.replacement != "":
+		replacement = replacement.upper();
 
-	return args.input, args.relabel_opt, sd, args.trim_opt, args.trim_delim, args.ss_opt, args.output;
+		if len(replacement) > 2 or (replacement[1] not in aas and replacement[1] != ":"):
+			print " -----------------------------------------------------------------------------------------";
+			print "|**Error 5: For -m, the second character entered must be a valid amino acid symbol or ':' |";
+			print " -----------------------------------------------------------------------------------------";
+			parser.print_help();
+			sys.exit();
+
+
+	return args.input, args.relabel_opt, sd, args.trim_opt, args.trim_delim, args.ss_opt, replacement, args.output;
 
 ############################################
 #Main Block
 ############################################
 
-ins, r, specdict, t, td, ss, outs = IO_fileParse();
+ins, r, specdict, t, td, ss, repl, outs = IO_fileParse();
 suffix = "";
 
 print "==============================================================================================";
 print "\t\t\tFASTA editing";
 print "\t\t\t" + core.getDateTime();
 if os.path.isfile(ins):
-	print "Editing single file:\t\t" + ins;
+	print "INPUT    | Editing single file:\t\t" + ins;
 	filelist = [ins];
 else:
-	print "Editing files in directory:\t\t\t\t" + ins;
+	print "INPUT    | Editing files in directory:\t\t\t\t" + ins;
 	filelist = os.listdir(ins);
 if r == 0 and t == 0 and ss == 0:
-	print "NOT trimming OR relabeling FASTA headers OR removing start/stop positions.\nSimply re-writing the sequences.";
+	print "INFO     | NOT trimming OR relabeling FASTA headers OR removing start/stop positions.\nSimply re-writing the sequences.";
 	suffix = ".cp";
 else:
 	if r == 1:
 		print "---";
-		print "Relabeling FASTA header(s).";
+		print "INFO     | Relabeling FASTA header(s).";
 		print "EXISTING LABEL\t\tADDED LABEL";
 		for sid in specdict:
 			print sid + "\t\t\t" + specdict[sid];
 		print "---";
 		suffix = suffix + ".r";
 	else:
-		print "NOT relabeling FASTA header(s).";
+		print "INFO     | NOT relabeling FASTA header(s).";
 	if t == 1:
 		if td == " ":
-			print "Trimming FASTA header(s) at first occurrence of:\t\" \"";
+			print "INFO     | Trimming FASTA header(s) at first occurrence of:\t\" \"";
 		else:
-			print "Trimming FASTA header(s) at first occurrence of:\t" + td;
+			print "INFO     | Trimming FASTA header(s) at first occurrence of:\t" + td;
 		suffix = suffix + ".t";
 	else:
-		print "NOT trimming FASTA header(s).";
+		print "INFO     | NOT trimming FASTA header(s).";
 	if ss == 1:
-		print "Removing start and stop positions.";
+		print "INFO     | Removing start and stop positions.";
 		suffix = suffix + ".ss";
 	else:
-		print "NOT removing start and stop positions.";
+		print "INFO     | NOT removing start and stop positions.";
+	if repl != "" and repl[1] != ":":
+		print "INFO     | Replacing all " + repl[0] + " symbols in input sequences with " + repl[1] + ".";
+	elif repl != "" and repl[1] == ":":
+		print "INFO     | Replacing all " + repl[0] + " symbols in input sequences with a random AA symbol not present in that column.";
 if os.path.isfile(ins):
-	print "Writing output to the following file:\t\t" + outs;
+	print "OUTPUT   | Writing output to the following file:\t\t" + outs;
 else:
 	if outs[len(outs)-1] != "/":
 		outs = outs + "/";
-	print "Writing output to the following directory:\t\t" + outs;
+	print "OUTPUT   | Writing output to the following directory:\t\t" + outs;
 	if not os.path.exists(outs):
 		print "+Creating output directory.";
 		os.system("mkdir " + outs);
@@ -207,6 +226,37 @@ for each in filelist:
 				inseqs[title] = inseqs[title][1:];
 			if inseqs[title][len(inseqs[title])-1] == "*":
 				inseqs[title] = inseqs[title][:len(inseqs[title])-1];
+
+	if repl != "":
+	#Replaces symbols in the sequences.
+		r1 = repl[0];
+		r2 = repl[1];
+		seqlen = len(inseqs[inseqs.keys()[0]]);
+		if r2 == ":":
+			pseqs = {};
+			for x in xrange(0,seqlen):
+				present = [];
+				for title in inseqs:
+					if x == 0:
+						pseqs[title] = "";
+					if inseqs[title][x] not in present:
+						present.append(inseqs[title][x]);
+				if r1 in present:1
+					newaa = present[0];
+					while newaa in present:
+						newaa = random.choice(aas);
+					for title in inseqs:
+						if inseqs[title][x] == r1:
+							pseqs[title] = pseqs[title] + newaa;
+						else:
+							pseqs[title] = pseqs[title] + inseqs[title][x];
+				else:
+					for title in inseqs:
+						pseqs[title] = pseqs[title] + inseqs[title][x];
+			inseqs = pseqs;
+		else:
+			for title in inseqs:
+				inseqs[title] = inseqs[title].replace(r1,r2);		
 
 	for title in inseqs:
 	#Writes the sequences to the output file.
