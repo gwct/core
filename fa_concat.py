@@ -27,6 +27,9 @@ filelist = os.listdir(ins);
 if outs.find("/") != -1:
 	pos = outs.rfind('/');
 	outdir = outs[:pos] + '/';
+	if not os.path.exists(outdir):
+		print "+Creating output directory.";
+		os.system("mkdir " + outdir);
 	partfile = outdir + "partitions.txt";
 else:
 	partfile = "partitions.txt";
