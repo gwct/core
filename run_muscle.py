@@ -45,6 +45,8 @@ def IO_fileParse():
 
 indir, v, outdir = IO_fileParse();
 
+if indir[len(indir)-1] != "/":
+	indir = indir + "/";
 if outdir[len(outdir)-1] != "/":
 	outdir = outdir + "/";
 
@@ -54,6 +56,7 @@ print "\t\t\t" + core.getDateTime();
 print "Aligning all files in:\t\t" + indir;
 print "Writing alignments to:\t\t" + outdir;
 print "-------------------------------------";
+
 
 filelist = os.listdir(indir);
 
