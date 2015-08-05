@@ -227,8 +227,10 @@ for each in filelist:
 		for title in inseqs:
 			if inseqs[title][0] == "M":
 				inseqs[title] = inseqs[title][1:];
-			if inseqs[title][len(inseqs[title])-1] == "*":
-				inseqs[title] = inseqs[title][:len(inseqs[title])-1];
+			#if inseqs[title][len(inseqs[title])-1] == "*":
+			#	inseqs[title] = inseqs[title][:len(inseqs[title])-1];
+			if inseqs[title].find("*") != -1:
+				inseqs[title] = inseqs[title].replace("*","");
 
 	if repl != "":
 	#Replaces symbols in the sequences.
