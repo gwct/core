@@ -1,46 +1,16 @@
 #!/usr/bin/python
 #############################################################################
-#The treeParse function takes as input a phylogenetic tree with branch lengths
-#and returns a dictionary with usable info about the tree in the following
-#format:
-#
-#node:[branch length, ancestral node, ancestral branch length, sister node, sister branch length, descendent 1, descendent 1 branch length, descendent 2, descendent 2 branch length, node type]
-#
+#Functions for retrieving information from newick formatted, rooted phylogenetic trees.
+#Gregg Thomas
+#Spring 2013-present
 #############################################################################
 
 import sys
-'''
-import argparse
 
-#############################################################################
-
-def IO():
-
-	parser = argparse.ArgumentParser();
-
-	parser.add_argument("-i", dest="input_data", help="Either a tree or a file containing a tree.");
-	parser.add_argument("-t", dest="input_type", help="Either 't' for tree or 'f' for file containing a tree.");
-	parser.add_argument("-o", dest="output_file", help="Output file name.");
-
-	args = parser.parse_args();
-
-	if args.input_data == None:
-		parser.print_help();
-		sys.exit();
-
-	if args.input_type not in ['t','f']:
-		print " -------------------------------------------------------------------------------------------";
-		print "|**Error 1: -t must take values of either 't' or 'f' depending on input type (Tree or File) |";
-		print " -------------------------------------------------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	return args.input_data, args.input_type, args.output_file;
-'''
 #############################################################################
 def getBranchLength(bltree, spec_label):
+#Returns the branch length of a species given a newick formatted tree. Used by treeParse.
 
-	#print spec_label;
 	d = 0;
 	startind = 0;
 
@@ -69,7 +39,49 @@ def getBranchLength(bltree, spec_label):
 	startind = d;
 
 #############################################################################
+
+def comAnc(spec_list, treedict):
+#Given a list of species within the tree and the dictionary returned by treeParse using that tree,
+#this function checks whether those species are monophyletic (ie they all share a common ancestor).
+
+	cur_list = [];
+	for b in spec_list:
+		if b in treedict:
+			cur_list.append(b);
+
+#	print treedict;
+#	print spec_list;
+#	print cur_list;
+
+	ancdict = {};
+	for b in cur_list:
+		ancdict[b] = treedict[b][1];
+
+	new_list = [];
+	for b in ancdict:
+		if ancdict.values().count(ancdict[b]) > 1 and ancdict[b] not in new_list:
+			new_list.append(ancdict[b]);
+		elif treedict[b][1] not in new_list:
+			new_list.append(b);
+
+	if not all(n in cur_list for n in new_list):
+		flag = comAnc(new_list, treedict);
+	elif len(new_list) > 1:
+		#print "not monophyletic";
+		flag = 0;
+	else:
+		#print "monophyletic";
+		flag = 1;
+		
+	return flag;
+
+#############################################################################
+
 def treeParse(tree):
+#The treeParse function takes as input a rooted phylogenetic tree with branch lengths and returns the tree with node labels and a 
+#dictionary with usable info about the tree in the following format:
+#
+#node:[branch length, ancestral node, ancestral branch length, sister node, sister branch length, descendent 1, descendent 1 branch length, descendent 2, descendent 2 branch length, node type]
 
 	tree = tree.replace("\n","");
 
@@ -88,7 +100,6 @@ def treeParse(tree):
 		z = z + 1;
 	rootnode = "<" + str(numnodes) + ">"
 	new_tree = new_tree + rootnode;
-
 
 	#print new_tree;
 	#print "-----------------------------------";
@@ -181,63 +192,6 @@ def treeParse(tree):
 	return nofo, new_tree;
 
 #############################################################################
-'''
-#indataname, intype, outfilename = IO();
 
-if intype == 't':
-	intree = indataname;
-elif intype == 'f':
-	inFile = open(indataname, "r");
-	intree = inFile.read();
-	inFile.close();
-
-node_info, ntree = treeParse(intree);
-
-print "Node\tBranch length\tAncestral node\tAncestral branch length\tSister node\tSister branch length\tDescendent 1\t Descendent 1 branch length\tDescendent 2\tDescendent 2 branch length\tNode type";
-
-for key in node_info:
-	outline = key + "\t";
-	for x in xrange(len(node_info[key])):
-		if x != len(node_info[key])-1:
-			outline = outline + str(node_info[key][x]) + "\t";
-		else:
-			outline = outline + str(node_info[key][x]);
-	print outline;
-
-if outfilename != None:
-	outFile = open(outfilename, "w");
-	outline = "Node\tBranch length\tAncestral node\tAncestral branch length\tSister node\tSister branch length\tDescendent 1\t Descendent 1 branch length\tDescendent 2\tDescendent 2 branch length\tNode type\n";
-	outFile.write(outline);
-
-	for key in node_info:
-		outline = key + "\t";
-		for x in xrange(len(node_info[key])):
-			if x != len(node_info[key])-1:
-				outline = outline + str(node_info[key][x]) + "\t";
-			else:
-				outline = outline + str(node_info[key][x]) + "\n";
-		outFile.write(outline);
-	outFile.close();
-
-#infilename = "tree_parse_in.txt";
-
-#inFile = open(infilename, "r");
-#intree = inFile.read();
-#inFile.close();
-
-#node_info = treeParse(intree);
-
-#outFile = open("testout.txt","w");
-#outline = "Node\tBranch length\tAncestral node\tAncestral branch length\tSister node\tSister branch length\tDescendent 1\t Descendent 1 branch length\tDescendent 2\tDescendent 2 branch length\n";
-#outFile.write(outline);
-
-#for key in nofo:
-#	outline = key + "\t";
-#	for each in nofo[key]:
-#		outline = outline + str(each) + "\t";
-#	outFile.write(outline);
-#	outFile.write("\n");
-#outFile.close();
-'''
 
 
