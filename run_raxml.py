@@ -70,7 +70,7 @@ def IO_fileParse():
 		parser.print_help();
 		sys.exit();
 
-	if args.tree_combine not in [0,1]:
+	if args.log_opt not in [0,1]:
 		print " ------------------------------------------------";
 		print "|**Error 5: -l must take values of either 1 or 0 |";
 		print " ------------------------------------------------";
