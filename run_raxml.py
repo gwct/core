@@ -188,12 +188,12 @@ for each in filelist:
 	if fileflag == 1:
 		rax_infile = each;
 		if each.find("/") != -1:
-			rax_outfile = each[each.rfind("/")+1:each.index("_aln.fa")];
+			rax_outfile = each[each.rfind("/")+1:each.index(".")];
 		else:
-			rax_outfile = each[:each.index("_aln.fa")];
+			rax_outfile = each[:each.index(".")];
 	else:
 		rax_infile = ins + each;
-		rax_outfile = each[:each.index("_aln.fa")];
+		rax_outfile = each[:each.index(".")];
 	rax_outdir = outdir + rax_outfile + "_raxout/";
 
 	if not os.path.exists(rax_outdir):
