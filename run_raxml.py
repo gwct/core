@@ -222,7 +222,7 @@ for each in filelist:
 		rax_cmd = rax_cmd + " -x " + boot_seed + " -# " + str(b) + " ";
 	if t > 1:
 		rax_cmd = rax_cmd + "-T " + str(t) + " ";
-	rax_cmd = rax_cmd + " -s " + rax_infile + " -n " + rax_outfile;
+	rax_cmd = rax_cmd + " -s " + rax_infile + " -n " + rax_outfile + " -w " + script_outdir;
 
 	if v == 0:
 		if os.path.isfile(ins):
@@ -241,13 +241,13 @@ for each in filelist:
 	os.system(rax_cmd);
 	##The RAxML call
 
-	newfileList = os.listdir(os.getcwd());
+	newfileList = os.listdir(script_outdir);
 	for neweach in newfileList:
 		if neweach.find("RAxML_bestTree") != -1:
-			mv_cmd = "mv " + neweach + " " + bestdir;
+			mv_cmd = "mv " + script_outdir + neweach + " " + bestdir;
 			os.system(mv_cmd);
 		elif neweach.find("RAxML") != -1 and neweach != "RAxML_best" and neweach != "raxml_seeds" and neweach != "RAxML_out" and neweach != "raxml_bseeds":
-			mv_cmd = "mv " + neweach + " " + rax_outdir;
+			mv_cmd = "mv " + script_outdir + neweach + " " + rax_outdir;
 			os.system(mv_cmd);
 	if os.path.exists(rax_infile + ".reduced"):
 		mv_cmd = "mv " + rax_infile + ".reduced" + " " + rax_outdir;
