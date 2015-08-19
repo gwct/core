@@ -58,7 +58,9 @@
 16. supertreemaker.py
   * This script can do several things. Runs SDM to get average consensus distance matrices, makes NJ trees from distance matrices, re-roots trees, and makes ultrametric trees. All of these programs will need to be in your PATH.
   * Dependencies:
-   1. SDM (http://www.atgc-montpellier.fr/sdm/) to calculate the matrix, called as `java -jar ~/bin/SDM/SDM.jar`
-   2. R (https://www.r-project.org/) to make NJ trees, called as `Rscript`
-   3. Newick Utilities (http://cegg.unige.ch/newick_utils) to re-root trees, called as `nw_reroot`
-   4. r8s (http://loco.biosci.arizona.edu/r8s/) to smooth trees, called as `r8s`
+  <ol>
+   <li>SDM (http://www.atgc-montpellier.fr/sdm/) to calculate the matrix, called as `java -jar ~/bin/SDM/SDM.jar`</li>
+   <li>R (https://www.r-project.org/) to make NJ trees, called as `Rscript`</li>
+   <li>Newick Utilities (http://cegg.unige.ch/newick_utils) to re-root trees, called as `nw_reroot`</li>
+   <li>r8s (http://loco.biosci.arizona.edu/r8s/) to smooth trees, called as `r8s`</li>
+  </ol>
