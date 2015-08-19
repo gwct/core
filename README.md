@@ -31,7 +31,7 @@
   * Just a little script to show the number of possible rooted tree topologies for a given number of species.
 10. run_codeml.py
   * A script to run some basic PAML analyses with codeml. Still adding a lot to this one. You'll need codeml and newickutils in your PATH.
-  * Dependencies: PAML (http://abacus.gene.ucl.ac.uk/software/paml.html) called as `codeml`, Newick Utilities (http://cegg.unige.ch/newick\_utils) called as `nw\_prune`
+  * Dependencies: PAML (http://abacus.gene.ucl.ac.uk/software/paml.html) called as `codeml`, Newick Utilities (http://cegg.unige.ch/newick_utils) called as `nw_prune`
 11. run_gblocks.py
   * A script to run GBlocks to mask a directory full of alignments in FASTA format. Note: This currently runs GBlocks at the most relaxed settings for phylogenetic tree inference. It will reject any masks that remove more than 20% of the columns from the original alignment.
 12. run_muscle.py
