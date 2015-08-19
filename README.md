@@ -6,8 +6,8 @@
 
 ### About
 ###### These scripts can be used for many tasks including sequence handling, tree making, and sequence alignment.
-###### Many of these programs are mainly used to easily run other genomics or phylogenetics programs on a bunch of files. Pay attention to the dependences for each script to make sure you have the proper programs installed.
-###### Please note that many of these scripts handle FASTA files. For my scripts, the programs expect FASTA files as input with the extension .fa. Use seq_convert to convert your sequences to FASTA format and fa_edit to make any changes you need to them afterwards.
+###### Many of these programs are mainly used to easily run other genomics or phylogenetics programs on a bunch of files. Pay attention to the dependencies for each script to make sure you have the proper programs installed.
+###### Please note that many of these scripts expect input as FASTA files. For my scripts, these *must* have the extension .fa. If you don't have FASTA formatted files, you can use seq_convert to get them to FASTA format and fa_edit to make any changes you need to them afterwards.
 ###### For any script, use the -h flag for specific usage details.
 
 1. corelib/core.py
