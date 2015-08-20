@@ -12,16 +12,16 @@
 ###### Almost all of these scripts are written in Python 2.7 (https://www.python.org/downloads/).
 ###### For any script, use the -h flag for specific usage details.
 
+### CORE scripts
+
 1. corelib/core.py
   * General helper functions such as reading sequences to a dictionary. You'll have to look to see what all is there.
 2. corelib/nj_tree.r
   * Simple R script to get a Neighbor Joining tree. Used by supertreemaker and probably not helpful standalone.
   * Dependencies:
-  <ol>
-   <li>R (https://www.r-project.org/)</li>
-  </ol>
+&emsp;R (https://www.r-project.org/)
 3. corelib/treeparse.py
-  * A couple functions that read newick formatted trees and return all relevant information in a more useful way to code with.
+  * A couple functions that read (rooted) Newick formatted trees and return all relevant information in a more useful way to code with.
 4. count_aln.py
   * This script gathers statistics about a single alignment file, or a directory full of alignment files.
 5. count_pos.py
