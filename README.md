@@ -1,7 +1,7 @@
 # CORE: Code fOr Romps in Evolutionary data
 ### A mixture of scripts and libraries to help with sequence data manipulation, tree parsing, and other things.
 
-## Author
+### Author
 #### Gregg Thomas
 
 ### About
@@ -18,7 +18,7 @@
   * General helper functions such as reading sequences to a dictionary. You'll have to look to see what all is there.
 2. corelib/nj_tree.r
   * Simple R script to get a Neighbor Joining tree. Used by supertreemaker and probably not helpful standalone.
-  * Dependencies:
+  * Dependencies:</br>
 &emsp;R (https://www.r-project.org/)
 3. corelib/treeparse.py
   * A couple functions that read (rooted) Newick formatted trees and return all relevant information in a more useful way to code with.
