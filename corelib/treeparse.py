@@ -56,16 +56,20 @@ def comAnc(spec_list, treedict):
 		elif treedict[b][1] not in new_list:
 			new_list.append(b);
 
+	#print new_list;
+
 	if not all(n in cur_list for n in new_list):
-		flag = comAnc(new_list, treedict);
+		flag, com_anc = comAnc(new_list, treedict);
 	elif len(new_list) > 1:
 		#print "not monophyletic";
 		flag = 0;
+		com_anc = "";
 	else:
 		#print "monophyletic";
 		flag = 1;
+		com_anc = new_list[0];
 		
-	return flag;
+	return flag, com_anc;
 
 #############################################################################
 
