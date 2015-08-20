@@ -35,7 +35,7 @@
 9. how\_many\_trees
   * Just a little script to show the number of possible rooted tree topologies for a given number of species.
 10. run_codeml.py
-  * A script to run some basic PAML analyses with codeml. Still adding a lot to this one. You'll need codeml and newickutils in your PATH.
+  * A script to run some basic PAML analyses with codeml. Still adding a lot to this one.
   * Dependencies:</br>
 &emsp;i.  PAML (http://abacus.gene.ucl.ac.uk/software/paml.html) called as `codeml`</br>
 &emsp;ii. Newick Utilities (http://cegg.unige.ch/newick_utils) called as `nw_prune`
