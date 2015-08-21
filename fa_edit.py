@@ -65,7 +65,7 @@ def IO_fileParse():
 		parser.print_help();
 		sys.exit();
 
-	if args.relabel_opt not in [0,1]:
+	if args.relabel_opt not in [0,1,2,3]:
 		print " -------------------------------------------------------";
 		print "|**Error 1: -r must take values of either 0, 1, 2, or 3 |";
 		print " -------------------------------------------------------";

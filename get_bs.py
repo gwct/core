@@ -7,13 +7,46 @@
 #
 #Gregg Thomas, Summer 2015
 #############################################################################
-import sys, os
+import sys, os, argparse
 import core
 
-if len(sys.argv) > 1:
-	indir = os.path.abspath(sys.argv[1]) + "/";
-else:
-	indir = os.getcwd() + "/";
+############################################
+#Function Definitions
+############################################
+def IO_fileParse():
+#This function handles the command line options.
+
+	parser = argparse.ArgumentParser(description="Compiles the info from a run_raxml run into files used by ASTRAL (tree file and bootstrap locations file). Input directory must be a run_raxml output directory.");
+
+	parser.add_argument("-i", dest="input", help="A run_raxml output directory. Default: current directory.", default=os.getcwd()+"/");
+	parser.add_argument("-b", dest="bs_relabel", help="Set to 0 to get original RAxML bootstrap files. Set to 1 to get relabeled files. Default: 0", type=int, default=0);
+
+	args = parser.parse_args();
+
+	if args.bs_relabel not in [0,1]:
+		print " ------------------------------------------------";
+		print "|**Error 1: -r must take values of either 0 or 1 |";
+		print " ------------------------------------------------";
+		parser.print_help();
+		sys.exit();
+	
+	return args.input, args.bs_relabel;
+
+
+############################################
+#Main Block
+############################################
+
+#if len(sys.argv) > 1:
+#	indir = os.path.abspath(sys.argv[1]) + "/";
+#	if len(sys.argv) > 2:
+#		bs_opt = int(sys.argv[2]);
+#else:
+#	indir = os.getcwd() + "/";
+#	bs_opt = 0;
+
+indir, bs_opt = IO_fileParse();
+
 raxtreedir = indir + "raxml_best/";
 raxoutdir = indir + "raxml_out/";
 outfilename = indir + "astral_gt.txt";
@@ -26,6 +59,10 @@ print "INPUT    | Input directory:\t\t\t" + indir;
 print "INFO     | All other directories and files will be within the input directory.";
 print "INFO     | RAxML best tree directory:\t\traxml_best/";
 print "INFO     | RAxML output directory:\t\traxml_out/";
+if bs_opt == 1:
+	print "INFO     | Retrieving bootstraps from relabeled files.";
+elif bs_opt == 0:
+	print "INFO     | Retrieving bootstraps from original RAxML files.";
 print "OUTPUT   | Writing genetrees to:\t\tastral_gt.txt";
 print "OUTPUT   | Writing locations of BS files to:\tastral_bs.txt";
 print "-------------------------------------";
@@ -50,7 +87,10 @@ for each in treelist:
 	gid = each[each.index(".")+1:];
 
 	gtree = open(raxtreedir + each,"r").read();
-	gbsfile = raxoutdir + gid + "_raxout/RAxML_bootstrap." + gid;
+	if bs_opt == 0:
+		gbsfile = raxoutdir + gid + "_raxout/RAxML_bootstrap." + gid;
+	elif bs_opt == 1:
+		gbsfile = raxoutdir + gid + "_raxout/bootstrap_relabel.txt";
 
 	ofile.write(gtree)
 	bfile.write(gbsfile + "\n");
