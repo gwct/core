@@ -1,4 +1,4 @@
-# CORE: Code fOr Romps in Evolutionary data
+# CORE: COde for Romps in Evolutionary data
 ### A mixture of scripts and libraries to help with sequence data manipulation, tree parsing, and other things.
 
 ## Author
@@ -6,8 +6,8 @@
 
 ## About
 ###### These scripts can be used for many tasks including sequence handling, tree making, and sequence alignment.
-###### Many of these programs are mainly used to easily run other genomics or phylogenetics programs on a bunch of files. Pay attention to the dependencies for each script to make sure you have the proper programs installed.
-###### Please note that many of these scripts expect input as FASTA files. For my scripts, these *must* have the extension .fa. If you don't have FASTA formatted files, you can use seq_convert to get them to FASTA format and fa_edit to make any changes you need to them afterwards.
+###### Some of these programs are mainly used as wrappers to easily run other genomics or phylogenetics programs on a bunch of files. Pay attention to the dependencies for each script to make sure you have the proper programs installed.
+###### Please note that many of these scripts expect input as FASTA files. For my scripts, these *must have the extension .fa*. If you don't have FASTA formatted files, you can use seq_convert to get them to FASTA format and fa_edit to make any changes you need to them afterwards.
 
 ###### Almost all of these scripts are written in Python 2.7 (https://www.python.org/downloads/).
 ###### For any script, use the -h flag for specific usage details.
