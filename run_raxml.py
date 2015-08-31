@@ -188,8 +188,10 @@ for each in filelist:
 	if fileflag == 1:
 		rax_infile = each;
 		if each.find("/") != -1:
-			rax_outfile = each[each.rfind("/")+1:each.index(".")];
+			print "HI1";
+			rax_outfile = each[each.rfind("/")+1:each.index(".",each.rfind("/")+1)];
 		else:
+			print "HELLO2";
 			rax_outfile = each[:each.index(".")];
 	else:
 		rax_infile = ins + each;
