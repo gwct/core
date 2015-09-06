@@ -234,7 +234,17 @@ def printWrite(o_name, o_line):
 
 #############################################################################
 
+def logCheck(lopt, lfilename, outline):
+#Function checks whether or not to write to a logfile, print something, or both.
+	if lopt == 1:
+		printWrite(lfilename, outline);
+	else:
+		print outline;
+
+#############################################################################
+
 def errorOut(errnum, errmsg):
+#Formatting for error messages.
 	fullmsg = "|**Error " + str(errnum) + ": " + errmsg + " |";
 	border = " " + "-" * (len(fullmsg)-2);
 	print border + "\n" + fullmsg + "\n" + border;

@@ -19,12 +19,13 @@ nts = ["A","T","C","G","N","-","X"];
 ############################################
 #Function Definitions
 ############################################
-def IO_fileParse():
+def optParse(errorflag):
 #This function handles the command line options.
 
 	parser = argparse.ArgumentParser(description="Runs codeml on a single .fa file or a directory full of .fa files. Dependencies: core, treeparse, PAML, newickutils");
 
 	parser.add_argument("-i", dest="input", help="Input. Either a directory containing many FASTA files or a single FASTA file.");
+	parser.add_argument("-c", dest="paml_path", help="You must specify the full path to your PAML DIRECTORY here.");
 	parser.add_argument("-t", dest="tree_file", help="A user specified tree for codeml to use. If not specified, codeml will infer the tree.", default="");
 	parser.add_argument("-p", dest="prune_opt", help="If not all species present in the tree will be present in each alignment, set this to 1 to prune the tree for each file. Default: 0", type=int, default=0);
 	parser.add_argument("-a", dest="anc_opt", help="Option to tell PAML to do ancestral reconstruction (1) or not (0). Default: 0.", type=int, default=0);
@@ -33,63 +34,60 @@ def IO_fileParse():
 
 	args = parser.parse_args();
 
-	if args.input == None:
+	if errorflag == 0:
+
+		if args.input == None or args.paml_path == None:
+			core.errorOut(1, "Both -i and -c must be set");
+			optParse(1);
+
+		if args.prune_opt not in [0,1]:
+			core.errorOut(2, "-p must take values of either 1 or 0");
+			optParse(1);
+
+		if args.prune_opt == 1 and args.tree_file == "":
+			core.errorOut(3, "With -p set to 1 a tree file must be specified");
+			optParse(1);
+
+		if args.anc_opt not in [0,1]:
+			core.errorOut(4, "-a must take values of 1 or 0");
+			optParse(1);
+
+		if args.verbosity not in [0,1]:
+			core.errorOut(5, "-v must take values of either 1 or 0");
+			optParse(1);
+
+		if args.log_opt not in [0,1]:
+			core.errorOut(6, "-l must take values of either 1 or 0");
+			optParse(1);
+
+		return args.input, args.paml_path, args.tree_file, args.prune_opt, args.anc_opt, args.verbosity, args.log_opt;
+
+	elif errorflag == 1:
 		parser.print_help();
 		sys.exit();
-
-	if args.prune_opt not in [0,1]:
-		print " ------------------------------------------------";
-		print "|**Error 1: -p must take values of either 1 or 0 |";
-		print " ------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	if args.prune_opt == 1 and args.tree_file == "":
-		print " ----------------------------------------------------------";
-		print "|**Error 2: With -p set to 1 a tree file must be specified |";
-		print " ----------------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	if args.anc_opt not in [0,1]:
-		print " -----------------------------------------";
-		print "|**Error 3: -a must take values of 1 or 0 |";
-		print " -----------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	if args.verbosity not in [0,1]:
-		print " ------------------------------------------------";
-		print "|**Error 3: -v must take values of either 1 or 0 |";
-		print " ------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	if args.log_opt not in [0,1]:
-		print " ------------------------------------------------";
-		print "|**Error 4: -l must take values of either 1 or 0 |";
-		print " ------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	return args.input, args.tree_file, args.prune_opt, args.anc_opt, args.verbosity, args.log_opt;
 
 #####
 
-def logCheck(lopt, lfilename, outline):
-	if lopt == 1:
-		core.printWrite(lfilename, outline);
-	else:
-		print outline;
+#def core.logCheck(lopt, lfilename, outline):
+#	if lopt == 1:
+#		core.printWrite(lfilename, outline);
+#	else:
+#		print outline;
 
 ############################################
 #Main Block
 ############################################
 
-ins, treefile, prune, aopt, v, l = IO_fileParse();
+ins, ppath, treefile, prune, aopt, v, l = optParse(0);
 
 starttime = core.getLogTime();
 starttime = starttime.replace(":",".");
+
+if not os.path.isdir(ppath):
+	core.errorOut(7, "-c must be a valid directory path");
+	optParse(1);
+elif ppath[-1] != "/":
+	ppath = ppath + "/";
 
 if os.path.isfile(ins):
 	fileflag = 1;
@@ -123,50 +121,51 @@ logfile = open(logfilename, "w");
 logfile.write("");
 logfile.close();
 
-logCheck(l, logfilename, "=======================================================================");
-logCheck(l, logfilename, "\t\t\tRunning codeml");
-logCheck(l, logfilename, "\t\t\t" + core.getDateTime());
+core.logCheck(l, logfilename, "=======================================================================");
+core.logCheck(l, logfilename, "\t\t\tRunning codeml");
+core.logCheck(l, logfilename, "\t\t\t" + core.getDateTime());
 if fileflag == 1:
-	logCheck(l, logfilename, "INPUT    | Making tree from file:\t\t" + ins);
+	core.logCheck(l, logfilename, "INPUT    | Making tree from file:\t\t" + ins);
 else:
-	logCheck(l, logfilename, "INPUT    | Making trees from all files in:\t" + ins);
+	core.logCheck(l, logfilename, "INPUT    | Making trees from all files in:\t" + ins);
+core.logCheck(l, logfilename, "INFO     | PAML path set to:\t\t\t" + ppath);
 if treefile != "":
-	logCheck(l, logfilename, "INFO     | Using tree from file:\t\t" + treefile);
+	core.logCheck(l, logfilename, "INFO     | Using tree from file:\t\t" + treefile);
 else:
-	logCheck(l, logfilename, "INFO     | No tree file specified. codeml will infer a tree for each gene.");
+	core.logCheck(l, logfilename, "INFO     | No tree file specified. codeml will infer a tree for each gene.");
 if prune == 1:
-	logCheck(l, logfilename, "INFO     | Pruning the tree for each gene.");
+	core.logCheck(l, logfilename, "INFO     | Pruning the tree for each gene.");
 if aopt == 0:
-	logCheck(l, logfilename, "INFO     | Not performing ancestral reconstruction.");
+	core.logCheck(l, logfilename, "INFO     | Not performing ancestral reconstruction.");
 elif aopt == 1:
-	logCheck(l, logfilename, "INFO     | Saving ancestral reconstructions and probabilities.");
+	core.logCheck(l, logfilename, "INFO     | Saving ancestral reconstructions and probabilities.");
 if v == 1:
-	logCheck(l, logfilename, "INFO     | Printing all codeml output to the screen.");
+	core.logCheck(l, logfilename, "INFO     | Printing all codeml output to the screen.");
 else:
-	logCheck(l, logfilename, "INFO     | Silent mode. Not printing codeml output to the screen.");
-logCheck(l, logfilename, "OUTPUT   | An output directory has been created within the input directory called:\t" + script_outdir);
-logCheck(l, logfilename, "-------------------------------------");
+	core.logCheck(l, logfilename, "INFO     | Silent mode. Not printing codeml output to the screen.");
+core.logCheck(l, logfilename, "OUTPUT   | An output directory has been created within the input directory called:\t" + script_outdir);
+core.logCheck(l, logfilename, "-------------------------------------");
 sys.exit();
 if not os.path.exists(outdir):
-	logCheck(l, logfilename, core.getTime() + " | Creating codeml output directory:\t" + outdir);
+	core.logCheck(l, logfilename, core.getTime() + " | Creating codeml output directory:\t" + outdir);
 	cmd = "mkdir " + outdir;
 	os.system(cmd);
 
 if aopt == 1:
 	if not os.path.exists(ancdir):
-		logCheck(l, logfilename, core.getTime() + " | Creating directory to pass ancestral sequences and trees:\t" + ancdir);
+		core.logCheck(l, logfilename, core.getTime() + " | Creating directory to pass ancestral sequences and trees:\t" + ancdir);
 		cmd = "mkdir " + ancdir;
 		os.system(cmd);
 
 if prune == 1:
-	logCheck(l, logfilename, core.getTime() + " | Retrieving tree info...");
+	core.logCheck(l, logfilename, core.getTime() + " | Retrieving tree info...");
 	td, tree = treeparse.treeParse(open(treefile, "r").read().replace("\n",""),1);
 	tips = [];
 	for node in td:
 		if td[node][9] == 'tip':
 			tips.append(node);
 
-logCheck(l, logfilename, core.getTime() + " | Starting codeml runs...\n");
+core.logCheck(l, logfilename, core.getTime() + " | Starting codeml runs...\n");
 if v == 0:
 	codeml_logfile = script_outdir + "codeml.log";
 
@@ -232,7 +231,7 @@ for each in filelist:
 	ctlFile.write("CodonFreq = 2\n");
 	ctlFile.write("clock = 0\n");
 	ctlFile.write("aaDist = 0\n");
-	ctlFile.write("aaRatefile = /Users/Gregg/bin/paml4.7a/dat/wag.dat\n");
+	ctlFile.write("aaRatefile = " + ppath + "/dat/wag.dat\n");
 	ctlFile.write("model = 2\n\n");
 
 	ctlFile.write("NSsites = 0\n\n");
@@ -254,14 +253,14 @@ for each in filelist:
 
 	ctlFile.close();
 
-	codeml_cmd = "codeml " + ctlfilename;
+	codeml_cmd = ppath + "bin/codeml " + ctlfilename;
 	if v == 0:
 		if os.path.isfile(ins):
 			codeml_cmd = codeml_cmd + " >> " + codeml_logfile;
 		else:
 			codeml_cmd = codeml_cmd + " >> " + codeml_logfile;
 	if v == 1 or fileflag == 1:
-		logCheck(l, logfilename, core.getTime() + " | codeml Call:\t" + codeml_cmd);
+		core.logCheck(l, logfilename, core.getTime() + " | codeml Call:\t" + codeml_cmd);
 	else:
 		lfile = open(logfilename, "a");
 		lfile.write(core.getTime() + " | codeml Call for " + infilename + ":\t" + codeml_cmd + "\n");
@@ -346,8 +345,8 @@ for each in filelist:
 if v == 0 and fileflag == 0:
 	pstring = "100.0% complete.\n";
 	sys.stderr.write('\b' * len(pstring) + pstring);
-logCheck(l, logfilename, core.getTime() + " | Done!");
-logCheck(l, logfilename, "=======================================================================");
+core.logCheck(l, logfilename, core.getTime() + " | Done!");
+core.logCheck(l, logfilename, "=======================================================================");
 
 
 
