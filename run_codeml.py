@@ -94,19 +94,26 @@ starttime = starttime.replace(":",".");
 if os.path.isfile(ins):
 	fileflag = 1;
 	indir = os.path.dirname(os.path.realpath(ins)) + "/";
-	script_outdir = indir + starttime + "-run_codeml/";
+	script_outdir = ins + "-run_codeml/";
 	outdir = script_outdir + "codeml_out/";
 	if aopt == 1:
 		ancdir = script_outdir + "anc_seqs_fa/";
 	filelist = [ins];
 else:
 	fileflag = 0;
+	filelist = os.listdir(ins);
 	indir = ins;
-	script_outdir = ins + starttime + "-run_codeml/";
+	used = [];
+	for each in filelist:
+		if each.find("-run_codeml") != -1:
+			used.append(int(each[:each.index("-")]));
+	if used != []:
+		script_outdir = ins + str(max(used)+1) + "-run_codeml-" + starttime + "/";
+	else:
+		script_outdir = ins + "1-run_codeml-" + starttime + "/";
 	outdir = script_outdir + "codeml_out/";
 	if aopt == 1:
 		ancdir = script_outdir + "anc_seqs_fa/";
-	filelist = os.listdir(ins);
 
 print core.getTime() + " | Creating main output directory:\t" + script_outdir;
 os.system("mkdir " + script_outdir);
@@ -139,7 +146,7 @@ else:
 	logCheck(l, logfilename, "INFO     | Silent mode. Not printing codeml output to the screen.");
 logCheck(l, logfilename, "OUTPUT   | An output directory has been created within the input directory called:\t" + script_outdir);
 logCheck(l, logfilename, "-------------------------------------");
-
+sys.exit();
 if not os.path.exists(outdir):
 	logCheck(l, logfilename, core.getTime() + " | Creating codeml output directory:\t" + outdir);
 	cmd = "mkdir " + outdir;
