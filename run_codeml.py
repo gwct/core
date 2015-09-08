@@ -40,24 +40,28 @@ def optParse(errorflag):
 			core.errorOut(1, "Both -i and -c must be set");
 			optParse(1);
 
+		if not os.path.isfile(args.tree_file):
+			core.errorOut(2, "-t must be a valid tree file name");
+			optParse(1);
+
 		if args.prune_opt not in [0,1]:
-			core.errorOut(2, "-p must take values of either 1 or 0");
+			core.errorOut(3, "-p must take values of either 1 or 0");
 			optParse(1);
 
 		if args.prune_opt == 1 and args.tree_file == "":
-			core.errorOut(3, "With -p set to 1 a tree file must be specified");
+			core.errorOut(4, "With -p set to 1 a tree file must be specified");
 			optParse(1);
 
 		if args.anc_opt not in [0,1]:
-			core.errorOut(4, "-a must take values of 1 or 0");
+			core.errorOut(5, "-a must take values of 1 or 0");
 			optParse(1);
 
 		if args.verbosity not in [0,1]:
-			core.errorOut(5, "-v must take values of either 1 or 0");
+			core.errorOut(6, "-v must take values of either 1 or 0");
 			optParse(1);
 
 		if args.log_opt not in [0,1]:
-			core.errorOut(6, "-l must take values of either 1 or 0");
+			core.errorOut(7, "-l must take values of either 1 or 0");
 			optParse(1);
 
 		return args.input, args.paml_path, args.tree_file, args.prune_opt, args.anc_opt, args.verbosity, args.log_opt;
@@ -84,7 +88,7 @@ starttime = core.getLogTime();
 starttime = starttime.replace(":",".");
 
 if not os.path.isdir(ppath):
-	core.errorOut(7, "-c must be a valid directory path");
+	core.errorOut(8, "-c must be a valid directory path");
 	optParse(1);
 elif ppath[-1] != "/":
 	ppath = ppath + "/";
@@ -99,6 +103,12 @@ if os.path.isfile(ins):
 	filelist = [ins];
 else:
 	fileflag = 0;
+	if not os.path.isdir(ins):
+		core.errorOut(9, "-i must be a valid directory path");
+		optParse(1);
+	ins = os.path.abspath(ins);
+	if ins[-1] != "/":
+		ins = ins + "/";
 	filelist = os.listdir(ins);
 	indir = ins;
 	used = [];
@@ -145,7 +155,7 @@ else:
 	core.logCheck(l, logfilename, "INFO     | Silent mode. Not printing codeml output to the screen.");
 core.logCheck(l, logfilename, "OUTPUT   | An output directory has been created within the input directory called:\t" + script_outdir);
 core.logCheck(l, logfilename, "-------------------------------------");
-sys.exit();
+#sys.exit();
 if not os.path.exists(outdir):
 	core.logCheck(l, logfilename, core.getTime() + " | Creating codeml output directory:\t" + outdir);
 	cmd = "mkdir " + outdir;
