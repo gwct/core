@@ -70,6 +70,10 @@ def alignCounter(ifile):
 ############################################
 #Main Block
 ############################################
+if len(sys.argv) not in [1,2,3]:
+	print "Usage:\t$ count_aln.py [input directory or filename] [1,0 to display individual file counts or not]";
+	sys.exit();
+
 ins = sys.argv[1];
 
 if os.path.isfile(ins):

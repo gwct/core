@@ -45,7 +45,7 @@ nts = ["A","T","C","G"];
 ############################################
 #Function Definitions
 ############################################
-def IO_fileParse():
+def optParse(errorflag):
 #This function handles the command line options.
 
 	parser = argparse.ArgumentParser(description="A general purpose FASTA editing script.");
@@ -61,79 +61,66 @@ def IO_fileParse():
 
 	args = parser.parse_args();
 
-	if args.input == None or args.output == None:
-		parser.print_help();
-		sys.exit();
-
-	if args.relabel_opt not in [0,1,2,3]:
-		print " -------------------------------------------------------";
-		print "|**Error 1: -r must take values of either 0, 1, 2, or 3 |";
-		print " -------------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-	elif args.relabel_opt == 1:
-		if args.spec_dict == None:
-			print " -------------------------------------------------------";
-			print "|**Error 2: With -r set to 1, -s must also be specified |";
-			print " -------------------------------------------------------";
-			parser.print_help();
-			sys.exit();
-		else:
-			specs = args.spec_dict.split(",");
-			sd = {};
-			for each in specs:
-				spec = each.split(":");
-				sd[spec[0]] = spec[1];
-	else:
-		sd = "";
-
-	if args.trim_opt not in [0,1]:
-		print " ------------------------------------------------";
-		print "|**Error 3: -t must take values of either 0 or 1 |";
-		print " ------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	if args.ss_opt not in [0,1]:
-		print " ------------------------------------------------";
-		print "|**Error 4: -p must take values of either 0 or 1 |";
-		print " ------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	replacement = args.replacement;
-	if args.replacement != "":
-		replacement = replacement.upper();
-
-		if len(replacement) > 2 and replacement.find(",") == -1:
-			print " -----------------------------------";
-			print "|**Error 5: -m entered incorrectly. |";
-			print " -----------------------------------";
+	if errorflag == 0:
+		if args.input == None or args.output == None:
 			parser.print_help();
 			sys.exit();
 
-		elif replacement.find(",") != -1:
-			replacement = replacement.split(",");
+		if args.relabel_opt not in [0,1,2,3]:
+			core.errorOut(1, "-r must take values of 0, 1, 2, or 3");
+			optParse(1);
 
+		elif args.relabel_opt == 1:
+			if args.spec_dict == None:
+				core.errorOut(2, "With -r set to 1 or 2, -s must also be specified");
+				optParse(1);
+			else:
+				specs = args.spec_dict.split(",");
+				sd = {};
+				for each in specs:
+					spec = each.split(":");
+					sd[spec[0]] = spec[1];
 		else:
-			replacement = [replacement];
+			sd = "";
 
-		for each in replacement:
-			if len(each) > 2 or (each[1] not in aas and each[1] != ":"):
-				print " -----------------------------------------------------------------------------------------";
-				print "|**Error 5: For -m, the second character entered must be a valid amino acid symbol or ':' |";
-				print " -----------------------------------------------------------------------------------------";
-				parser.print_help();
-				sys.exit();
+		if args.trim_opt not in [0,1]:
+			core.errorOut(3, "-t must take values of either 0 or 1");
+			optParse(1);
 
+		if args.ss_opt not in [0,1]:
+			core.errorOut(4, "-p must take values of either 0 or 1");
+			optParse(1);
 
-	return args.input, args.relabel_opt, sd, args.trim_opt, args.trim_delim, args.ss_opt, replacement, args.output;
+		replacement = args.replacement;
+		if args.replacement != "":
+			replacement = replacement.upper();
+
+			if len(replacement) > 2 and replacement.find(",") == -1:
+				core.errorOut(1, "-m entered incorrectly");
+				optParse(1);
+
+			elif replacement.find(",") != -1:
+				replacement = replacement.split(",");
+
+			else:
+				replacement = [replacement];
+
+			for each in replacement:
+				if len(each) > 2 or (each[1] not in aas and each[1] != ":"):
+					core.errorOut(1, "For -m, the second character entered must be a valid amino acid symbol or ':'");
+					optParse(1);
+
+		return args.input, args.relabel_opt, sd, args.trim_opt, args.trim_delim, args.ss_opt, replacement, args.output;
+
+	elif errorflag == 1:
+		parser.print_help();
+		sys.exit();
 
 ############################################
 #Main Block
 ############################################
 
-ins, r, specdict, t, td, ss, repl, outs = IO_fileParse();
+ins, r, specdict, t, td, ss, repl, outs = optParse(0);
 suffix = "";
 
 print "==============================================================================================";

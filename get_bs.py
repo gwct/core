@@ -13,7 +13,7 @@ import core
 ############################################
 #Function Definitions
 ############################################
-def IO_fileParse():
+def optParse(errorflag):
 #This function handles the command line options.
 
 	parser = argparse.ArgumentParser(description="Compiles the info from a run_raxml run into files used by ASTRAL (tree file and bootstrap locations file). Input directory must be a run_raxml output directory.");
@@ -23,29 +23,23 @@ def IO_fileParse():
 
 	args = parser.parse_args();
 
-	if args.bs_relabel not in [0,1]:
-		print " ------------------------------------------------";
-		print "|**Error 1: -r must take values of either 0 or 1 |";
-		print " ------------------------------------------------";
+	if errorflag == 0:
+
+		if args.bs_relabel not in [0,1]:
+			core.errorOut(1, "-r must take values of either 0 or 1");
+			optParse(1);
+	
+		return args.input, args.bs_relabel;
+
+	elif errorflag == 1:
 		parser.print_help();
 		sys.exit();
-	
-	return args.input, args.bs_relabel;
 
 
 ############################################
 #Main Block
 ############################################
-
-#if len(sys.argv) > 1:
-#	indir = os.path.abspath(sys.argv[1]) + "/";
-#	if len(sys.argv) > 2:
-#		bs_opt = int(sys.argv[2]);
-#else:
-#	indir = os.getcwd() + "/";
-#	bs_opt = 0;
-
-indir, bs_opt = IO_fileParse();
+indir, bs_opt = optParse(0);
 
 raxtreedir = indir + "raxml_best/";
 raxoutdir = indir + "raxml_out/";

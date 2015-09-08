@@ -6,6 +6,7 @@
 
 import string
 import sys
+import os
 import re
 import subprocess
 import datetime
@@ -248,6 +249,28 @@ def errorOut(errnum, errmsg):
 	fullmsg = "|**Error " + str(errnum) + ": " + errmsg + " |";
 	border = " " + "-" * (len(fullmsg)-2);
 	print border + "\n" + fullmsg + "\n" + border;
+
+#############################################################################
+
+def getOutdir(indir, prefix, stime):
+#Retrieves full input directory name and proper output directory name for other scripts.
+	if not os.path.isdir(indir):
+		core.errorOut(4, "-i must be a valid directory path");
+		optParse(1);
+	indir = os.path.abspath(indir);
+	if indir[-1] != "/":
+		indir = indir + "/";
+	filelist = os.listdir(indir);
+	used = [];
+	for each in filelist:
+		if each.find("-" + prefix) != -1:
+			used.append(int(each[:each.index("-")]));
+	if used != []:
+		outdir = indir + str(max(used)+1) + "-" + prefix + "-" + stime + "/";
+	else:
+		outdir = indir + "1-" + prefix + "-" + stime + "/";
+
+	return indir, outdir;
 
 #############################################################################
 ##########################################################################################################################################################

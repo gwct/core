@@ -18,6 +18,10 @@ import sys, os
 sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
 import core
 
+if len(sys.argv) not in [1,2,3]:
+	print "Usage:\t$ count_pos.py [input directory or filename] [1,0 to display individual file counts or not]";
+	sys.exit();
+
 ins = sys.argv[1];
 print "=======================================================================";
 print "\t\t\t" + core.getDateTime();

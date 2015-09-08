@@ -8,13 +8,13 @@
 #############################################################################
 
 import sys, os, argparse
-#sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
+sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
 import core
 
 ############################################
 #Function Definitions
 ############################################
-def IO_fileParse():
+def optParse(errorflag):
 #This function handles the command line options.
 
 	parser = argparse.ArgumentParser(description="Runs GBlocks on a single .fa file or a directory full of .fa files. Dependencies: core, GBlocks");
@@ -22,41 +22,37 @@ def IO_fileParse():
 	parser.add_argument("-i", dest="input", help="Input. Either a directory containing many FASTA files or a single FASTA file.");
 	parser.add_argument("-r", dest="gblocks_path", help="You can specify the full path to your GBlocks executable here. Default: gblocks (assumes you either have an alias or it is in your PATH.", default="gblocks");
 	parser.add_argument("-t", dest="seq_type", help="Choose from: protein (p, default), dna, (d), or codon (c).", default="p");
-	parser.add_argument("-v", dest="verbosity", help="An option to control the output printed to the screen. 1: print all RAxML output, 0: print only a progress bar. Default: 1", type=int, default=1);
+	parser.add_argument("-v", dest="verbosity", help="An option to control the output printed to the screen. 1: print all GBlocks output, 0: print only a progress bar. Default: 1", type=int, default=1);
 	parser.add_argument("-l", dest="log_opt", help="A boolean option to tell the script whether to create a logfile (1) or not (0). Default: 1", type=int, default=1);
 
 	args = parser.parse_args();
 
-	if args.input == None:
+	if errorflag == 0:
+		if args.input == None:
+			parser.print_help();
+			sys.exit();
+
+		st = args.seq_type.lower();
+		if st not in ["p","d","c","protein","dna","codon"]:
+			core.errorOut(1, "-t must take values of p, d, or c");
+			optParse(1);
+
+		if len(st) > 1:
+			st = st[:1];
+
+		if args.verbosity not in [0,1]:
+			core.errorOut(2, "-v must take values of either 1 or 0");
+			optParse(1);
+
+		if args.log_opt not in [0,1]:
+			core.errorOut(3, "-l must take values of either 1 or 0");
+			optParse(1);
+
+		return args.input, args.gblocks_path, st, args.verbosity, args.log_opt;
+
+	elif errorflag == 1:
 		parser.print_help();
 		sys.exit();
-
-	st = args.seq_type.lower();
-	if st not in ["p","d","c","protein","dna","codon"]:
-		print " ----------------------------------------------------";
-		print "|**Error 1: -t must take values of either p, d, or c |";
-		print " ----------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	if len(st) > 1:
-		st = st[:1];
-
-	if args.verbosity not in [0,1]:
-		print " ------------------------------------------------";
-		print "|**Error 1: -v must take values of either 1 or 0 |";
-		print " ------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	if args.log_opt not in [0,1]:
-		print " ------------------------------------------------";
-		print "|**Error 2: -l must take values of either 1 or 0 |";
-		print " ------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	return args.input, args.gblocks_path, st, args.verbosity, args.log_opt;
 
 #####
 
@@ -70,7 +66,7 @@ def logCheck(lopt, lfilename, outline):
 #Main Block
 ############################################
 
-ins, gb_path, seqtype, v, l = IO_fileParse();
+ins, gb_path, seqtype, v, l = optParse(0);
 
 starttime = core.getLogTime();
 
@@ -81,9 +77,8 @@ if os.path.isfile(ins):
 	filelist = [ins];
 else:
 	fileflag = 0;
-	indir = ins;
-	outdir = indir + starttime + "-gblocks/";
-	filelist = os.listdir(ins);
+	indir, outdir = core.getOutdir(ins, "gblocks", starttime);
+	filelist = os.listdir(indir);
 
 print core.getTime() + " | Creating main output directory...";
 os.system("mkdir " + outdir);
@@ -99,14 +94,14 @@ logCheck(l, logfilename, "\t\t\t" + core.getDateTime());
 if fileflag == 1:
 	logCheck(l, logfilename, "INPUT    | Masking alignment from file: " + ins);
 else:
-	logCheck(l, logfilename, "INPUT    | Masking alignments from all files in: " + ins);
+	logCheck(l, logfilename, "INPUT    | Masking alignments from all files in: " + indir);
 logCheck(l, logfilename, "INFO     | GBlocks path set to: " + gb_path);
 logCheck(l, logfilename, "INFO     | Sequence type set to: " + seqtype);
 if v == 1:
 	logCheck(l, logfilename, "INFO     | Printing all GBlocks output to the screen.");
 else:
 	logCheck(l, logfilename, "INFO     | Silent mode. Not printing GBlocks output to the screen.");
-logCheck(l, logfilename, "OUTPUT   | An output directory has been created within the input directory called: " + starttime + "-gblocks");
+logCheck(l, logfilename, "OUTPUT   | An output directory has been created within the input directory called: " + outdir);
 logCheck(l, logfilename, "-------------------------------------");
 
 num_aligns = 0;

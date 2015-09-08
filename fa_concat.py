@@ -14,6 +14,10 @@ import sys, os
 sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
 import core
 
+if len(sys.argv) not in [1,2]:
+	print "Usage:\t$ fa_conact.py [input directory] [output file name]";
+	sys.exit();
+
 ins = sys.argv[1];
 outs = sys.argv[2];
 
