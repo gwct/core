@@ -85,7 +85,6 @@ def optParse(errorflag):
 ins, ppath, treefile, prune, aopt, v, l = optParse(0);
 
 starttime = core.getLogTime();
-starttime = starttime.replace(":",".");
 
 if not os.path.isdir(ppath):
 	core.errorOut(8, "-c must be a valid directory path");

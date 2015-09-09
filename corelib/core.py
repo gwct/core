@@ -222,7 +222,7 @@ def getTime():
 
 def getLogTime():
 #Function to get the date and time in a certain format.
-	return datetime.datetime.now().strftime("%m.%d.%Y-%I:%M:%S");
+	return datetime.datetime.now().strftime("%m.%d.%Y-%I.%M.%S");
 
 #############################################################################
 
@@ -271,6 +271,19 @@ def getOutdir(indir, prefix, stime):
 		outdir = indir + "1-" + prefix + "-" + stime + "/";
 
 	return indir, outdir;
+
+#############################################################################
+
+def spacedOut(string, totlen):
+	spaces = " " * (totlen - len(string));
+	return string + spaces;
+
+#############################################################################
+
+def filePrep(filename):
+	f = open(filename, "w");
+	f.write("");
+	f.close();
 
 #############################################################################
 ##########################################################################################################################################################
