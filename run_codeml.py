@@ -96,30 +96,17 @@ elif ppath[-1] != "/":
 if os.path.isfile(ins):
 	fileflag = 1;
 	indir = os.path.dirname(os.path.realpath(ins)) + "/";
-	script_outdir = ins + "-run_codeml/";
+	indir, script_outdir = core.getOutdir(indir, "run_codeml", starttime);
 	outdir = script_outdir + "codeml_out/";
 	if aopt == 1:
 		ancdir = script_outdir + "anc_seqs_fa/";
 	filelist = [ins];
+
 else:
 	fileflag = 0;
-	if not os.path.isdir(ins):
-		core.errorOut(9, "-i must be a valid directory path");
-		optParse(1);
-	ins = os.path.abspath(ins);
-	if ins[-1] != "/":
-		ins = ins + "/";
-	filelist = os.listdir(ins);
-	indir = ins;
-	used = [];
-	for each in filelist:
-		if each.find("-run_codeml") != -1:
-			used.append(int(each[:each.index("-")]));
-	if used != []:
-		script_outdir = ins + str(max(used)+1) + "-run_codeml-" + starttime + "/";
-	else:
-		script_outdir = ins + "1-run_codeml-" + starttime + "/";
+	indir, script_outdir = core.getOutdir(ins, "run_codeml", starttime);
 	outdir = script_outdir + "codeml_out/";
+	filelist = os.listdir(indir);
 	if aopt == 1:
 		ancdir = script_outdir + "anc_seqs_fa/";
 
@@ -137,7 +124,7 @@ core.logCheck(l, logfilename, "\t\t\t" + core.getDateTime());
 if fileflag == 1:
 	core.logCheck(l, logfilename, "INPUT    | Making tree from file:\t\t" + ins);
 else:
-	core.logCheck(l, logfilename, "INPUT    | Making trees from all files in:\t" + ins);
+	core.logCheck(l, logfilename, "INPUT    | Making trees from all files in:\t" + indir);
 core.logCheck(l, logfilename, "INFO     | PAML path set to:\t\t\t" + ppath);
 if treefile != "":
 	core.logCheck(l, logfilename, "INFO     | Using tree from file:\t\t" + treefile);
@@ -356,6 +343,7 @@ if v == 0 and fileflag == 0:
 	pstring = "100.0% complete.\n";
 	sys.stderr.write('\b' * len(pstring) + pstring);
 core.logCheck(l, logfilename, core.getTime() + " | Done!");
+core.logCheck(l, logfilename, core.getLogTime());
 core.logCheck(l, logfilename, "=======================================================================");
 
 

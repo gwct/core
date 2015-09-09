@@ -15,7 +15,7 @@ import core
 #Function Definitions
 ############################################
 
-def IO_fileParse():
+def optParse(errorflag):
 #This function handles the command line options.
 
 	parser = argparse.ArgumentParser(description="Makes muscle alignments from an input directory. Dependencies: core, muscle");
@@ -26,27 +26,34 @@ def IO_fileParse():
 
 	args = parser.parse_args();
 
-	if args.input_dir == None or args.output_dir == None:
+	if errorflag == 0:	
+		if args.input_dir == None or args.output_dir == None:
+			parser.print_help();
+			sys.exit();
+
+		if args.verbosity not in [0,1]:
+			core.errorOut(1, "-v must take values of either 0 or 1");
+			optParse(1);
+
+		return args.input_dir, args.verbosity, args.output_dir;
+
+	elif errorflag == 1:
 		parser.print_help();
 		sys.exit();
-
-	if args.verbosity not in [0,1]:
-		print " ------------------------------------------------";
-		print "|**Error 1: -v must take values of either 0 or 1 |";
-		print " ------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	return args.input_dir, args.verbosity, args.output_dir;
 
 ############################################
 #Main Block
 ############################################
 
-indir, v, outdir = IO_fileParse();
+indir, v, outdir = optParse(0);
 
-if indir[len(indir)-1] != "/":
+if not os.path.isdir(indir):
+	errorOut(0, "-i must be a valid directory path");
+	sys.exit();
+indir = os.path.abspath(indir);
+if indir[-1] != "/":
 	indir = indir + "/";
+
 if outdir[len(outdir)-1] != "/":
 	outdir = outdir + "/";
 
@@ -56,7 +63,6 @@ print "\t\t\t" + core.getDateTime();
 print "Aligning all files in:\t\t" + indir;
 print "Writing alignments to:\t\t" + outdir;
 print "-------------------------------------";
-
 
 filelist = os.listdir(indir);
 

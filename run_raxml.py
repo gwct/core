@@ -15,7 +15,7 @@ import core
 ############################################
 #Function Definitions
 ############################################
-def IO_fileParse():
+def optParse(errorflag):
 #This function handles the command line options.
 
 	parser = argparse.ArgumentParser(description="Runs RAxML on a single .fa file or a directory full of .fa files. Dependencies: core, RAxML");
@@ -31,84 +31,63 @@ def IO_fileParse():
 
 	args = parser.parse_args();
 
-	if args.input == None or args.raxml_model == None:
+	if errorflag == 0:
+		if args.input == None or args.raxml_model == None:
+			parser.print_help();
+			sys.exit();
+
+		if args.bootstrap_reps < 0:
+			core.errorOut(1, "-b can take only positive values");
+			optParse(1);
+
+		if args.bootstrap_reps > 100:
+			print " ---------------------------------------------------------------------------------------------------";
+			print "|*Warning: You have specified more than 100 bootstrap replicates. This could take a very long time. |";
+			print " ---------------------------------------------------------------------------------------------------";
+
+		if args.num_threads <= 0:
+			core.errorOut(2, "-t can take only positive, non-zero values");
+			optParse(1);
+
+		if args.verbosity not in [0,1]:
+			core.errorOut(3, "-v must take values of either 1 or 0");
+			optParse(1);
+
+		if args.tree_combine not in [0,1]:
+			core.errorOut(4, "-t must take values of either 1 or 0");
+			optParse(1);
+
+		if args.log_opt not in [0,1]:
+			core.errorOut(5, "-l mus take values of either 1 or 0");
+			optParse(1);
+
+		return args.input, args.raxml_path, args.raxml_model, args.bootstrap_reps, args.num_threads, args.verbosity, args.tree_combine, args.log_opt;
+
+	elif errorflag == 1:
 		parser.print_help();
 		sys.exit();
-
-	if args.bootstrap_reps < 0:
-		print " --------------------------------------------";
-		print "|**Error 1: -b can take only positive values |";
-		print " --------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	if args.bootstrap_reps > 100:
-		print " ---------------------------------------------------------------------------------------------------";
-		print "|*Warning: You have specified more than 100 bootstrap replicates. This could take a very long time. |";
-		print " ---------------------------------------------------------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	if args.num_threads < 0:
-		print " --------------------------------------------";
-		print "|**Error 2: -t can take only positive values |";
-		print " --------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	if args.verbosity not in [0,1]:
-		print " ------------------------------------------------";
-		print "|**Error 3: -v must take values of either 1 or 0 |";
-		print " ------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	if args.tree_combine not in [0,1]:
-		print " ------------------------------------------------";
-		print "|**Error 4: -t must take values of either 1 or 0 |";
-		print " ------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	if args.log_opt not in [0,1]:
-		print " ------------------------------------------------";
-		print "|**Error 5: -l must take values of either 1 or 0 |";
-		print " ------------------------------------------------";
-		parser.print_help();
-		sys.exit();
-
-	return args.input, args.raxml_path, args.raxml_model, args.bootstrap_reps, args.num_threads, args.verbosity, args.tree_combine, args.log_opt;
-
-#####
-
-def logCheck(lopt, lfilename, outline):
-	if lopt == 1:
-		core.printWrite(lfilename, outline);
-	else:
-		print outline;
 
 ############################################
 #Main Block
 ############################################
 
-ins, rax_path, model, b, t, v, c, l = IO_fileParse();
+ins, rax_path, model, b, t, v, c, l = optParse(0);
 
 starttime = core.getLogTime();
 
 if os.path.isfile(ins):
 	fileflag = 1;
 	indir = os.path.dirname(os.path.realpath(ins)) + "/";
-	script_outdir = indir + starttime + "-run_raxml/";
+	indir, script_outdir = core.getOutdir(indir, "run_raxml", starttime);
 	bestdir = script_outdir + "raxml_best/";
 	outdir = script_outdir + "raxml_out/";
 	filelist = [ins];
 else:
 	fileflag = 0;
-	indir = ins;
-	script_outdir = ins + starttime + "-run_raxml/";
+	indir, script_outdir = core.getOutdir(ins, "run_raxml", starttime);
 	bestdir = script_outdir + "raxml_best/";
 	outdir = script_outdir + "raxml_out/";
-	filelist = os.listdir(ins);
+	filelist = os.listdir(indir);
 
 print core.getTime() + " | Creating main output directory:\t" + script_outdir;
 os.system("mkdir " + script_outdir);
@@ -118,58 +97,58 @@ logfile = open(logfilename, "w");
 logfile.write("");
 logfile.close();
 
-logCheck(l, logfilename, "=======================================================================");
-logCheck(l, logfilename, "\t\t\tBuilding trees with RAxML");
-logCheck(l, logfilename, "\t\t\t" + core.getDateTime());
+core.logCheck(l, logfilename, "=======================================================================");
+core.logCheck(l, logfilename, "\t\t\tBuilding trees with RAxML");
+core.logCheck(l, logfilename, "\t\t\t" + core.getDateTime());
 if fileflag == 1:
-	logCheck(l, logfilename, "INPUT    | Making tree from file:\t\t" + ins);
+	core.logCheck(l, logfilename, "INPUT    | Making tree from file:\t\t" + indir);
 else:
-	logCheck(l, logfilename, "INPUT    | Making trees from all files in:\t" + ins);
-logCheck(l, logfilename, "INPUT    | RAxML path set to:\t\t\t" + rax_path);
-logCheck(l, logfilename, "INFO     | Using the following DNA or AA model:\t" + model);
+	core.logCheck(l, logfilename, "INPUT    | Making trees from all files in:\t" + indir);
+core.logCheck(l, logfilename, "INPUT    | RAxML path set to:\t\t\t" + rax_path);
+core.logCheck(l, logfilename, "INFO     | Using the following DNA or AA model:\t" + model);
 if b > 0:
-	logCheck(l, logfilename, "INFO     | Performing " + str(b) + " bootstrap replicates per tree.");
+	core.logCheck(l, logfilename, "INFO     | Performing " + str(b) + " bootstrap replicates per tree.");
 else:
-	logCheck(l, logfilename, "INFO     | Not performing bootstrap analysis.");
+	core.logCheck(l, logfilename, "INFO     | Not performing bootstrap analysis.");
 if t > 1:
-	logCheck(l, logfilename, "INFO     | Using " + str(t) + " threads.");
+	core.logCheck(l, logfilename, "INFO     | Using " + str(t) + " threads.");
 else:
-	logCheck(l, logfilename, "INFO     | Using 1 thread");
+	core.logCheck(l, logfilename, "INFO     | Using 1 thread");
 if v == 1:
-	logCheck(l, logfilename, "INFO     | Printing all RAxML output to the screen.");
+	core.logCheck(l, logfilename, "INFO     | Printing all RAxML output to the screen.");
 else:
-	logCheck(l, logfilename, "INFO     | Silent mode. Not printing RAxML output to the screen.");
+	core.logCheck(l, logfilename, "INFO     | Silent mode. Not printing RAxML output to the screen.");
 if c == 1:
-	logCheck(l, logfilename, "INFO     | Combining RAxML best trees into a file in the input directory called raxml_best_trees.txt");
+	core.logCheck(l, logfilename, "INFO     | Combining RAxML best trees into a file in the input directory called raxml_best_trees.txt");
 else:
-	logCheck(l, logfilename, "INFO     | Not combining best trees to a file.");
-logCheck(l, logfilename, "OUTPUT   | An output directory has been created within the input directory called:\t" + starttime + "-run_raxml");
-logCheck(l, logfilename, "OUTPUT   | Best trees will be placed in raxml_best/, all other RAxML output will be placed in raxml_out/");
-logCheck(l, logfilename, "-------------------------------------");
+	core.logCheck(l, logfilename, "INFO     | Not combining best trees to a file.");
+core.logCheck(l, logfilename, "OUTPUT   | An output directory has been created within the input directory called:\t" + script_outdir);
+core.logCheck(l, logfilename, "OUTPUT   | Best trees will be placed in raxml_best/, all other RAxML output will be placed in raxml_out/");
+core.logCheck(l, logfilename, "-------------------------------------");
 
 if not os.path.exists(outdir):
-	logCheck(l, logfilename, core.getTime() + " | Creating RAxML output directory:\t" + outdir);
+	core.logCheck(l, logfilename, core.getTime() + " | Creating RAxML output directory:\t" + outdir);
 	cmd = "mkdir " + outdir;
 	os.system(cmd);
 if not os.path.exists(bestdir):
-	logCheck(l, logfilename, core.getTime() + " | Creating RAxML best directory:\t" + bestdir);
+	core.logCheck(l, logfilename, core.getTime() + " | Creating RAxML best directory:\t" + bestdir);
 	cmd = "mkdir " + bestdir;
 	os.system(cmd);
 
 seedFile = script_outdir + "raxml_seeds.txt";
-logCheck(l, logfilename, core.getTime() + " | Creating seeds file:\t\t\t" + seedFile);
+core.logCheck(l, logfilename, core.getTime() + " | Creating seeds file:\t\t\t" + seedFile);
 sFile = open(seedFile, "w");
 sFile.write("");
 sFile.close();
 
 if b > 0:
 	bseedFile = script_outdir + "raxml_bseeds.txt";
-	logCheck(l, logfilename, core.getTime() + " | Creating bootstrap seeds file:\t" + bseedFile);
+	core.logCheck(l, logfilename, core.getTime() + " | Creating bootstrap seeds file:\t" + bseedFile);
 	sFile = open(bseedFile, "w");
 	sFile.write("");
 	sFile.close();
 
-logCheck(l, logfilename, core.getTime() + " | Starting RAxML runs...\n");
+core.logCheck(l, logfilename, core.getTime() + " | Starting RAxML runs...\n");
 if v == 0:
 	rax_logfile = script_outdir + "raxml.log";
 
@@ -188,13 +167,11 @@ for each in filelist:
 	if fileflag == 1:
 		rax_infile = each;
 		if each.find("/") != -1:
-			print "HI1";
 			rax_outfile = each[each.rfind("/")+1:each.index(".",each.rfind("/")+1)];
 		else:
-			print "HELLO2";
 			rax_outfile = each[:each.index(".")];
 	else:
-		rax_infile = ins + each;
+		rax_infile = indir + each;
 		rax_outfile = each[:each.index(".")];
 	rax_outdir = outdir + rax_outfile + "_raxout/";
 
@@ -227,14 +204,11 @@ for each in filelist:
 	rax_cmd = rax_cmd + " -s " + rax_infile + " -n " + rax_outfile + " -w " + script_outdir;
 
 	if v == 0:
-		if os.path.isfile(ins):
-			rax_cmd = rax_cmd + " >> " + rax_logfile;
-		else:
-			rax_cmd = rax_cmd + " >> " + rax_logfile;
+		rax_cmd = rax_cmd + " >> " + rax_logfile;
 	##Building the RAxML command based on the input parameters.
 
 	if v == 1 or fileflag == 1:
-		logCheck(l, logfilename, core.getTime() + " | RAxML Call:\t" + rax_cmd);
+		core.logCheck(l, logfilename, core.getTime() + " | RAxML Call:\t" + rax_cmd);
 	else:
 		lfile = open(logfilename, "a");
 		lfile.write(core.getTime() + " | RAxML Call:\t" + rax_cmd + "\n");
@@ -262,7 +236,7 @@ if v == 0:
 
 if i > 1 and c == 1:
 	##Combine best trees into a single file.
-	logCheck(l, logfilename, "\n" + core.getTime() + " | Combining best trees...");
+	core.logCheck(l, logfilename, "\n" + core.getTime() + " | Combining best trees...");
 	filelist = os.listdir(bestdir);
 	tree_combine = script_outdir + "raxml_best_trees.txt";
 
@@ -286,6 +260,6 @@ if i > 1 and c == 1:
 		outfile.write(curtree);
 	outfile.close();
 
-logCheck(l, logfilename, core.getTime() + " | Done!");
-logCheck(l, logfilename, "=======================================================================");
+core.logCheck(l, logfilename, core.getTime() + " | Done!");
+core.logCheck(l, logfilename, "=======================================================================");
 

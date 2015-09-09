@@ -22,6 +22,7 @@ def optParse(errorflag):
 	parser.add_argument("-i", dest="input", help="Input. Either a directory containing many FASTA files or a single FASTA file.");
 	parser.add_argument("-r", dest="gblocks_path", help="You can specify the full path to your GBlocks executable here. Default: gblocks (assumes you either have an alias or it is in your PATH.", default="gblocks");
 	parser.add_argument("-t", dest="seq_type", help="Choose from: protein (p, default), dna, (d), or codon (c).", default="p");
+	parser.add_argument("-m", dest="run_mode", help="Run mode. 1: for phylogenetic reconstructions, accepts only masks that are < 20 percent of original file. 2: Conservative, default GBlocks settings. Default: 1", type=int, default=1);
 	parser.add_argument("-v", dest="verbosity", help="An option to control the output printed to the screen. 1: print all GBlocks output, 0: print only a progress bar. Default: 1", type=int, default=1);
 	parser.add_argument("-l", dest="log_opt", help="A boolean option to tell the script whether to create a logfile (1) or not (0). Default: 1", type=int, default=1);
 
@@ -40,44 +41,40 @@ def optParse(errorflag):
 		if len(st) > 1:
 			st = st[:1];
 
+		if args.run_mode not in [1,2]:
+			core.errorOut(2, "-m must take values of either 1 or 2");
+			optParse(1);
+
 		if args.verbosity not in [0,1]:
-			core.errorOut(2, "-v must take values of either 1 or 0");
+			core.errorOut(3, "-v must take values of either 1 or 0");
 			optParse(1);
 
 		if args.log_opt not in [0,1]:
-			core.errorOut(3, "-l must take values of either 1 or 0");
+			core.errorOut(4, "-l must take values of either 1 or 0");
 			optParse(1);
 
-		return args.input, args.gblocks_path, st, args.verbosity, args.log_opt;
+		return args.input, args.gblocks_path, st, args.run_mode, args.verbosity, args.log_opt;
 
 	elif errorflag == 1:
 		parser.print_help();
 		sys.exit();
 
-#####
-
-def logCheck(lopt, lfilename, outline):
-	if lopt == 1:
-		core.printWrite(lfilename, outline);
-	else:
-		print outline;
-
 ############################################
 #Main Block
 ############################################
 
-ins, gb_path, seqtype, v, l = optParse(0);
+ins, gb_path, seqtype, m, v, l = optParse(0);
 
 starttime = core.getLogTime();
 
 if os.path.isfile(ins):
 	fileflag = 1;
 	indir = os.path.dirname(os.path.realpath(ins)) + "/";
-	outdir = indir + starttime + "-gblocks/";
+	indir, outdir = core.getOutdir(indir, "run_gblocks", starttime);
 	filelist = [ins];
 else:
 	fileflag = 0;
-	indir, outdir = core.getOutdir(ins, "gblocks", starttime);
+	indir, outdir = core.getOutdir(ins, "run_gblocks", starttime);
 	filelist = os.listdir(indir);
 
 print core.getTime() + " | Creating main output directory...";
@@ -88,21 +85,25 @@ logfile = open(logfilename, "w");
 logfile.write("");
 logfile.close();
 
-logCheck(l, logfilename, "=======================================================================");
-logCheck(l, logfilename, "\t\t\tMasking alignments with GBlocks");
-logCheck(l, logfilename, "\t\t\t" + core.getDateTime());
+core.logCheck(l, logfilename, "=======================================================================");
+core.logCheck(l, logfilename, "\t\t\tMasking alignments with GBlocks");
+core.logCheck(l, logfilename, "\t\t\t" + core.getDateTime());
 if fileflag == 1:
-	logCheck(l, logfilename, "INPUT    | Masking alignment from file: " + ins);
+	core.logCheck(l, logfilename, "INPUT    | Masking alignment from file: " + ins);
 else:
-	logCheck(l, logfilename, "INPUT    | Masking alignments from all files in: " + indir);
-logCheck(l, logfilename, "INFO     | GBlocks path set to: " + gb_path);
-logCheck(l, logfilename, "INFO     | Sequence type set to: " + seqtype);
+	core.logCheck(l, logfilename, "INPUT    | Masking alignments from all files in: " + indir);
+core.logCheck(l, logfilename, "INFO     | GBlocks path set to: " + gb_path);
+core.logCheck(l, logfilename, "INFO     | Sequence type set to: " + seqtype);
+if m == 1:
+	core.logCheck(l, logfilename, "INFO     | Only accepting alignments with < 20% of sequence masked (for tree making).");
+else:
+	core.logCheck(l, logfilename, "INFO     | Using default GBlocks settings (stringent).");
 if v == 1:
-	logCheck(l, logfilename, "INFO     | Printing all GBlocks output to the screen.");
+	core.logCheck(l, logfilename, "INFO     | Printing all GBlocks output to the screen.");
 else:
-	logCheck(l, logfilename, "INFO     | Silent mode. Not printing GBlocks output to the screen.");
-logCheck(l, logfilename, "OUTPUT   | An output directory has been created within the input directory called: " + outdir);
-logCheck(l, logfilename, "-------------------------------------");
+	core.logCheck(l, logfilename, "INFO     | Silent mode. Not printing GBlocks output to the screen.");
+core.logCheck(l, logfilename, "OUTPUT   | An output directory has been created within the input directory called: " + outdir);
+core.logCheck(l, logfilename, "-------------------------------------");
 
 num_aligns = 0;
 for a in filelist:
@@ -112,7 +113,7 @@ for a in filelist:
 if v == 0:
 	gb_logfile = outdir + "gblocks.log";
 
-logCheck(l, logfilename,  core.getTime() + " | Runnning GBlocks on " + str(num_aligns) + " alignments...");
+core.logCheck(l, logfilename,  core.getTime() + " | Runnning GBlocks on " + str(num_aligns) + " alignments...");
 
 acc_mask = 0;
 
@@ -137,32 +138,38 @@ for each in filelist:
 		infilename = indir + each;
 		gb_outfile = each[:each.index(".fa")] + "-gb.fa";
 
-	inseqs = core.fastaGetDict(infilename);
-	seqlen = len(inseqs[inseqs.keys()[0]]);
-	b1 = int(round(0.5 * len(inseqs))) + 1;
+	gb_cmd = "gblocks " + infilename + " -t=" + seqtype;
 
-	gb_cmd = "gblocks " + infilename + " -t=" + seqtype + " -b1=" + str(b1) + " -b2=" + str(b1) + " -b3=" + str(seqlen) + " -b4=2 -b5=a";
+	if m == 1:
+		inseqs = core.fastaGetDict(infilename);
+		seqlen = len(inseqs[inseqs.keys()[0]]);
+		b1 = int(round(0.5 * len(inseqs))) + 1;
+
+		gb_cmd = gb_cmd + " -b1=" + str(b1) + " -b2=" + str(b1) + " -b3=" + str(seqlen) + " -b4=2 -b5=a";		
+
 	if v == 0:
 		gb_cmd = gb_cmd + " >> " + gb_logfile;
 
 	if v == 1 or fileflag == 1:
-		logCheck(l, logfilename, core.getTime() + " | GBlocks Call:\t" + gb_cmd);
+		core.logCheck(l, logfilename, core.getTime() + " | GBlocks Call:\t" + gb_cmd);
 	else:
 		lfile = open(logfilename, "a");
 		lfile.write(core.getTime() + " | GBlocks Call:\t" + gb_cmd + "\n");
 		lfile.close();
 	os.system(gb_cmd);
 
-	gbseqs = core.fastaGetDict(infilename+"-gb");
-	gblen = len(gbseqs[gbseqs.keys()[0]]);
-	difflen = seqlen - gblen;
-	percdiff = float(difflen) / float(seqlen) * 100.0;
-	percgb = float(gblen) / float(seqlen) * 100.0;
-
+	if m == 1:
+		gbseqs = core.fastaGetDict(infilename+"-gb");
+		gblen = len(gbseqs[gbseqs.keys()[0]]);
+		difflen = seqlen - gblen;
+		percdiff = float(difflen) / float(seqlen) * 100.0;
+		percgb = float(gblen) / float(seqlen) * 100.0;
+	else:
+		percdiff = 100;
 
 	outline = core.getTime() + " | Percent of original sequence masked:\t" + str(percdiff);
 
-	if percdiff <= 20:
+	if percdiff <= 20 or m == 2:
 		outline = outline + ". Accepting masked alignment.";
 		acc_mask = acc_mask + 1;
 		mv_cmd = "mv " + infilename + "-gb " + outdir + gb_outfile;
@@ -177,7 +184,7 @@ for each in filelist:
 		os.system(rm_cmd);
 
 	if v == 1 or fileflag == 1:
-		logCheck(l, logfilename, outline);
+		core.logCheck(l, logfilename, outline);
 	else:
 		lfile = open(logfilename, "a");
 		lfile.write(outline + "\n");
@@ -189,6 +196,7 @@ for each in filelist:
 if v == 0 and fileflag == 0:
 	pstring = "100.0% complete.\n";
 	sys.stderr.write('\b' * len(pstring) + pstring);
-logCheck(l, logfilename, core.getTime() + " | Done!");
-logCheck(l, logfilename, core.getTime() + " | " + str(acc_mask) + " out of " + str(num_aligns) + " masked alignments accepted.");
-logCheck(l, logfilename, "=======================================================================");
+core.logCheck(l, logfilename, core.getTime() + " | Done!");
+core.logCheck(l, logfilename, core.getTime() + " | " + str(acc_mask) + " out of " + str(num_aligns) + " masked alignments accepted.");
+core.logCheck(l, logfilename, core.getLogTime());
+core.logCheck(l, logfilename, "=======================================================================");

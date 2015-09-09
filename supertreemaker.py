@@ -16,7 +16,7 @@ import core
 #Function Definitions
 ############################################
 
-def IO_fileParse():
+def optParse(errorflag):
 #This function handles the command line options.
 
 	parser = argparse.ArgumentParser();
@@ -37,73 +37,53 @@ def IO_fileParse():
 
 	args = parser.parse_args();
 
-	if args.input_file == None or args.nj_opt == None or args.nj_opt not in [0,1] or args.div_est_opt == None or args.div_est_opt not in [0,1]:
-		print " ---------------------------------------------------------------------------------------";
-		print "|**Error 1: -i must always be defined. One of -j or -d must also always be defined as 1 |";
-		print " ---------------------------------------------------------------------------------------";
-		sys.exit();		
-		parser.print_help();
-		sys.exit();
+	if errorflag == 0:
+		if args.input_file == None or args.nj_opt == None or args.nj_opt not in [0,1] or args.div_est_opt == None or args.div_est_opt not in [0,1]:
+			core.errorOut(1, "-i must always be defined. One of -j or -d must also always be defined as 1");
+			optParse(1);
 
-	if args.reroot_opt not in [0,1]:
-		print " ------------------------------------------------";
-		print "|**Error 2: -t must take values of either 0 or 1 |";
-		print " ------------------------------------------------";
-		sys.exit();
+		if args.reroot_opt not in [0,1]:
+			core.errorOut(2, "-t must take values of either 1 or 0");
+			optParse(1);
 
-	if args.reroot_opt == 1 and args.nj_outgroup == None:
-		print " -----------------------------------------------------------------------";
-		print "|**Error 3: When -t is set to 1, an outgroup must be specified with -o. |";
-		print " -----------------------------------------------------------------------";
+		if args.reroot_opt == 1 and args.nj_outgroup == None:
+			core.errorOut(3, "-When -t is set to 1, an outgroup must be specified with -o");
+			optParse(1);
 
-	if args.div_est_opt not in [0,1]:
-		print " ------------------------------------------------";
-		print "|**Error 4: -d must take values of either 0 or 1 |";
-		print " ------------------------------------------------";
-		parser.print_help();
-		sys.exit();
+		if args.div_est_opt not in [0,1]:
+			core.errorOut(4, "-d must take values of either 1 or 0");
+			optParse(1);
 
-	elif args.div_est_opt == 1:
-		if args.nj_outgroup == None or args.r8s_output_file == None or args.num_sites == None or args.cal_specs == None or args.cal_age == None:
-			print " ----------------------------------------------------------------------------------------------------------------------";
-			print "|**Error 5: You are missing some options for div time estimation with r8s. -o, -e, -n, -s, and -a all must be defined. |";
-			print " ----------------------------------------------------------------------------------------------------------------------";
-			parser.print_help();
-			sys.exit();
+		elif args.div_est_opt == 1:
+			if args.nj_outgroup == None or args.r8s_output_file == None or args.num_sites == None or args.cal_specs == None or args.cal_age == None:
+				core.errorOut(5, "You are missing some options for div time estimation with r8s. -o, -e, -n, -s, and -a must all be defined");
+				optParse(1);
+
+			else:
+				cal_specs = args.cal_specs.split(",");
+	#			args.reroot_opt = 1;
+
 		else:
-			cal_specs = args.cal_specs.split(",");
-#			args.reroot_opt = 1;
+			args.r8s_output_file = None;
+			args.num_sites = None;
+			cal_specs = None;
+			args.cal_age = None;
 
-	else:
-		args.r8s_output_file = None;
-		args.num_sites = None;
-		cal_specs = None;
-		args.cal_age = None;
+		if args.log_opt not in [0,1]:
+			core.errorOut(6, "-l must take values of either 1 or 0");
+			optParse(1);
 
-	if args.log_opt not in [0,1]:
-		print " ------------------------------------------------";
-		print "|**Error 6: -l must take values of either 1 or 0 |";
-		print " ------------------------------------------------";
+		return args.input_file, args.r_output_file, args.nj_opt, args.nj_outgroup, args.reroot_opt, args.div_est_opt, args.r8s_output_file, args.num_sites, cal_specs, args.cal_age, args.log_opt;
+
+	elif errorflag == 1:
 		parser.print_help();
 		sys.exit();
-
-
-	return args.input_file, args.r_output_file, args.nj_opt, args.nj_outgroup, args.reroot_opt, args.div_est_opt, args.r8s_output_file, args.num_sites, cal_specs, args.cal_age, args.log_opt;
-
-#####
-
-def logCheck(lopt, lfilename, outline):
-	if lopt == 1:
-		core.printWrite(lfilename, outline);
-	else:
-		print outline;
 
 ############################################
 #Main Block
 ############################################
 
-infilename, routfilename, njopt, outgroup, rr, d, r8soutfilename, numsites, calspec, calage, l = IO_fileParse();
-print "RR", rr;
+infilename, routfilename, njopt, outgroup, rr, d, r8soutfilename, numsites, calspec, calage, l = optParse(0);
 
 starttime = core.getLogTime();
 
@@ -113,7 +93,8 @@ if infilename.find("/") != -1:
 else:
 	indir = os.getcwd() + "/";
 
-script_outdir = os.getcwd() + "/" + starttime + "-supertreemaker/";
+indir, script_outdir = core.getOutdir(indir, "supertreemaker", starttime);
+#script_outdir = os.getcwd() + "/" + starttime + "-supertreemaker/";
 
 print core.getTime() + " | Creating main output directory:\t" + script_outdir;
 os.system("mkdir " + script_outdir);
@@ -124,52 +105,52 @@ logfile.write("");
 logfile.close();
 ##Pre-run prep: creating log files and output directories, etc...
 
-logCheck(l, logfilename, "=======================================================================");
-logCheck(l, logfilename, "\tSupertree making with SDM, R, newickutils, and r8s");
-logCheck(l, logfilename, "\t\t\t" + core.getDateTime());
-logCheck(l, logfilename, "INPUT    | Making tree from file:\t\t\t" + infilename);
-logCheck(l, logfilename, "INPUT    | Input file located in:\t\t\t" + indir);
+core.logCheck(l, logfilename, "=======================================================================");
+core.logCheck(l, logfilename, "\tSupertree making with SDM, R, newickutils, and r8s");
+core.logCheck(l, logfilename, "\t\t\t" + core.getDateTime());
+core.logCheck(l, logfilename, "INPUT    | Making tree from file:\t\t\t" + infilename);
+core.logCheck(l, logfilename, "INPUT    | Input file located in:\t\t\t" + indir);
 if njopt == 1:
-	logCheck(l, logfilename, "INFO     | Using Average Consensus method in SDM to build distance matrix.");
-	logCheck(l, logfilename, "INFO     | Using R to build a neighbor-joining tree from matrix.");
+	core.logCheck(l, logfilename, "INFO     | Using Average Consensus method in SDM to build distance matrix.");
+	core.logCheck(l, logfilename, "INFO     | Using R to build a neighbor-joining tree from matrix.");
 else:
-	logCheck(l, logfilename, "INFO     | Not creating consensus tree.");
+	core.logCheck(l, logfilename, "INFO     | Not creating consensus tree.");
 if rr == 1:
-	logCheck(l, logfilename, "INFO     | Rooting the NJ tree with species:\t\t" + outgroup);
+	core.logCheck(l, logfilename, "INFO     | Rooting the NJ tree with species:\t\t" + outgroup);
 if d == 0:
-	logCheck(l, logfilename, "INFO     | NOT estimating divergence times with r8s.");
+	core.logCheck(l, logfilename, "INFO     | NOT estimating divergence times with r8s.");
 else:
-	logCheck(l, logfilename, "INFO     | Will estimate divergence times with r8s.");
-	logCheck(l, logfilename, "INFO     | Number of sites from alignments:\t\t" + numsites);
-	logCheck(l, logfilename, "INFO     | Calibrating at the node defined by:\t\t" + str(calspec));
-	logCheck(l, logfilename, "INFO     | Calibration age at that node:\t\t" + calage);
-	logCheck(l, logfilename, "INFO     | Writing r8s output to:\t\t\t" + r8soutfilename);
-logCheck(l, logfilename, "OUTPUT   | An output directory has been created:\t" + script_outdir);
+	core.logCheck(l, logfilename, "INFO     | Will estimate divergence times with r8s.");
+	core.logCheck(l, logfilename, "INFO     | Number of sites from alignments:\t\t" + numsites);
+	core.logCheck(l, logfilename, "INFO     | Calibrating at the node defined by:\t\t" + str(calspec));
+	core.logCheck(l, logfilename, "INFO     | Calibration age at that node:\t\t" + calage);
+	core.logCheck(l, logfilename, "INFO     | Writing r8s output to:\t\t\t" + r8soutfilename);
+core.logCheck(l, logfilename, "OUTPUT   | An output directory has been created:\t" + script_outdir);
 if njopt == 1:
-	logCheck(l, logfilename, "OUTPUT   | Writing NJ tree to:\t\t\t\t" +  routfilename);
+	core.logCheck(l, logfilename, "OUTPUT   | Writing NJ tree to:\t\t\t\t" +  routfilename);
 if d == 1:
-	logCheck(l, logfilename, "OUTPUT   | Writing r8s output to:\t\t\t" + r8soutfilename);
-logCheck(l, logfilename, "-------------------------------------");
+	core.logCheck(l, logfilename, "OUTPUT   | Writing r8s output to:\t\t\t" + r8soutfilename);
+core.logCheck(l, logfilename, "-------------------------------------");
 ##Info block
-
+sys.exit();
 if njopt == 1:
 	sdmfilename = script_outdir + infilename + "_sdm_mat.txt";
 	tmpfilename = script_outdir + "/rmat.tmp";
 	routfilename = script_outdir + routfilename;
 	##Some more file prep
 
-	logCheck(l, logfilename, core.getTime() + " | Running Average Consensus within SDM...");
+	core.logCheck(l, logfilename, core.getTime() + " | Running Average Consensus within SDM...");
 	sdm_cmd = "java -jar ~/bin/SDM/SDM.jar -i " + indir + infilename + " -d ACS97 -t T -f Phylip_square";
 	print sdm_cmd;
 	os.system(sdm_cmd);
 	##Runs SDM with ACS97
 
-	logCheck(l, logfilename, core.getTime() + " | Moving SDM output files to main output directory...");
+	core.logCheck(l, logfilename, core.getTime() + " | Moving SDM output files to main output directory...");
 	mv_cmd = "mv " + indir + "*sdm* " + script_outdir;
 	os.system(mv_cmd);
 	##Moves all SDM output files to script outdir
 
-	logCheck(l, logfilename, core.getTime() + " | Reading and parsing distance matrix...");
+	core.logCheck(l, logfilename, core.getTime() + " | Reading and parsing distance matrix...");
 	infile = open(sdmfilename, "r");
 	inlines = infile.readlines();
 
@@ -194,7 +175,7 @@ if njopt == 1:
 	tmpfile.close();
 	##Re-writes the SDM distance matrix to be readable by R
 
-	logCheck(l, logfilename, core.getTime() + " | Calling R to make NJ tree...\n");
+	core.logCheck(l, logfilename, core.getTime() + " | Calling R to make NJ tree...\n");
 	rcmd = "Rscript ~/bin/core/corelib/nj_tree.r " + tmpfilename + " " + routfilename;
 	os.system(rcmd);
 	##Runs the NJ algorithm within the ape package of R
@@ -202,26 +183,26 @@ if njopt == 1:
 	routfile = open(routfilename, "r");
 	nj_tree = routfile.read().replace("\n","");
 	routfile.close();
-	logCheck(l, logfilename, "\n ----Unrooted NJ tree----");
-	logCheck(l, logfilename, nj_tree);
+	core.logCheck(l, logfilename, "\n ----Unrooted NJ tree----");
+	core.logCheck(l, logfilename, nj_tree);
 	##Reads and prints the resulting tree
 else:
 	nj_tree = open(indir + infilename, "r").read().replace("\n","");
 
 if rr == 1:
 ##Uses newickutils to root the tree at the outgroup if specified
-	logCheck(l, logfilename, "\n" + core.getTime() + " | Rooting NJ tree with newickutils...\n");
+	core.logCheck(l, logfilename, "\n" + core.getTime() + " | Rooting NJ tree with newickutils...\n");
 	rootedtreefile = routfilename[:routfilename.index(".tre")] + "_rooted.tre";
 	nwcmd = "nw_reroot " + routfilename + " " + outgroup + " > " + rootedtreefile;
 	os.system(nwcmd);
 	nj_tree = open(rootedtreefile,"r").read().replace("\n","");
-	logCheck(l, logfilename, "\n ----Rooted NJ tree----");
-	logCheck(l, logfilename, nj_tree);
+	core.logCheck(l, logfilename, "\n ----Rooted NJ tree----");
+	core.logCheck(l, logfilename, nj_tree);
 	
 
 if d == 1:
 ##Uses r8s to estimate divergence times on the rooted tree
-	logCheck(l, logfilename, "\n" + core.getTime() + " | Preparing tree and input file for r8s...");
+	core.logCheck(l, logfilename, "\n" + core.getTime() + " | Preparing tree and input file for r8s...");
 	r8soutfilename = script_outdir + r8soutfilename;
 
 	r8sinputfile = script_outdir + "r8s_input_file.txt";
@@ -251,15 +232,15 @@ if d == 1:
 
 	r8sfile.close();
 
-	logCheck(l, logfilename, core.getTime() + " | Calling r8s to smooth the tree...");
+	core.logCheck(l, logfilename, core.getTime() + " | Calling r8s to smooth the tree...");
 	r8scmd = "r8s -b -f " + r8sinputfile + " > " + r8soutfilename;
 	os.system(r8scmd);
 
 	for line in open(r8soutfilename):
 		continue;
 	div_tree = line[line.index("("):].replace(calnode,"");
-	logCheck(l, logfilename, "\n ----Smoothed tree----");
-	logCheck(l, logfilename, div_tree);
+	core.logCheck(l, logfilename, "\n ----Smoothed tree----");
+	core.logCheck(l, logfilename, div_tree);
 
-logCheck(l, logfilename, core.getTime() + " | Done!");
+core.logCheck(l, logfilename, core.getTime() + " | Done!");
 print "=======================================================================";

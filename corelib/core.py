@@ -255,8 +255,8 @@ def errorOut(errnum, errmsg):
 def getOutdir(indir, prefix, stime):
 #Retrieves full input directory name and proper output directory name for other scripts.
 	if not os.path.isdir(indir):
-		core.errorOut(4, "-i must be a valid directory path");
-		optParse(1);
+		errorOut(0, "-i must be a valid directory path");
+		sys.exit();
 	indir = os.path.abspath(indir);
 	if indir[-1] != "/":
 		indir = indir + "/";
