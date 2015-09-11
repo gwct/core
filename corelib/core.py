@@ -280,9 +280,9 @@ def spacedOut(string, totlen):
 
 #############################################################################
 
-def filePrep(filename):
+def filePrep(filename, header):
 	f = open(filename, "w");
-	f.write("");
+	f.write(header);
 	f.close();
 
 #############################################################################
