@@ -275,12 +275,14 @@ def getOutdir(indir, prefix, stime):
 #############################################################################
 
 def spacedOut(string, totlen):
+#Properly adds spaces to the end of a message to make it a given length
 	spaces = " " * (totlen - len(string));
 	return string + spaces;
 
 #############################################################################
 
 def filePrep(filename, header):
+#Writes over a file, header optional (if no header just pass "")
 	f = open(filename, "w");
 	f.write(header);
 	f.close();
