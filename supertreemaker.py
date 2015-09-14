@@ -132,7 +132,7 @@ if d == 1:
 	core.logCheck(l, logfilename, "OUTPUT   | Writing r8s output to:\t\t\t" + r8soutfilename);
 core.logCheck(l, logfilename, "-------------------------------------");
 ##Info block
-sys.exit();
+
 if njopt == 1:
 	sdmfilename = script_outdir + infilename + "_sdm_mat.txt";
 	tmpfilename = script_outdir + "/rmat.tmp";

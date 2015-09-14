@@ -73,6 +73,15 @@ def comAnc(spec_list, treedict):
 
 #############################################################################
 
+def specRelabel(s, t_d):
+#Relabels species to match the labels in the tree.
+	for node in t_d:
+		if s in node:
+			s = node;
+	return s;
+
+#############################################################################
+
 def treeParse(tree, tree_type):
 #The treeParse function takes as input a rooted phylogenetic tree with branch lengths and returns the tree with node labels and a 
 #dictionary with usable info about the tree in the following format:
@@ -102,8 +111,12 @@ def treeParse(tree, tree_type):
 				numnodes = numnodes + 1;
 		new_tree = new_tree + tree[z];
 		z = z + 1;
-	rootnode = "<" + str(numnodes) + ">"
-	new_tree = new_tree + rootnode;
+	if new_tree[-1] == ")":
+		rootnode = "<" + str(numnodes) + ">"
+		new_tree = new_tree + rootnode;
+	else:
+		rootnode = new_tree[new_tree.rfind(")")+1:];
+
 	##This first block labels all internal nodes with the format <#>
 
 #	print new_tree;
@@ -179,10 +192,10 @@ def treeParse(tree, tree_type):
 
 		z = z + 1;
 	##End ancestral node block
-
-	#for key in ancs:
-	#	print key + ":", ancs[key]
-	#print "---------";
+#	print curanc;
+#	for key in ancs:
+#		print key + ":", ancs[key]
+#	print "---------";
 
 	##The next block gets all the other info for each node: sister and decendent nodes and branch lengths (if type 1)
 	##and node type (tip, internal, root). This is easy now that the ancestral nodes are stored.
