@@ -12,6 +12,12 @@ import sys, os, argparse
 from subprocess import Popen, PIPE
 import core
 
+#"Apis_mellifera,Bombus_impatiens Pachypsylla_venusta,Frankliniella_occidentallis Tribolium_castaneum,Athalia_rosae Anopheles_gambiae,Lutzomyia_longipalpis Catajapyx_aquilonaris,Centruroides_sculpturatus Athalia_rosae,Pachypsylla_venusta Hapegnathos_saltator,Dufourea_novaeangliae Ladona_fulva,Ephemera_danica Frankliniella_occidentallis,Pediculus_humanus"
+#25.7,309.15,228,99.9,117.55,228,91.85,228,222
+
+#"Ladona_fulva,Blatella_germanica Frankliniella_occidentalis,Pachypsylla_venusta Athalia_rosae,Atta_cephalotes Athalia_rosae,Lucila_cuprina Plutella_xylostella,Heliconius_melpomene Anopheles_gambiae,Drosophila_melanogaster Pachypsylla_venusta,Halymorpha_halys Apis_mellifera,Atta_cephalotes Apis_mellifera,Bombis_terrestris"
+#324,222,228,309.15,124.2,99.9,99.9,91.85,25.7
+
 ############################################
 #Function Definitions
 ############################################
@@ -55,13 +61,16 @@ def optParse(errorflag):
 			optParse(1);
 
 		elif args.div_est_opt == 1:
-			if args.nj_outgroup == None or args.r8s_output_file == None or args.num_sites == None or args.cal_specs == None or args.cal_age == None:
-				core.errorOut(5, "You are missing some options for div time estimation with r8s. -o, -e, -n, -s, and -a must all be defined");
+			if args.r8s_output_file == None or args.num_sites == None or args.cal_specs == None or args.cal_age == None:
+				core.errorOut(5, "You are missing some options for div time estimation with r8s. -e, -n, -s, and -a must all be defined");
 				optParse(1);
-
 			else:
-				cal_specs = args.cal_specs.split(",");
-	#			args.reroot_opt = 1;
+				if args.cal_specs.find(" ") != -1 and args.cal_age.find(",") != -1:
+					cal_specs = args.cal_specs.split(" ");
+					cal_age = args.cal_age.split(",");
+				if len(cal_specs) != len(cal_age):
+					core.errorOut(6, "You must enter the same number of calibration nodes (-s) and calibration ages (-a)");
+					optParse(1);
 
 		else:
 			args.r8s_output_file = None;
@@ -73,7 +82,7 @@ def optParse(errorflag):
 			core.errorOut(6, "-l must take values of either 1 or 0");
 			optParse(1);
 
-		return args.input_file, args.r_output_file, args.nj_opt, args.nj_outgroup, args.reroot_opt, args.div_est_opt, args.r8s_output_file, args.num_sites, cal_specs, args.cal_age, args.log_opt;
+		return args.input_file, args.r_output_file, args.nj_opt, args.nj_outgroup, args.reroot_opt, args.div_est_opt, args.r8s_output_file, args.num_sites, cal_specs, cal_age, args.log_opt;
 
 	elif errorflag == 1:
 		parser.print_help();
@@ -123,7 +132,7 @@ else:
 	core.logCheck(l, logfilename, "INFO     | Will estimate divergence times with r8s.");
 	core.logCheck(l, logfilename, "INFO     | Number of sites from alignments:\t\t" + numsites);
 	core.logCheck(l, logfilename, "INFO     | Calibrating at the node defined by:\t\t" + str(calspec));
-	core.logCheck(l, logfilename, "INFO     | Calibration age at that node:\t\t" + calage);
+	core.logCheck(l, logfilename, "INFO     | Calibration age at that node:\t\t" + str(calage));
 	core.logCheck(l, logfilename, "INFO     | Writing r8s output to:\t\t\t" + r8soutfilename);
 core.logCheck(l, logfilename, "OUTPUT   | An output directory has been created:\t" + script_outdir);
 if njopt == 1:
@@ -198,7 +207,7 @@ if rr == 1:
 	nj_tree = open(rootedtreefile,"r").read().replace("\n","");
 	core.logCheck(l, logfilename, "\n ----Rooted NJ tree----");
 	core.logCheck(l, logfilename, nj_tree);
-	
+
 
 if d == 1:
 ##Uses r8s to estimate divergence times on the rooted tree
@@ -211,7 +220,12 @@ if d == 1:
 #	nj_tree, stderr = p.communicate()
 #	nj_tree = nj_tree.replace("\n","");
 
-	calnode = calspec[0][:3] + calspec[1][:3];
+	#calnode = calspec[0][:3] + calspec[1][:3];
+	for n in xrange(len(calspec)):
+		calspec[n] = calspec[n].split(",");
+	calnodes = [];
+	for node in calspec:
+		calnodes.append(node[0][:3] + node[1][:3]);
 
 	r8sfile = open(r8sinputfile, "w");
 	r8sfile.write("#NEXUS\nbegin trees;\n");
@@ -221,10 +235,12 @@ if d == 1:
 	outline = "blformat nsites=" + numsites + " lengths=persite ultrametric=no;\n";
 	r8sfile.write(outline);
 	r8sfile.write("collapse;\n");
-	outline = "mrca " + calnode + " " + calspec[0] + " " + calspec[1] + ";\n";
-	r8sfile.write(outline);
-	outline = "fixage taxon=" + calnode + " age=" + calage + ";\n";
-	r8sfile.write(outline);
+	for n in xrange(len(calnodes)):
+		outline = "mrca " + calnodes[n] + " " + calspec[n][0] + " " + calspec[n][1] + ";\n";
+		r8sfile.write(outline);
+	for n in xrange(len(calnodes)):
+		outline = "fixage taxon=" + calnodes[n] + " age=" + calage[n] + ";\n";
+		r8sfile.write(outline);
 	r8sfile.write("divtime method=pl algorithm=qnewt cvStart=0 cvInc=0.5 cvNum=8 crossv=yes;\n");
 	r8sfile.write("describe plot=chronogram;\n");
 	r8sfile.write("describe plot=tree_description;\n");
@@ -238,7 +254,9 @@ if d == 1:
 
 	for line in open(r8soutfilename):
 		continue;
-	div_tree = line[line.index("("):].replace(calnode,"");
+	div_tree = line;
+	for node in calnodes:
+		div_tree = div_tree.replace(node,"");
 	core.logCheck(l, logfilename, "\n ----Smoothed tree----");
 	core.logCheck(l, logfilename, div_tree);
 
