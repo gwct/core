@@ -41,6 +41,9 @@ def optParse(errorflag):
 	parser.add_argument("-a", dest="cal_age", help="The calibration age of the node defined by the species in -s.");
 	parser.add_argument("-l", dest="log_opt", help="A boolean option to tell the script whether to create a logfile (1) or not (0). Default: 1", type=int, default=1);
 
+	parser.add_argument("-z", dest="script_logdir", help="A directory in which to place the script output directory. If none is specified, this will default to the directory of the input file");
+	parser.add_argument("-x", dest="logdir_suffix", help="A string to add on to the end of the output directory.");
+
 	args = parser.parse_args();
 
 	if errorflag == 0:
@@ -79,10 +82,10 @@ def optParse(errorflag):
 			args.cal_age = None;
 
 		if args.log_opt not in [0,1]:
-			core.errorOut(6, "-l must take values of either 1 or 0");
+			core.errorOut(7, "-l must take values of either 1 or 0");
 			optParse(1);
 
-		return args.input_file, args.r_output_file, args.nj_opt, args.nj_outgroup, args.reroot_opt, args.div_est_opt, args.r8s_output_file, args.num_sites, cal_specs, cal_age, args.log_opt;
+		return args.input_file, args.r_output_file, args.nj_opt, args.nj_outgroup, args.reroot_opt, args.div_est_opt, args.r8s_output_file, args.num_sites, cal_specs, cal_age, args.log_opt, args.script_logdir, args.logdir_suffix;
 
 	elif errorflag == 1:
 		parser.print_help();
@@ -92,7 +95,7 @@ def optParse(errorflag):
 #Main Block
 ############################################
 
-infilename, routfilename, njopt, outgroup, rr, d, r8soutfilename, numsites, calspec, calage, l = optParse(0);
+infilename, routfilename, njopt, outgroup, rr, d, r8soutfilename, numsites, calspec, calage, l, script_outdir_initial, outdir_suffix = optParse(0);
 
 starttime = core.getLogTime();
 
@@ -103,7 +106,19 @@ else:
 	indir = os.getcwd() + "/";
 
 indir, script_outdir = core.getOutdir(indir, "supertreemaker", starttime);
-#script_outdir = os.getcwd() + "/" + starttime + "-supertreemaker/";
+print script_outdir;
+print os.path.basename(os.path.normpath(script_outdir));
+if script_outdir_initial != None:
+	if not os.path.isdir(script_outdir_initial):
+		core.errorOut(8, "-z must be a valid directory");
+		optParse(1);
+
+	script_outdir = os.path.join(script_outdir_initial, os.path.basename(os.path.normpath(script_outdir)));
+if outdir_suffix != None:
+	if script_outdir[-1] == "/":
+		script_outdir = script_outdir[:len(script_outdir)-1] + "-" + outdir_suffix + "/";
+	else:
+		script_outdir = script_outdir + "-" + outdir_suffix + "/";
 
 print core.getTime() + " | Creating main output directory:\t" + script_outdir;
 os.system("mkdir " + script_outdir);
@@ -131,9 +146,12 @@ if d == 0:
 else:
 	core.logCheck(l, logfilename, "INFO     | Will estimate divergence times with r8s.");
 	core.logCheck(l, logfilename, "INFO     | Number of sites from alignments:\t\t" + numsites);
-	core.logCheck(l, logfilename, "INFO     | Calibrating at the node defined by:\t\t" + str(calspec));
-	core.logCheck(l, logfilename, "INFO     | Calibration age at that node:\t\t" + str(calage));
-	core.logCheck(l, logfilename, "INFO     | Writing r8s output to:\t\t\t" + r8soutfilename);
+	core.logCheck(l, logfilename, "INFO     | Calibrating with the following nodes and ages:\n---------");
+	core.logCheck(l, logfilename, core.spacedOut("NODE 1", 40) + core.spacedOut("NODE 2", 40) + "AGE");
+	for n in xrange(len(calspec)):
+		calspec[n] = calspec[n].split(",");
+		core.logCheck(l, logfilename, core.spacedOut(calspec[n][0], 40) + core.spacedOut(calspec[n][1], 40) + calage[n]);
+	core.logCheck(l, logfilename, "---------");
 core.logCheck(l, logfilename, "OUTPUT   | An output directory has been created:\t" + script_outdir);
 if njopt == 1:
 	core.logCheck(l, logfilename, "OUTPUT   | Writing NJ tree to:\t\t\t\t" +  routfilename);
@@ -221,8 +239,6 @@ if d == 1:
 #	nj_tree = nj_tree.replace("\n","");
 
 	#calnode = calspec[0][:3] + calspec[1][:3];
-	for n in xrange(len(calspec)):
-		calspec[n] = calspec[n].split(",");
 	calnodes = [];
 	for node in calspec:
 		calnodes.append(node[0][:3] + node[1][:3]);
@@ -261,4 +277,4 @@ if d == 1:
 	core.logCheck(l, logfilename, div_tree);
 
 core.logCheck(l, logfilename, core.getTime() + " | Done!");
-print "=======================================================================";
+core.logCheck(l, logfilename, "=======================================================================");
