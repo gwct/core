@@ -15,7 +15,7 @@ import core
 #"Apis_mellifera,Bombus_impatiens Pachypsylla_venusta,Frankliniella_occidentallis Tribolium_castaneum,Athalia_rosae Anopheles_gambiae,Lutzomyia_longipalpis Catajapyx_aquilonaris,Centruroides_sculpturatus Athalia_rosae,Pachypsylla_venusta Hapegnathos_saltator,Dufourea_novaeangliae Ladona_fulva,Ephemera_danica Frankliniella_occidentallis,Pediculus_humanus"
 #25.7,309.15,228,99.9,117.55,228,91.85,228,222
 
-#"Ladona_fulva,Blatella_germanica Frankliniella_occidentalis,Pachypsylla_venusta Athalia_rosae,Atta_cephalotes Athalia_rosae,Lucila_cuprina Plutella_xylostella,Heliconius_melpomene Anopheles_gambiae,Drosophila_melanogaster Pachypsylla_venusta,Halymorpha_halys Apis_mellifera,Atta_cephalotes Apis_mellifera,Bombis_terrestris"
+#"Ladona_fulva,Blatella_germanica Frankliniella_occidentalis,Pachypsylla_venusta Athalia_rosae,Atta_cephalotes Athalia_rosae,Lucilia_cuprina Plutella_xylostella,Heliconius_melpomene Anopheles_gambiae,Drosophila_melanogaster Pachypsylla_venusta,Halyomorpha_halys Apis_mellifera,Atta_cephalotes Apis_mellifera,Bombus_terrestris"
 #324,222,228,309.15,124.2,99.9,99.9,91.85,25.7
 
 ############################################
