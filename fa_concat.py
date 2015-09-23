@@ -53,7 +53,7 @@ for each in filelist:
 	i = i + 1;
 
 	if each.find(".fa") == -1:
-		continue; 	
+		continue;
 
 	infilename = ins + each;
 
