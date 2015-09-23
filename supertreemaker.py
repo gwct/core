@@ -276,6 +276,7 @@ if d == 1:
 	div_tree = line;
 	for node in calnodes:
 		div_tree = div_tree.replace(node,"");
+	div_tree = div_tree[div_tree.index("= ")+2:];
 	core.logCheck(l, logfilename, "\n ----Smoothed tree----");
 	core.logCheck(l, logfilename, div_tree);
 
