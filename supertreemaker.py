@@ -71,6 +71,9 @@ def optParse(errorflag):
 				if args.cal_specs.find(" ") != -1 and args.cal_age.find(",") != -1:
 					cal_specs = args.cal_specs.split(" ");
 					cal_age = args.cal_age.split(",");
+				else:
+					cal_specs = [args.cal_specs];
+					cal_age = [args.cal_age];
 				if len(cal_specs) != len(cal_age):
 					core.errorOut(6, "You must enter the same number of calibration nodes (-s) and calibration ages (-a)");
 					optParse(1);
