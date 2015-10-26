@@ -105,7 +105,7 @@ def LCA(spec_list, treedict):
 		monophyletic = 1;
 
 	#print ancs;
-	print ancs;
+	#print ancs;
 	#print getClade(lcp[0],treedict);
 	#print monophyletic;
 	#sys.exit();
@@ -236,6 +236,7 @@ def treeParseNew(tree, tree_type):
 	startind = 0;
 	while z < (len(new_tree)-1):
 	##Here, the ancestral nodes of each node are found
+
 		if tree_type == 1:
 		##The major difference between trees with branch lengths (type 1) and without (type 2) is seen here. Finding the ancestral nodes requires
 		##almost a completely different set of logic statements.
@@ -248,6 +249,7 @@ def treeParseNew(tree, tree_type):
 				a = z;
 
 				while a < (len(new_tree)-1):
+
 					if new_tree[a] == "(":
 						numcpneeded = numcpneeded + 1;
 					if new_tree[a] == ")" and numcpneeded != numcp:
@@ -259,7 +261,7 @@ def treeParseNew(tree, tree_type):
 							curanc = new_tree[len(new_tree)-4:];
 						else:
 							curanc = new_tree[a+1:new_tree.index(":", a)];
-						a = 10000;
+						a = 100000000;
 
 						ancs[curnode] = curanc;
 					a = a + 1;
@@ -299,9 +301,9 @@ def treeParseNew(tree, tree_type):
 		z = z + 1;
 	##End ancestral node block
 #	print curanc;
-#	for key in ancs:
-#		print key + ":", ancs[key]
-#	print "---------";
+	#for key in ancs:
+	#	print key + ":", ancs[key]
+	#print "---------";
 
 	##The next block gets all the other info for each node: sister and decendent nodes and branch lengths (if type 1)
 	##and node type (tip, internal, root). This is easy now that the ancestral nodes are stored.
