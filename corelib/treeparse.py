@@ -117,7 +117,7 @@ def comAnc(spec_list, treedict):
 #Given a list of species within the tree and the dictionary returned by treeParse using that tree,
 #this function checks whether those species are monophyletic (ie they all share a common ancestor).
 
-	print spec_list;
+	#print spec_list;
 	if len(spec_list) > 1:
 		if spec_list.count(spec_list[0]) == len(spec_list):
 			if treedict[spec_list[0]][3] == 'root':
@@ -182,6 +182,15 @@ def specRelabel(s, t_d):
 		if s in node:
 			s = node;
 	return s;
+
+#############################################################################
+
+def numInternal(treedict):
+	num_nodes = 0;
+	for node in treedict:
+		if treedict[node][3] != 'tip':
+			num_nodes = num_nodes + 1;
+	return num_nodes;
 
 #############################################################################
 
@@ -301,9 +310,9 @@ def treeParseNew(tree, tree_type):
 		z = z + 1;
 	##End ancestral node block
 #	print curanc;
-	#for key in ancs:
-	#	print key + ":", ancs[key]
-	#print "---------";
+	for key in ancs:
+		print key + ":", ancs[key]
+	print "---------";
 
 	##The next block gets all the other info for each node: sister and decendent nodes and branch lengths (if type 1)
 	##and node type (tip, internal, root). This is easy now that the ancestral nodes are stored.
