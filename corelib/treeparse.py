@@ -163,6 +163,7 @@ def comAnc(spec_list, treedict):
 #############################################################################
 
 def nodeDepth(n_spec, n_treedict):
+#This function returns a list of the nodes between the current node and the root of the tree.
 	if n_treedict[n_spec][3] == 'root':
 		return [];
 
@@ -186,6 +187,7 @@ def specRelabel(s, t_d):
 #############################################################################
 
 def numInternal(treedict):
+#This function counts the number of internal nodes in a tree.
 	num_nodes = 0;
 	for node in treedict:
 		if treedict[node][3] != 'tip':
@@ -258,16 +260,16 @@ def treeParseNew(tree, tree_type):
 				a = z;
 
 				while a < (len(new_tree)-1):
-
 					if new_tree[a] == "(":
 						numcpneeded = numcpneeded + 1;
 					if new_tree[a] == ")" and numcpneeded != numcp:
 						numcp = numcp + 1;
 					if new_tree[a] == ")" and numcpneeded == numcp:
-						if a == (len(new_tree)-4):
-							curanc = new_tree[a+1:];
-						elif new_tree[a+1:].find(":") == -1:
-							curanc = new_tree[len(new_tree)-4:];
+						#if a == (len(new_tree)-5):
+						#	curanc = new_tree[a+1:];
+						if new_tree[a+1:].find(":") == -1:
+							#curanc = new_tree[len(new_tree)-5:];
+							curanc = new_tree[new_tree.rfind(")")+1:]
 						else:
 							curanc = new_tree[a+1:new_tree.index(":", a)];
 						a = 100000000;
@@ -310,9 +312,10 @@ def treeParseNew(tree, tree_type):
 		z = z + 1;
 	##End ancestral node block
 #	print curanc;
-	for key in ancs:
-		print key + ":", ancs[key]
-	print "---------";
+	#for key in ancs:
+	#	print key + ":", ancs[key]
+	#print "---------";
+	#sys.exit()
 
 	##The next block gets all the other info for each node: sister and decendent nodes and branch lengths (if type 1)
 	##and node type (tip, internal, root). This is easy now that the ancestral nodes are stored.
