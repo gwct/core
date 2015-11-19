@@ -28,9 +28,12 @@ def optParse(errorflag):
 	parser.add_argument("-c", dest="paml_path", help="You must specify the full path to your PAML DIRECTORY here.");
 	parser.add_argument("-t", dest="tree_file", help="A user specified tree for codeml to use. If not specified, codeml will infer the tree.", default="");
 	parser.add_argument("-p", dest="prune_opt", help="If not all species present in the tree will be present in each alignment, set this to 1 to prune the tree for each file. Default: 0", type=int, default=0);
+	parser.add_argument("-s", dest="paml_seqtype", help="The seqtype for codeml to use. 1 (default): Codons; 2: Amino Acids", type=int, default=1);
+	parser.add_argument("-b", dest="branch_site", help="Specifies the type of run for PAML's branch site test. 0 (default): Do not do branch site test; 1: Do the null model of the branch site test (model=2, NSsite=2, fix_omega=1, omega=1); 2: Do the alternate model of the branch site test (model=2, NSsite=2, fix_omega=0, omega=1). A branch must be specified in your tree file.", type=int, default=0);
 	parser.add_argument("-a", dest="anc_opt", help="Option to tell PAML to do ancestral reconstruction (1) or not (0). Default: 0.", type=int, default=0);
 	parser.add_argument("-v", dest="verbosity", help="An option to control the output printed to the screen. 1: print all codeml output, 0: print only a progress bar. Default: 1", type=int, default=1);
 	parser.add_argument("-l", dest="log_opt", help="A boolean option to tell the script whether to create a logfile (1) or not (0). Default: 1", type=int, default=1);
+	parser.add_argument("-x", dest="logdir_suffix", help="A string to add on to the end of the output directory.");
 
 	args = parser.parse_args();
 
@@ -52,19 +55,27 @@ def optParse(errorflag):
 			core.errorOut(4, "With -p set to 1 a tree file must be specified");
 			optParse(1);
 
+		if args.paml_seqtype not in [1,2]:
+			core.errorOut(5, "-s must taked values of either 1 or 2");
+			optParse(1);
+
+		if args.branch_site not in [0,1,2]:
+			core.errorOut(6, "-b must take values of 0, 1, or 2");
+			optParse(1);
+
 		if args.anc_opt not in [0,1]:
-			core.errorOut(5, "-a must take values of 1 or 0");
+			core.errorOut(7, "-a must take values of 1 or 0");
 			optParse(1);
 
 		if args.verbosity not in [0,1]:
-			core.errorOut(6, "-v must take values of either 1 or 0");
+			core.errorOut(8, "-v must take values of either 1 or 0");
 			optParse(1);
 
 		if args.log_opt not in [0,1]:
-			core.errorOut(7, "-l must take values of either 1 or 0");
+			core.errorOut(9, "-l must take values of either 1 or 0");
 			optParse(1);
 
-		return args.input, args.paml_path, args.tree_file, args.prune_opt, args.anc_opt, args.verbosity, args.log_opt;
+		return args.input, args.paml_path, args.tree_file, args.prune_opt, args.paml_seqtype, args.branch_site, args.anc_opt, args.verbosity, args.log_opt, args.logdir_suffix;
 
 	elif errorflag == 1:
 		parser.print_help();
@@ -82,12 +93,12 @@ def optParse(errorflag):
 #Main Block
 ############################################
 
-ins, ppath, treefile, prune, aopt, v, l = optParse(0);
+ins, ppath, treefile, prune, seqtype, bsopt, aopt, v, l, outdir_suffix = optParse(0);
 
 starttime = core.getLogTime();
 
 if not os.path.isdir(ppath):
-	core.errorOut(8, "-c must be a valid directory path");
+	core.errorOut(10, "-c must be a valid directory path");
 	optParse(1);
 elif ppath[-1] != "/":
 	ppath = ppath + "/";
@@ -108,6 +119,12 @@ else:
 	filelist = os.listdir(indir);
 	if aopt == 1:
 		ancdir = script_outdir + "anc_seqs_fa/";
+
+if outdir_suffix != None:
+	if script_outdir[-1] == "/":
+		script_outdir = script_outdir[:len(script_outdir)-1] + "-" + outdir_suffix + "/";
+	else:
+		script_outdir = script_outdir + "-" + outdir_suffix + "/";
 
 print core.getTime() + " | Creating main output directory:\t" + script_outdir;
 os.system("mkdir " + script_outdir);
@@ -204,7 +221,7 @@ for each in filelist:
 		os.system(nw_cmd);
 
 	ctlFile = open(ctlfilename, "w");
-	
+
 	inline = "seqfile = " + infilename + "\n";
 	ctlFile.write(inline);
 	if treefile != "":
@@ -223,19 +240,29 @@ for each in filelist:
 	else:
 		ctlFile.write("runmode = 2\n\n");
 
-	ctlFile.write("seqtype = 2\n");
+	if seqtype == 1:
+		ctlFile.write("seqtype = 1\n");
+	elif seqtype == 2:
+		ctlFile.write("seqtype = 2\n");
+
 	ctlFile.write("CodonFreq = 2\n");
 	ctlFile.write("clock = 0\n");
 	ctlFile.write("aaDist = 0\n");
 	ctlFile.write("aaRatefile = " + ppath + "/dat/wag.dat\n");
 	ctlFile.write("model = 2\n\n");
 
-	ctlFile.write("NSsites = 0\n\n");
+	if bsopt in [1,2]:
+		ctlFIle.write("NSsites = 2\n\n");
+	else:
+		ctlFile.write("NSsites = 0\n\n");
 
 	ctlFile.write("icode = 0\n");
 	ctlFile.write("fix_kappa = 0\n");
 	ctlFile.write("kappa = 3\n");
-	ctlFile.write("fix_omega = 0\n");
+	if bsopt == 1:
+		ctlFile.write("fix_omega = 1\n");
+	else:
+		ctlFile.write("fix_omega = 0\n");
 	ctlFile.write("omega = 1\n\n");
 
 	ctlFile.write("fix_alpha = 1\n");
@@ -244,7 +271,8 @@ for each in filelist:
 	ctlFile.write("ncatG = 10\n\n");
 
 	ctlFile.write("getSE = 0\n");
-	ctlFile.write("RateAncestor = 1\n");
+	if aopt == 1:
+		ctlFile.write("RateAncestor = 1\n");
 	ctlFile.write("Small_Diff = .5e-6\n");
 
 	ctlFile.close();
@@ -297,7 +325,7 @@ for each in filelist:
 					j = j + 1;
 				if aopt == 1:
 					asfile.close();
-				break;		
+				break;
 
 		curseqs = {};
 		for n in node_list:
@@ -330,7 +358,7 @@ for each in filelist:
 			asfile.write("\n");
 		asfile.close();
 
-	
+
 	newfileList = os.listdir(os.getcwd());
 	for neweach in newfileList:
 		if neweach in ["2NG.dN","2NG.dS","2NG.t","codeml.ctl","lnf","rst","rst1","rub","pruned.tre"]:
@@ -344,7 +372,3 @@ if v == 0 and fileflag == 0:
 core.logCheck(l, logfilename, core.getTime() + " | Done!");
 core.logCheck(l, logfilename, core.getLogTime());
 core.logCheck(l, logfilename, "=======================================================================");
-
-
-
-
