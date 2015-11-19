@@ -261,7 +261,7 @@ for each in filelist:
 	ctlFile.write("model = 2\n\n");
 
 	if bsopt in [1,2]:
-		ctlFIle.write("NSsites = 2\n\n");
+		ctlFile.write("NSsites = 2\n\n");
 	else:
 		ctlFile.write("NSsites = 0\n\n");
 
