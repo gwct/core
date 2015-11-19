@@ -115,16 +115,15 @@ if os.path.isfile(ins):
 else:
 	fileflag = 0;
 	indir, script_outdir = core.getOutdir(ins, "run_codeml", starttime);
+	if outdir_suffix != None:
+		if script_outdir[-1] == "/":
+			script_outdir = script_outdir[:len(script_outdir)-1] + "-" + outdir_suffix + "/";
+		else:
+			script_outdir = script_outdir + "-" + outdir_suffix + "/";
 	outdir = script_outdir + "codeml_out/";
 	filelist = os.listdir(indir);
 	if aopt == 1:
 		ancdir = script_outdir + "anc_seqs_fa/";
-
-if outdir_suffix != None:
-	if script_outdir[-1] == "/":
-		script_outdir = script_outdir[:len(script_outdir)-1] + "-" + outdir_suffix + "/";
-	else:
-		script_outdir = script_outdir + "-" + outdir_suffix + "/";
 
 print core.getTime() + " | Creating main output directory:\t" + script_outdir;
 os.system("mkdir " + script_outdir);
@@ -140,7 +139,7 @@ core.logCheck(l, logfilename, "\t\t\t" + core.getDateTime());
 if fileflag == 1:
 	core.logCheck(l, logfilename, "INPUT    | Making tree from file:\t\t" + ins);
 else:
-	core.logCheck(l, logfilename, "INPUT    | Making trees from all files in:\t" + indir);
+	core.logCheck(l, logfilename, "INPUT    | Running codeml on all files in:\t" + indir);
 core.logCheck(l, logfilename, "INFO     | PAML path set to:\t\t\t" + ppath);
 if treefile != "":
 	core.logCheck(l, logfilename, "INFO     | Using tree from file:\t\t" + treefile);
@@ -148,6 +147,16 @@ else:
 	core.logCheck(l, logfilename, "INFO     | No tree file specified. codeml will infer a tree for each gene.");
 if prune == 1:
 	core.logCheck(l, logfilename, "INFO     | Pruning the tree for each gene.");
+if bsopt == 0:
+	core.logCheck(l, logfilename, "INFO     | Not doing branch-site test.");
+if bsopt == 1:
+	core.logCheck(l, logfilename, "INFO     | Doing NULL runs of branch-site test.");
+if bsopt == 2:
+	core.logCheck(l, logfilename, "INFO     | Doing ALT runs of branch-site test.");
+if seqtype == 1:
+	core.logCheck(l, logfilename, "INFO     | Seqtype set to codons. (1)");
+if seqtype == 2:
+	core.logCheck(l, logfilename, "INFO     | Seqtype set to amino acids. (2)");
 if aopt == 0:
 	core.logCheck(l, logfilename, "INFO     | Not performing ancestral reconstruction.");
 elif aopt == 1:
