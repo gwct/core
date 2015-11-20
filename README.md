@@ -32,6 +32,9 @@
   * A general purpose FASTA handling script. Can relabel and trim headers and remove start and stop AAs.
 8. how\_many\_trees
   * Just a little script to show the number of possible rooted tree topologies for a given number of species.
+9. paml_lrt.py
+  * Performs a likelihood ratio test on output from the branch-site test in codeml.
+  * Dependencies: Output from two run_codeml.py runs with -b 1 (null model) and -b 2 (alternate model).
 9. run_codeml.py
   * A script to run some basic PAML analyses with codeml. Still adding a lot to this one.
   * Dependencies:</br>
