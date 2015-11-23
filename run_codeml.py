@@ -181,10 +181,11 @@ if aopt == 1:
 
 if prune == 1:
 	core.logCheck(l, logfilename, core.getTime() + " | Retrieving tree info...");
-	td, tree = treeparse.treeParse(open(treefile, "r").read().replace("\n",""),1);
+	td, tree = treeparse.treeParseNew(open(treefile, "r").read().replace("\n",""),1);
+
 	tips = [];
 	for node in td:
-		if td[node][9] == 'tip':
+		if td[node][3] == 'tip':
 			tips.append(node);
 
 core.logCheck(l, logfilename, core.getTime() + " | Starting codeml runs...\n");
