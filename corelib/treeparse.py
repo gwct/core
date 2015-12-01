@@ -113,6 +113,22 @@ def LCA(spec_list, treedict):
 
 #############################################################################
 
+def getSubtree(node, tree):
+	subtree = "";
+	partree = tree[:tree.index(node)][::-1];
+	cp = 0;
+	op = 0;
+	for c in partree:
+		if c == ")":
+			cp = cp + 1;
+		if c == "(":
+			op = op + 1;
+		subtree = subtree + c;
+		if cp == op:
+			break;
+	return "(" + subtree[::-1] + node + ")";
+
+#############################################################################
 def comAnc(spec_list, treedict):
 #Given a list of species within the tree and the dictionary returned by treeParse using that tree,
 #this function checks whether those species are monophyletic (ie they all share a common ancestor).
