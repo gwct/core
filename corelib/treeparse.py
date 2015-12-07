@@ -126,7 +126,7 @@ def getSubtree(node, tree):
 		subtree = subtree + c;
 		if cp == op:
 			break;
-	return "(" + subtree[::-1] + node + ")";
+	return subtree[::-1];
 
 #############################################################################
 def comAnc(spec_list, treedict):
