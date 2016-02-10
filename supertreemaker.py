@@ -258,9 +258,19 @@ if d == 1:
 		outline = "mrca " + calnodes[n] + " " + calspec[n][0] + " " + calspec[n][1] + ";\n";
 		r8sfile.write(outline);
 	for n in xrange(len(calnodes)):
-		outline = "fixage taxon=" + calnodes[n] + " age=" + calage[n] + ";\n";
+		if calage[n].find("min") != -1 and calage[n].find("max") != -1:
+			curcal = calage[n].split("-");
+			outline = "constrain taxon=" + calnodes[n] + " minage=" + curcal[1] + " maxage=" + curcal[3] +";\n";
+		elif calage[n].find("min") != -1:
+			curcal = calage[n].split("-");
+			outline = "constrain taxon=" + calnodes[n] + " minage=" + curcal[1] +";\n";
+		elif calage[n].find("max") != -1:
+			curcal = calage[n].split("-");
+			outline = "constrain taxon=" + calnodes[n] + " minage=" + curcal[1] +";\n";
+		else:
+			outline = "fixage taxon=" + calnodes[n] + " age=" + calage[n] + ";\n";
 		r8sfile.write(outline);
-	r8sfile.write("divtime method=pl algorithm=qnewt cvStart=0 cvInc=0.5 cvNum=8 crossv=yes;\n");
+	r8sfile.write("divtime method=pl algorithm=tn cvStart=0 cvInc=0.5 cvNum=8 crossv=yes;\n");
 	r8sfile.write("describe plot=chronogram;\n");
 	r8sfile.write("describe plot=tree_description;\n");
 	r8sfile.write("end;");
