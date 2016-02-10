@@ -37,8 +37,8 @@ def optParse(errorflag):
 	parser.add_argument("-d", dest="div_est_opt", help="A boolean option to estimate divergence times from the NJ tree with r8s (1) or not (0). Default: 0.", type=int, default=0);
 	parser.add_argument("-e", dest="r8s_output_file", help="A file name for r8s to write the final output.");
 	parser.add_argument("-n", dest="num_sites", help="The total number of sites from the alignments used to make the tree; used by r8s.");
-	parser.add_argument("-s", dest="cal_specs", help="A comma delimited (no spaces) list of the two species in the NJ tree you wish to calibrate ages by.");
-	parser.add_argument("-a", dest="cal_age", help="The calibration age of the node defined by the species in -s.");
+	parser.add_argument("-s", dest="cal_specs", help="A list of PAIRS of species that define nodes you wish to constrain times on. Species within a pair should be separated by a comma, pairs should be separated by a space (eg 'pair1s1,pair1s2 pair2s1,pair2s2').");
+	parser.add_argument("-a", dest="cal_age", help="The calibration ages of the nodes defined by the species in -s. The order of this list corresponds to the order of -s. Separate ages by commas. If constraints are to be used the keywords min and/or max are used with hyphens (eg '324,min-99.9-max-121' defines one fixed age of 324 and one constrained age).");
 	parser.add_argument("-l", dest="log_opt", help="A boolean option to tell the script whether to create a logfile (1) or not (0). Default: 1", type=int, default=1);
 
 	parser.add_argument("-z", dest="script_logdir", help="A directory in which to place the script output directory. If none is specified, this will default to the directory of the input file");
