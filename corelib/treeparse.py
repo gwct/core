@@ -233,18 +233,38 @@ def treeParseNew(tree, tree_type):
 	new_tree = "";
 	z = 0;
 	numnodes = 1;
+	supports = {};
 
 	while z < (len(tree)-1):
 		if tree_type == 1:
 			if tree[z] == ":" and tree[z-1] == ")":
 				new_tree = new_tree + "<" + str(numnodes) + ">";
 				numnodes = numnodes + 1;
+			elif tree[z] == ":":
+				tmp_str = tree[:z];
+				if tmp_str.rfind(")") > tmp_str.rfind(","):
+					new_node = "<" + str(numnodes) + ">";
+
+					supports[new_node] = tmp_str[tmp_str.rfind(")")+1:];
+
+					new_tree = new_tree[:new_tree.rfind(")")+1] + new_node;
+					numnodes = numnodes + 1;
+
 		if tree_type == 2:
 			if (tree[z] == "," or tree[z] == ")") and tree[z-1] == ")":
 				new_tree = new_tree + "<" + str(numnodes) + ">";
 				numnodes = numnodes + 1;
 		new_tree = new_tree + tree[z];
 		z = z + 1;
+
+	if new_tree[-1] not in [")",">"]:
+		if new_tree.rfind(")") > new_tree.rfind(">"):
+			last_char = ")";
+		else:
+			last_char = ">";
+
+		new_tree = new_tree[:new_tree.rfind(last_char)+1];
+
 	if new_tree[-1] == ")":
 		rootnode = "<" + str(numnodes) + ">"
 		new_tree = new_tree + rootnode;
@@ -252,8 +272,10 @@ def treeParseNew(tree, tree_type):
 		rootnode = new_tree[new_tree.rfind(")")+1:];
 
 	##This first block labels all internal nodes with the format <#>
-
+	
+	#print tree;
 	#print new_tree;
+	#print supports;
 	#print "-----------------------------------";
 
 	ancs = {};
@@ -367,6 +389,9 @@ def treeParseNew(tree, tree_type):
 			nofo[node].append("tip");
 		else:
 			nofo[node].append("internal");
+
+		if nofo[node][3] != 'tip' and supports != {} and node in supports:
+			nofo[node].append(supports[node]);
 
 	##End info retrieval block.
 
