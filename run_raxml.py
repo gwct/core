@@ -90,7 +90,7 @@ else:
 	filelist = os.listdir(indir);
 
 print core.getTime() + " | Creating main output directory:\t" + script_outdir;
-os.system("mkdir " + script_outdir);
+os.system("mkdir '" + script_outdir +"'");
 
 logfilename = script_outdir + "run_raxml.log";
 logfile = open(logfilename, "w");
@@ -128,11 +128,11 @@ core.logCheck(l, logfilename, "-------------------------------------");
 
 if not os.path.exists(outdir):
 	core.logCheck(l, logfilename, core.getTime() + " | Creating RAxML output directory:\t" + outdir);
-	cmd = "mkdir " + outdir;
+	cmd = "mkdir '" + outdir + "'";
 	os.system(cmd);
 if not os.path.exists(bestdir):
 	core.logCheck(l, logfilename, core.getTime() + " | Creating RAxML best directory:\t" + bestdir);
-	cmd = "mkdir " + bestdir;
+	cmd = "mkdir '" + bestdir + "'";
 	os.system(cmd);
 
 seedFile = script_outdir + "raxml_seeds.txt";
@@ -176,7 +176,7 @@ for each in filelist:
 	rax_outdir = outdir + rax_outfile + "_raxout/";
 
 	if not os.path.exists(rax_outdir):
-		os.system("mkdir " + rax_outdir);
+		os.system("mkdir '" + rax_outdir + "'");
 	
 
 	seed = str(randint(1000000,999999999));
@@ -201,7 +201,7 @@ for each in filelist:
 		rax_cmd = rax_cmd + " -x " + boot_seed + " -# " + str(b) + " ";
 	if t > 1:
 		rax_cmd = rax_cmd + "-T " + str(t) + " ";
-	rax_cmd = rax_cmd + " -s " + rax_infile + " -n " + rax_outfile + " -w " + script_outdir;
+	rax_cmd = rax_cmd + " -s '" + rax_infile + "' -n '" + rax_outfile + "' -w '" + script_outdir + "'";
 
 	if v == 0:
 		rax_cmd = rax_cmd + " >> " + rax_logfile;
@@ -220,13 +220,13 @@ for each in filelist:
 	newfileList = os.listdir(script_outdir);
 	for neweach in newfileList:
 		if neweach.find("RAxML_bestTree") != -1:
-			mv_cmd = "mv " + script_outdir + neweach + " " + bestdir;
+			mv_cmd = "mv '" + script_outdir + neweach + "' '" + bestdir + "'";
 			os.system(mv_cmd);
 		elif neweach.find("RAxML") != -1 and neweach != "RAxML_best" and neweach != "raxml_seeds" and neweach != "RAxML_out" and neweach != "raxml_bseeds":
-			mv_cmd = "mv " + script_outdir + neweach + " " + rax_outdir;
+			mv_cmd = "mv '" + script_outdir + neweach + "' '" + rax_outdir + "'";
 			os.system(mv_cmd);
 	if os.path.exists(rax_infile + ".reduced"):
-		mv_cmd = "mv " + rax_infile + ".reduced" + " " + rax_outdir;
+		mv_cmd = "mv '" + rax_infile + ".reduced '" + rax_outdir + "'";
 		os.system(mv_cmd);
 
 if v == 0:

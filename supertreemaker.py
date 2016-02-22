@@ -65,7 +65,7 @@ def optParse(errorflag):
 
 		elif args.div_est_opt == 1:
 			if args.r8s_output_file == None or args.num_sites == None or args.cal_specs == None or args.cal_age == None:
-				core.errorOut(5, "You are missing some options for div time estimation with r8s. -e, -n, -s, and -a must all be defined");
+				core.errorOut(5, "You are missing one or more of the options for div time estimation with r8s. -e, -n, -s, and -a must all be defined");
 				optParse(1);
 			else:
 				if args.cal_specs.find(" ") != -1 and args.cal_age.find(",") != -1:
@@ -124,7 +124,7 @@ if outdir_suffix != None:
 		script_outdir = script_outdir + "-" + outdir_suffix + "/";
 
 print core.getTime() + " | Creating main output directory:\t" + script_outdir;
-os.system("mkdir " + script_outdir);
+os.system("mkdir '" + script_outdir + "'");
 
 logfilename = script_outdir + "supertreemaker.log";
 logfile = open(logfilename, "w");
@@ -233,9 +233,11 @@ if rr == 1:
 if d == 1:
 ##Uses r8s to estimate divergence times on the rooted tree
 	core.logCheck(l, logfilename, "\n" + core.getTime() + " | Preparing tree and input file for r8s...");
-	r8soutfilename = script_outdir + r8soutfilename;
+	#r8soutfilename = script_outdir + r8soutfilename;
+	r8soutfilename = os.path.join(script_outdir, r8soutfilename);
 
-	r8sinputfile = script_outdir + "r8s_input_file.txt";
+	#r8sinputfile = script_outdir + "r8s_input_file.txt";
+	r8sinputfile = os.path.join(script_outdir, "r8s_input_file.txt");
 #	nwcmd = "nw_prune nwtmp.txt " + outgroup + " > nwtmp.txt";
 #	p = Popen(nwcmd, shell=True, stdin=PIPE, stdout=PIPE, stderr=PIPE)
 #	nj_tree, stderr = p.communicate()
@@ -278,7 +280,7 @@ if d == 1:
 	r8sfile.close();
 
 	core.logCheck(l, logfilename, core.getTime() + " | Calling r8s to smooth the tree...");
-	r8scmd = "r8s -b -f " + r8sinputfile + " > " + r8soutfilename;
+	r8scmd = "r8s -b -f '" + r8sinputfile + "' > '" + r8soutfilename + "'";
 	os.system(r8scmd);
 
 	for line in open(r8soutfilename):
