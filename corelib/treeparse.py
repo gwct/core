@@ -216,7 +216,7 @@ def treeParseNew(tree, tree_type):
 #The treeParse function takes as input a rooted phylogenetic tree with branch lengths and returns the tree with node labels and a
 #dictionary with usable info about the tree in the following format:
 #New (current) format:
-#node:[branch length, ancestral node, ancestral branch length, node type]
+#node:[branch length, ancestral node, ancestral branch length, node type, node labels (if present)]
 #
 #Old format
 #node:[branch length, ancestral node, ancestral branch length, sister node, sister branch length, descendent 1, descendent 1 branch length, descendent 2, descendent 2 branch length, node type]
