@@ -334,7 +334,6 @@ for spec in rapids:
 	if spec == 'total':
 		continue;
 
-
 	for f in range(len(rapids[spec])):
 		if f == 0:
 			outline = spec + " rapid expansions:\t";
@@ -346,19 +345,6 @@ for spec in rapids:
 		outline = outline[:-1] + "\n";
 		outfile.write(outline);
 
-# 	outline = spec + " rapid expansions:\t";
-# 	for f in rapids[spec][0]:
-# 		outline = outline + f + ",";
-# 	outline = outline[:-1] + "\n";
-# 	outfile.write(outline);
-
-# 	outline = spec + " rapid contractions:\t";
-# 	for f in rapids[spec][1]:
-# 		outline = outline + f + ",";
-# 	outline = outline[:-1] + "\n";
-# 	outfile.write(outline);
-# outfile.close();
-
 print "RESULTS TABLE -- tab delimted for easy copy/pasting into your favorite spreadsheet program"
 print "\tExpansions\tGenes Gained\tEqual\tContractions\tGenes Lost\tFamilies Lost\tAverage Expansion\tSig Expansions\tSig Contractions\tTotal Sig Changes";
 for species in results:
@@ -368,6 +354,7 @@ for species in results:
 	print outline;
 
 print
+print "Number of rapidly evolving families in tree:\t", len(rapids['total']);
 print "CAFE labeled tree:\t" + labeled_tree;
 # This block simply prints the information stored in results to the screen.
 

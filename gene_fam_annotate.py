@@ -6,7 +6,9 @@
 # Feb. 2016
 #############################################################################
 
-import sys, os, argparse, core
+import sys, os, platform, argparse
+sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
+import core
 
 ############################################
 #Function Definitions
@@ -71,7 +73,10 @@ def querySearch(fdict, qlist):
 infilename, famlist, querylist = optParse(0);
 # Getting the input parameters.
 
-gofilename = "/Users/Gregg/bin/go.obo";
+if platform.system() == 'Windows':
+	gofilename = "C:\\bin\go.obo"
+else:
+	gofilename = "/Users/Gregg/bin/go.obo";
 
 print "# =======================================================================";
 print "#\t\t\tGene Family Annotation Lookup";
