@@ -85,8 +85,7 @@ print "# Input gene family annotation file:\t" + infilename;
 print "# GO term database location:\t\t" + gofilename;
 print "# ---------";
 print "# Looking up GO terms for the following families:";
-for each in famlist:
-	print "# " + each;
+print "# " + ",".join(famlist);
 print "# ---------";
 if querylist != [""]:
 	print "# Looking for the following phrases in above families:"
