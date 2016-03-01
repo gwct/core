@@ -21,7 +21,7 @@ def optParse(errorflag):
 	parser.add_argument("-i", dest="input_file", help="A tab delimited file containing on each line the gene family ID in the first column and all GO terms associated with that family.");
 	parser.add_argument("-f", dest="fam_list", help="A comma delimited list of gene families for which you wish to look up GO terms. Enter 'all' to retrieve all families in input file.");
 	parser.add_argument("-q", dest="query_list", help="A comma delimted list of words or terms to search for in the families retrieved with -f.", default="");
-	parser.add_argument("-o", dest="output_format", help="1 - nested tabulated format. 2 - rowed tabulated format. Default: 1", type=int, default=1);
+	parser.add_argument("-o", dest="output_format", help="1 - nested tabulated format. 2 - rowed tabulated format. 3 - Just print the number of families with a certain GO term (used in conjunction with -q). Default: 1", type=int, default=1);
 
 	args = parser.parse_args();
 
@@ -30,8 +30,12 @@ def optParse(errorflag):
 			core.errorout(1, "All options must be specified.");
 			optParse(1);
 
-		if args.output_format not in [1,2]:
-			core.errorout(2, "-o can take values of only 1 or 2.");
+		if args.output_format not in [1,2,3]:
+			core.errorout(2, "-o can take values of only 1, 2, or 3.");
+			optParse(1);
+
+		if args.output_format == 3 and args.query_list == None:
+			core.errorout(3, "Setting -o 3 requires you to also be searching for terms with -q.");
 			optParse(1);
 
 		return args.input_file, args.fam_list.split(","), args.query_list.split(","), args.output_format;
@@ -85,7 +89,7 @@ def printFams(fdict, of):
 
 ######################
 
-def querySearch(fdict, qlist):
+def querySearch(fdict, qlist, ofp):
 	pdict = {};
 	for q in qlist:
 		for fam in fdict:
@@ -94,7 +98,10 @@ def querySearch(fdict, qlist):
 					if any(v in g for v in [q, q.title(), q.upper(), q.lower()]):
 						pdict[fam] = fdict[fam];
 
-	printFams(pdict);
+	if ofp in [1,2]:
+		printFams(pdict, ofp);
+	elif ofp == 3:
+		return len(pdict);
 
 ############################################
 #Main Block
@@ -114,7 +121,7 @@ print "#\t\t\t" + core.getDateTime()
 print "# Input gene family annotation file:\t" + infilename;
 print "# GO term database location:\t\t" + gofilename;
 print "# ---------";
-print "# Looking up GO terms for the following families:";
+print "# Looking up GO terms for the following", len(famlist), "families:";
 print "# " + ",".join(famlist);
 print "# ---------";
 if querylist != [""]:
@@ -134,6 +141,7 @@ if len(famlist) > 100:
 		print "# WARNING: Looking up more than 100 families... this may take a while.\n"
 
 famdict = {};
+total_fams = 0;
 
 for fam in famlist:
 	famdict[fam] = [];
@@ -172,17 +180,32 @@ for fam in famlist:
 		gofile.close();
 
 	if len(famdict) > 100:
-		if querylist != [""]:
-			querySearch(famdict, querylist);
-		else:
-			printFams(famdict, outformat);
+		if outformat in [1,2]:
+			if querylist != [""]:
+				querySearch(famdict, querylist, outformat);
+			else:
+				printFams(famdict, outformat);
+		elif outformat == 3:
+			if querylist != [""]:
+				total_fams = total_fams + querySearch(famdict, querylist, outformat);
+			else:
+				total_fams = total_fams + 100;
 		famdict = {};
 		print "# Continuing lookup...\n"
-	
-if querylist != [""]:
-	querySearch(famdict, querylist);
-else:
-	printFams(famdict, outformat);
+
+if outformat in [1,2]:
+	if querylist != [""]:
+		querySearch(famdict, querylist, outformat);
+	else:
+		printFams(famdict, outformat);
+elif outformat == 3:
+	if querylist != [""]:
+		total_fams = total_fams + querySearch(famdict, querylist, outformat);
+	else:
+		total_fams = total_fams + len(famdict);
+
+	print "# ---------";
+	print "# " + str(total_fams) + " total families found."
 
 print "\n# Done!";
 print "# =======================================================================";
