@@ -10,6 +10,7 @@
 
 import sys, os, argparse
 from subprocess import Popen, PIPE
+sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
 import core
 
 #"Apis_mellifera,Bombus_impatiens Pachypsylla_venusta,Frankliniella_occidentallis Tribolium_castaneum,Athalia_rosae Anopheles_gambiae,Lutzomyia_longipalpis Catajapyx_aquilonaris,Centruroides_sculpturatus Athalia_rosae,Pachypsylla_venusta Hapegnathos_saltator,Dufourea_novaeangliae Ladona_fulva,Ephemera_danica Frankliniella_occidentallis,Pediculus_humanus"
@@ -82,7 +83,7 @@ def optParse(errorflag):
 			args.r8s_output_file = None;
 			args.num_sites = None;
 			cal_specs = None;
-			args.cal_age = None;
+			cal_age = None;
 
 		if args.log_opt not in [0,1]:
 			core.errorOut(7, "-l must take values of either 1 or 0");
