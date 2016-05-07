@@ -48,7 +48,8 @@ def optParse(errorflag):
 
 def printFams(fdict, of):
 
-	fams = sorted([int(k) for k in fdict.keys()])
+	#fams = sorted([int(k) for k in fdict.keys()])
+	fams = fdict;
 
 	if of == 1:
 		for fam in fams:
@@ -84,8 +85,8 @@ def printFams(fdict, of):
 				i = i + 1;
 
 
-	print "# ---------";
-	print "# " + str(len(fdict)) + " total families."
+	#print "# ---------";
+	#print "# " + str(len(fdict)) + " total families."
 
 ######################
 
@@ -115,30 +116,30 @@ if platform.system() == 'Windows':
 else:
 	gofilename = "/Users/Gregg/bin/go.obo";
 
-print "# =======================================================================";
-print "#\t\tGene Family Annotation Lookup";
-print "#\t\t\t" + core.getDateTime()
-print "# Input gene family annotation file:\t" + infilename;
-print "# GO term database location:\t\t" + gofilename;
-print "# ---------";
-print "# Looking up GO terms for the following", len(famlist), "families:";
-print "# " + ",".join(famlist);
-print "# ---------";
-if querylist != [""]:
-	print "# Looking for the following phrases in above families:"
-	for each in querylist:
-		print "# " + each;
-	print "# ---------";
-print "# Looking up annotations...\n"
+# print "# =======================================================================";
+# print "#\t\tGene Family Annotation Lookup";
+# print "#\t\t\t" + core.getDateTime()
+# print "# Input gene family annotation file:\t" + infilename;
+# print "# GO term database location:\t\t" + gofilename;
+# print "# ---------";
+# print "# Looking up GO terms for the following", len(famlist), "families:";
+# print "# " + ",".join(famlist);
+# print "# ---------";
+# if querylist != [""]:
+# 	print "# Looking for the following phrases in above families:"
+# 	for each in querylist:
+# 		print "# " + each;
+# 	print "# ---------";
+# print "# Looking up annotations...\n"
 
 if famlist[0].lower() == "all":
 	famlist = [f.split("\t")[0] for f in open(infilename)];
 
-if len(famlist) > 100:
-	if len(famlist) > 1000:
-		print "# WARNING: Looking up more than 1000 families... this will take a very long time.\n"
-	else:
-		print "# WARNING: Looking up more than 100 families... this may take a while.\n"
+# if len(famlist) > 100:
+# 	if len(famlist) > 1000:
+# 		print "# WARNING: Looking up more than 1000 families... this will take a very long time.\n"
+# 	else:
+# 		print "# WARNING: Looking up more than 100 families... this may take a while.\n"
 
 famdict = {};
 total_fams = 0;
@@ -191,7 +192,7 @@ for fam in famlist:
 			else:
 				total_fams = total_fams + 100;
 		famdict = {};
-		print "# Continuing lookup...\n"
+		#print "# Continuing lookup...\n"
 
 if outformat in [1,2]:
 	if querylist != [""]:
@@ -204,8 +205,8 @@ elif outformat == 3:
 	else:
 		total_fams = total_fams + len(famdict);
 
-	print "# ---------";
-	print "# " + str(total_fams) + " total families found."
+# 	print "# ---------";
+# 	print "# " + str(total_fams) + " total families found."
 
-print "\n# Done!";
-print "# =======================================================================";
+# print "\n# Done!";
+# print "# =======================================================================";

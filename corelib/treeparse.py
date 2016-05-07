@@ -76,6 +76,32 @@ def getClade(c_spec, c_treedict):
 
 #############################################################################
 
+def getCladeNode(c_spec, c_treedict):
+# This function takes a node in the current tree and the dictionary of the current tree
+# (returned by treeparse) and finds all tip labels that are descendants of the current node.
+# This is done by getting the direct descendants of the current node with getDesc and then
+# recursively calling itself on those descendants.
+
+	clade = [];
+	c_desc = getDesc(c_spec, c_treedict);
+	for d in c_desc:
+		if c_treedict[d][3] != 'tip':
+			clade.append(getCladeNode(d, c_treedict));
+			# Recursion
+		clade.append(d);
+
+	r_clade = [];
+	for c in clade:
+		if type(c) == list:
+			for cc in c:
+				r_clade.append(cc);
+		else:
+			r_clade.append(c);
+
+	return r_clade;
+
+#############################################################################
+
 def LCA(spec_list, treedict):
 	#print treedict;
 	#print spec_list;
