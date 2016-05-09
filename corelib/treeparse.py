@@ -5,7 +5,7 @@
 #Spring 2013-present
 #############################################################################
 
-import sys
+import sys, re
 
 #############################################################################
 def getBranchLength(bltree, spec_label):
@@ -33,6 +33,17 @@ def getBranchLength(bltree, spec_label):
 				return curbranch;
 		d = d + 1;
 	startind = d;
+
+#############################################################################
+
+def remBranchLength(treestring):
+# Removes branch lengths from a tree.
+
+	treestring = re.sub('[)][\d.eE-]+:[\d.eE-]+', ')', treestring);
+	treestring = re.sub(':[\d.eE-]+', '', treestring);
+	treestring = re.sub('<[\d]+>', '', treestring);
+
+	return treestring;
 
 #############################################################################
 
@@ -299,10 +310,10 @@ def treeParseNew(tree, tree_type):
 
 	##This first block labels all internal nodes with the format <#>
 	
-	#print tree;
-	#print new_tree;
-	#print supports;
-	#print "-----------------------------------";
+	# print tree;
+	# print new_tree;
+	# print supports;
+	# print "-----------------------------------";
 
 	ancs = {};
 	nofo = {};
