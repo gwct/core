@@ -113,6 +113,16 @@ def getCladeNode(c_spec, c_treedict):
 
 #############################################################################
 
+def pathToRoot(node, tree_dict):
+	#ptr = [node];
+	ptr = [];
+	while tree_dict[node][3] != 'root':
+		ptr.append(tree_dict[node][1]);
+		node = tree_dict[node][1];
+	return ptr;
+
+#############################################################################
+
 def LCA(spec_list, treedict):
 	#print treedict;
 	#print spec_list;
