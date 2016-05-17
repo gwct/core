@@ -604,7 +604,7 @@ def treeParseNew(tree, tree_type):
 #############################################################################
 # THIS IS THE OLD TREEPARSE FUNCTION that I am keeping around until I can make the switch to the
 # new one in all my scripts.
-def treeParse(tree, tree_type):
+def treeParseOld(tree, tree_type):
 #The treeParse function takes as input a rooted phylogenetic tree with branch lengths and returns the tree with node labels and a
 #dictionary with usable info about the tree in the following format:
 #
