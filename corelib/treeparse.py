@@ -70,7 +70,7 @@ def getClade(c_spec, c_treedict):
 	clade = [];
 	c_desc = getDesc(c_spec, c_treedict);
 	for d in c_desc:
-		if c_treedict[d][3] != 'tip':
+		if c_treedict[d][2] != 'tip':
 			clade.append(getClade(d, c_treedict));
 		else:
 			clade.append(d);
@@ -96,7 +96,7 @@ def getCladeNode(c_spec, c_treedict):
 	clade = [];
 	c_desc = getDesc(c_spec, c_treedict);
 	for d in c_desc:
-		if c_treedict[d][3] != 'tip':
+		if c_treedict[d][2] != 'tip':
 			clade.append(getCladeNode(d, c_treedict));
 			# Recursion
 		clade.append(d);
@@ -116,7 +116,7 @@ def getCladeNode(c_spec, c_treedict):
 def pathToRoot(node, tree_dict):
 	#ptr = [node];
 	ptr = [];
-	while tree_dict[node][3] != 'root':
+	while tree_dict[node][2] != 'root':
 		ptr.append(tree_dict[node][1]);
 		node = tree_dict[node][1];
 	return ptr;
@@ -134,11 +134,11 @@ def LCA(spec_list, treedict):
 		ancs[spec] = [spec];
 
 	for spec in spec_list:
-		if treedict[spec][3] == 'root':
+		if treedict[spec][2] == 'root':
 			continue;
 		curanc = treedict[spec][1];
 		ancs[spec].append(curanc);
-		while treedict[curanc][3] != 'root':
+		while treedict[curanc][2] != 'root':
 			curanc = treedict[curanc][1];
 			ancs[spec].append(curanc);
 	#print ancs;
@@ -183,7 +183,7 @@ def comAnc(spec_list, treedict):
 	#print spec_list;
 	if len(spec_list) > 1:
 		if spec_list.count(spec_list[0]) == len(spec_list):
-			if treedict[spec_list[0]][3] == 'root':
+			if treedict[spec_list[0]][2] == 'root':
 				return 1, spec_list[0];
 			else:
 				return 1, treedict[spec_list[0]][1];
@@ -227,13 +227,13 @@ def comAnc(spec_list, treedict):
 
 def nodeDepth(n_spec, n_treedict):
 #This function returns a list of the nodes between the current node and the root of the tree.
-	if n_treedict[n_spec][3] == 'root':
+	if n_treedict[n_spec][2] == 'root':
 		return [];
 
 	ancs = []
 	curanc = n_treedict[n_spec][1];
 	ancs.append(curanc);
-	while n_treedict[curanc][3] != 'root':
+	while n_treedict[curanc][2] != 'root':
 		curanc = n_treedict[curanc][1];
 		ancs.append(curanc);
 	return ancs;
@@ -253,7 +253,7 @@ def numInternal(treedict):
 #This function counts the number of internal nodes in a tree.
 	num_nodes = 0;
 	for node in treedict:
-		if treedict[node][3] != 'tip':
+		if treedict[node][2] != 'tip':
 			num_nodes = num_nodes + 1;
 	return num_nodes;
 
@@ -586,7 +586,7 @@ def treeParseNew(tree, tree_type):
 		else:
 			nofo[node].append("internal");
 
-		if nofo[node][3] != 'tip' and supports != {} and node in supports:
+		if nofo[node][2] != 'tip' and supports != {} and node in supports:
 			nofo[node].append(supports[node]);
 
 	##End info retrieval block.
