@@ -40,6 +40,7 @@ def remBranchLength(treestring):
 # Removes branch lengths from a tree.
 
 	treestring = re.sub('[)][\d.eE-]+:[\d.eE-]+', ')', treestring);
+	treestring = re.sub('(?<=[)])[\d.eE-]+(?=[,();])', '', treestring);
 	treestring = re.sub(':[\d.eE-]+', '', treestring);
 	treestring = re.sub('<[\d]+>', '', treestring);
 
@@ -310,7 +311,7 @@ def treeParse(tree, debug=0):
 	# One loop through the nodes to retrieve all other info
 
 		if node + ")" in tree or node + "," in new_tree:
-		# If the node is followed immediately by a ) or , then there are no branch lengths of supports to collect
+		# If the node is followed immediately by a ) or , then there are no branch lengths or supports to collect
 			supports[node] = "NA";
 			bl[node] = "NA";
 
@@ -334,7 +335,8 @@ def treeParse(tree, debug=0):
 			else:
 			# If it is not found then the branch only has a support label
 				cur_bs = re.findall(node + "[\w.Ee<> -]+", new_tree);
-				supports[node] = cur_bs;
+				supports[node] = cur_bs[0][cur_bs[0].index(">")+1:];
+				## REMEMBER I CHANGED THIS FOR SOMETHING
 				bl[node] = "NA";
 
 		# Next we get the ancestral nodes. If the node is the root this is set to NA.
