@@ -344,7 +344,8 @@ def treeParse(tree, debug=0):
 			ancs[node] = "NA";
 			continue;
 
-		anc_tree = new_tree[new_tree.index(node):];
+		anc_match = re.findall('[(),]' + match_node + '[(),]', new_tree);
+		anc_tree = new_tree[new_tree.index(anc_match[0]):][1:];
 		# Ancestral labels are always to the right of the node label in the text of the tree, so we start our scan from the node label
 
 		cpar_count = 0;
