@@ -38,6 +38,8 @@ import core
 
 #MULTIZ 100 SPEC ALIGN
 #"hg19:hg19,panTro4:panTro4,gorGor3:gorGor3,ponAbe2:ponAbe2,nomLeu3:nomLeu3,rheMac3:rheMac3,macFas5:macFas5,papHam1:papHam1,chlSab1:chlSab1,calJac3:calJac3,saiBol1:saiBol1,otoGar3:otoGar3,tupChi1:tupChi1,speTri2:speTri2,jacJac1:jacJac1,micOch1:micOch1,criGri1:criGri1,mesAur1:mesAur1,mm10:mm10,rn5:rn5,hetGla2:hetGla2,cavPor3:cavPor3,chiLan1:chiLan1,octDeg1:octDeg1,oryCun2:oryCun2,ochPri3:ochPri3,susScr3:susScr3,vicPac2:vicPac2,camFer1:camFer1,turTru2:turTru2,orcOrc1:orcOrc1,panHod1:panHod1,bosTau7:bosTau7,oviAri3:oviAri3,capHir1:capHir1,equCab2:equCab2,cerSim1:cerSim1,felCat5:felCat5,canFam3:canFam3,musFur1:musFur1,ailMel1:ailMel1,odoRosDiv1:odoRosDiv1,lepWed1:lepWed1,pteAle1:pteAle1,pteVam1:pteVam1,myoDav1:myoDav1,myoLuc2:myoLuc2,eptFus1:eptFus1,eriEur2:eriEur2,sorAra2:sorAra2,conCri1:conCri1,loxAfr3:loxAfr3,eleEdw1:eleEdw1,triMan1:triMan1,chrAsi1:chrAsi1,echTel2:echTel2,oryAfe1:oryAfe1,dasNov3:dasNov3,monDom5:monDom5,sarHar1:sarHar1,macEug2:macEug2,ornAna1:ornAna1,falChe1:falChe1,falPer1:falPer1,ficAlb2:ficAlb2,zonAlb1:zonAlb1,geoFor1:geoFor1,taeGut2:taeGut2,pseHum1:pseHum1,melUnd1:melUnd1,amaVit1:amaVit1,araMac1:araMac1,colLiv1:colLiv1,anaPla1:anaPla1,galGal4:galGal4,melGal1:melGal1,allMis1:allMis1,cheMyd1:cheMyd1,chrPic1:chrPic1,pelSin1:pelSin1,apaSpi1:apaSpi1,anoCar2:anoCar2,xenTro7:xenTro7,latCha1:latCha1,tetNig2:tetNig2,fr3:fr3,takFla1:takFla1,oreNil2:oreNil2,neoBri1:neoBri1,hapBur1:hapBur1,mayZeb1:mayZeb1,punNye1:punNye1,oryLat2:oryLat2,xipMac1:xipMac1,gasAcu1:gasAcu1,gadMor1:gadMor1,danRer7:danRer7,astMex1:astMex1,lepOcu1:lepOcu1,petMar2:petMar2"
+#"hg19,panTro4,gorGor3,ponAbe2,nomLeu3,rheMac3,macFas5,papHam1,chlSab1,calJac3,saiBol1,otoGar3,tupChi1,speTri2,jacJac1,micOch1,criGri1,mesAur1,mm10,rn5,hetGla2,cavPor3,chiLan1,octDeg1,oryCun2,ochPri3,susScr3,vicPac2,camFer1,turTru2,orcOrc1,panHod1,bosTau7,oviAri3,capHir1,equCab2,cerSim1,felCat5,canFam3,musFur1,ailMel1,odoRosDiv1,lepWed1,pteAle1,pteVam1,myoDav1,myoLuc2,eptFus1,eriEur2,sorAra2,conCri1,loxAfr3,eleEdw1,triMan1,chrAsi1,echTel2,oryAfe1,monDom5,ornAna1,dasNov3,sarHar1,macEug2"
+#"hg19,rheMac3,papHam1,calJac3,mm10,rn5,vicPac2,turTru2,orcOrc1,bosTau7,canFam3,odoRosDiv1,loxAfr3,triMan1,monDom5"
 
 aas = ["G","A","V","L","I","P","F","Y","W","S","T","C","M","N","Q","K","R","H","D","E","X"];
 nts = ["A","T","C","G"];
@@ -52,6 +54,7 @@ def optParse(errorflag):
 
 	parser.add_argument("-i", dest="input", help="A directory containing FASTA formatted files or a single FASTA file.");
 	parser.add_argument("-r", dest="relabel_opt", help="Option to tell the script whether to relabel the FASTA headers (1,2,3) or not (0). 1: Replace header completely. 2: Add new header to beginning of old header. 3: i5k. Default: 1", type=int, default=1);
+	parser.add_argument("-j", dest="seq_keep", help="A comma delimited list of sequence IDs to remove from each file.", default="");
 	parser.add_argument("-s", dest="spec_dict", help="A string formatted as a Python dictionary with the current species ID as the key and the label to add to the beginning of the FASTA header as the value. Must be provided if -r set to 1.");
 	parser.add_argument("-t", dest="trim_opt", help="Boolean to tell the script whether to trim the FASTA headers (1) or not (0). Default: 0", type=int, default=0);
 	parser.add_argument("-d", dest="trim_delim", help="The character string at which to trim the FASTA headers if -t is set to 1. Default: \" \"", default=" ");
@@ -110,7 +113,7 @@ def optParse(errorflag):
 					core.errorOut(1, "For -m, the second character entered must be a valid amino acid symbol or ':'");
 					optParse(1);
 
-		return args.input, args.relabel_opt, sd, args.trim_opt, args.trim_delim, args.ss_opt, replacement, args.output;
+		return args.input, args.relabel_opt, sd, args.seq_keep, args.trim_opt, args.trim_delim, args.ss_opt, replacement, args.output;
 
 	elif errorflag == 1:
 		parser.print_help();
@@ -120,7 +123,8 @@ def optParse(errorflag):
 #Main Block
 ############################################
 
-ins, r, specdict, t, td, ss, repl, outs = optParse(0);
+ins, r, specdict, seqkeep, t, td, ss, repl, outs = optParse(0);
+seqkeep = seqkeep.split(",");
 suffix = "";
 
 print "==============================================================================================";
@@ -132,7 +136,7 @@ if os.path.isfile(ins):
 else:
 	print "INPUT    | Editing files in directory:\t\t\t\t" + ins;
 	filelist = os.listdir(ins);
-if r == 0 and t == 0 and ss == 0 and repl == "":
+if r == 0 and t == 0 and ss == 0 and repl == "" and seqkeep == "":
 	print "INFO     | NOT trimming OR relabeling FASTA headers OR removing start/stop positions.\nSimply re-writing the sequences.";
 	suffix = ".cp";
 else:
@@ -146,6 +150,10 @@ else:
 		suffix = suffix + ".l";
 	else:
 		print "INFO     | NOT relabeling FASTA header(s).";
+	if seqkeep != "":
+		print "INFO     | Only keeping sequences:\t\t\t\t\t" + ",".join(seqkeep);
+	else:
+		print "INFO     | Keeping all sequences";
 	if t == 1:
 		if td == " ":
 			print "INFO     | Trimming FASTA header(s) at first occurrence of:\t\" \"";
@@ -200,10 +208,6 @@ for each in filelist:
 		infilename = ins + each;
 		outfilename = outs + each[:each.index(".fa")] + suffix + ".fa";
 
-	outfile = open(outfilename, "w");
-	outfile.write("");
-	outfile.close();
-
 	inseqs = core.fastaGetDict(infilename);
 	#Reads the sequences from the input file.
 
@@ -244,7 +248,7 @@ for each in filelist:
 				inseqs[title] = inseqs[title].replace("*","");
 
 	if repl != None:
-	#Replaces symbols in the sequences.
+	# Replaces symbols in the sequences.
 		seqlen = len(inseqs[inseqs.keys()[0]]);
 		for rep in repl:
 			r1 = rep[0];
@@ -275,9 +279,19 @@ for each in filelist:
 				for title in inseqs:
 					inseqs[title] = inseqs[title].replace(r1,r2);		
 
+	writeseqs = {};
 	for title in inseqs:
-	#Writes the sequences to the output file.
-		core.writeSeqOL(outfilename, inseqs[title], title);
+		if any(s in title for s in seqkeep):
+			writeseqs[title] = inseqs[title];
+
+	if len(writeseqs) == len(seqkeep):
+		outfile = open(outfilename, "w");
+		outfile.write("");
+		outfile.close();
+		for title in writeseqs:
+		# Writes the sequences to the output file.
+			core.writeSeqOL(outfilename, writeseqs[title], title);
+
 
 if not os.path.isfile(ins):
 	pstring = "100.0% complete.";
