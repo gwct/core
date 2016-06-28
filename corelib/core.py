@@ -281,7 +281,7 @@ def spacedOut(string, totlen):
 
 #############################################################################
 
-def filePrep(filename, header):
+def filePrep(filename, header=""):
 #Writes over a file, header optional (if no header just pass "")
 	f = open(filename, "w");
 	f.write(header);
