@@ -125,6 +125,7 @@ def optParse(errorflag):
 
 ins, r, specdict, seqkeep, t, td, ss, repl, outs = optParse(0);
 seqkeep = seqkeep.split(",");
+
 suffix = "";
 
 print "==============================================================================================";
@@ -150,7 +151,7 @@ else:
 		suffix = suffix + ".l";
 	else:
 		print "INFO     | NOT relabeling FASTA header(s).";
-	if seqkeep != "":
+	if seqkeep != [""]:
 		print "INFO     | Only keeping sequences:\t\t\t\t\t" + ",".join(seqkeep);
 	else:
 		print "INFO     | Keeping all sequences";
@@ -281,10 +282,13 @@ for each in filelist:
 
 	writeseqs = {};
 	for title in inseqs:
-		if any(s in title for s in seqkeep):
+		if seqkeep != [""]:
+			if any(s in title for s in seqkeep):
+				writeseqs[title] = inseqs[title];
+		else:
 			writeseqs[title] = inseqs[title];
 
-	if len(writeseqs) == len(seqkeep):
+	if len(writeseqs) == len(seqkeep) or seqkeep == [""]:
 		outfile = open(outfilename, "w");
 		outfile.write("");
 		outfile.close();
