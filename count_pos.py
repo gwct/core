@@ -23,33 +23,39 @@ if len(sys.argv) not in [1,2,3]:
 	sys.exit();
 
 ins = sys.argv[1];
+disp_file = 0;
+if len(sys.argv) > 2:
+	disp_file = sys.argv[2];
+if disp_file not in ["0","1"]:
+	print "Not printing file counts.";
+	disp_file = 0;
+
+disp_file = int(disp_file);
+
 print "=======================================================================";
 print "\t\t\t" + core.getDateTime();
 print "Counting the total number of positions (AAs or NTs) in:\t" + ins;
 
 if os.path.isfile(ins):
-	print "----------";
-	print "Sequence\tLength";
+	if disp_file == 1:
+		print "----------";
+		print "Sequence\tLength";
 	inseqs = core.fastaGetDict(ins);
 	tot_pos = 0;
 	for seq in inseqs:
-		print seq + "\t" + str(len(inseqs[seq]));
+		if disp_file == 1:
+			print seq + "\t" + str(len(inseqs[seq]));
 		tot_pos = tot_pos + len(inseqs[seq]);
 	print "----------";
-	print "Total\t" + str(tot_pos);
+	print "Total sequences:\t" + str(len(inseqs));
+	print "Total positions:\t" + str(tot_pos);
+	print "=======================================================================";
 
 else:
 	if not ins.endswith("/"):
 		ins = ins + "/";
 	filelist = os.listdir(ins);
-	disp_file = 0;
-	if len(sys.argv) > 2:
-		disp_file = sys.argv[2];
-	if disp_file not in ["0","1"]:
-		print "Not printing file counts.";
-		disp_file = 0;
 
-	disp_file = int(disp_file);
 	tot_pos = 0;
 
 	numlines = len(filelist);
