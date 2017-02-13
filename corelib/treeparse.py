@@ -281,6 +281,10 @@ def treeParse(tree, debug=0):
 	nodes = { n : 'tip' for n in topology.replace("(","").replace(")","").replace(";","").split(",") };
 	# Retrieval of the tip labels
 
+	if debug == 1:
+		print "TOPOLOGY:", topology;
+		print "NODES:", nodes;
+
 	new_tree = "";
 	z = 0;
 	numnodes = 1;
@@ -294,6 +298,10 @@ def treeParse(tree, debug=0):
 		z += 1;
 	nodes[node_label] = 'root';
 	# This labels the original tree as new_tree and stores the nodes and their types in the nodes dict
+
+	if debug == 1:
+		print "----------";
+		print "NODES:", nodes;
 
 	topo = "";
 	z = 0;
