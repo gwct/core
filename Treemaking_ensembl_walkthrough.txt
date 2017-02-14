@@ -1,0 +1,59 @@
+01. Download the coding sequences of the species of interest for your phylogeny from the Ensembl FTP site.
+
+02. Filter out any redundant sequences with isofilter.py
+
+		python isofilter.py
+
+03. Download the list of orthologous sequences between all your species from Ensembl BioMart. Ensembl only allows a download
+	of 6 species at a time, so if your phylogeny has more than 6 species you will have to download multiple lists with at least
+	one species in common and then combine the lists with orth_combine.py
+
+		python orth_combine.py
+
+04. Combine orthologous sequences from filtered genomes from step 2 using the list from step 4.
+
+		python get_orth_fasta.py
+
+05. Re-label the FASTA title headers with consistent species names in the firest field. Trim FASTA headers if necessary.
+
+		python fasta_label.py
+
+**COMBINE STEPS 5+6 (DONE)
+
+07. Align sequences.
+
+		python run_muscle.py
+		-or-
+		python run_pasta_aln.py
+
+08. Mask alignments.
+
+		python run_gblocks.py
+
+09. Get alignment stats.
+
+		python count_aln.py
+
+10. Make gene trees and combine the best trees into one file.
+
+		python run_raxml.py
+
+----
+Average consensus
+
+11. Run the average consensus method in SDM (implement this?)
+
+		sdm -i [input file] -d [SDM, SDM*, or ACS97 methods] -t T -f Phylip_square
+
+12. Take the distance matrix from SDM and create a neighbor joining tree. Continue with divergence time estimation in r8s if necessary.
+
+		python supertreemaker.py
+
+----
+ASTRAL
+
+11. Remove the first line listing the number of trees from the combined best tree list output of run_raxml.
+
+12. Run ASTRAL
+
+		astral -i [input file] -o [output file]
