@@ -315,6 +315,10 @@ def treeParse(tree, debug=0):
 		z += 1;
 	# This labels the topology with the same internal labels
 
+	if debug == 1:
+		print "----------";
+		print "TOPOLOGY:", topo;
+
 	for node in nodes:
 	# One loop through the nodes to retrieve all other info
 
@@ -329,6 +333,12 @@ def treeParse(tree, debug=0):
 			cur_bl = re.findall(node + ":[\d.Ee-]+", new_tree);
 			cur_bl = cur_bl[0].replace(node + ":", "");
 			bl[node] = cur_bl;
+
+		elif nodes[node] == 'root':
+			bl[node] = "NA";
+			supports[node] = new_tree[new_tree.index(node):];
+			ancs[node] = "NA";
+			continue;
 
 		else:
 		# Otherwise we must collect both support and branch length or just support
@@ -348,11 +358,8 @@ def treeParse(tree, debug=0):
 				bl[node] = "NA";
 
 		# Next we get the ancestral nodes. If the node is the root this is set to NA.
-		if nodes[node] == 'root':
-			ancs[node] = "NA";
-			continue;
+		anc_match = re.findall('[(),]' + node, new_tree);
 
-		anc_match = re.findall('[(),]' + node + '[:(),]', new_tree);
 		anc_tree = new_tree[new_tree.index(anc_match[0]):][1:];
 		# Ancestral labels are always to the right of the node label in the text of the tree, so we start our scan from the node label
 
