@@ -39,10 +39,13 @@ def getBranchLength(bltree, spec_label):
 def remBranchLength(treestring):
 # Removes branch lengths from a tree.
 
-	treestring = re.sub('[)][\d.eE-]+:[\d.eE-]+', ')', treestring);
-	treestring = re.sub('(?<=[)])[\d.eE-]+(?=[,();])', '', treestring);
+	treestring = re.sub('[)][\d\w<>.eE_:-]+', ')', treestring);
 	treestring = re.sub(':[\d.eE-]+', '', treestring);
-	treestring = re.sub('<[\d]+>', '', treestring);
+	#treestring = re.sub('[)][_\d\w<>.eE-]+:[\d.eE-]+', ')', treestring);
+	#treestring = re.sub(':[\d.eE-]+', '', treestring);
+	#treestring = re.sub('<[\d\w]+>[\d_]+', '', treestring);
+	#treestring = re.sub('<[\d\w]+>', '', treestring);
+	#treestring = re.sub('[\d_]+', '', treestring);
 
 	return treestring;
 
@@ -260,6 +263,18 @@ def numInternal(treedict):
 
 #############################################################################
 
+def nodeDist(query_node, target_node, treedict):
+	dist = float(treedict[query_node][0]);
+	ancnode = treedict[query_node][1];
+	if ancnode == target_node:
+		return dist;
+	else:
+		dist += nodeDist(ancnode, target_node, treedict);
+
+	return dist;
+
+#############################################################################
+
 def treeParse(tree, debug=0):
 # The treeParse function takes as input a rooted phylogenetic tree with branch lengths and returns the tree with node labels and a
 # dictionary with usable info about the tree in the following format:
@@ -271,18 +286,21 @@ def treeParse(tree, debug=0):
 		tree += ";";
 	# Some string handling
 
-	nodes = {};
-	bl = {};
-	supports = {};
-	ancs = {};
+	nodes, bl, supports, ancs = {}, {}, {}, {};
 	# Initialization of all the tracker dicts
 
 	topology = remBranchLength(tree);
-	nodes = { n : 'tip' for n in topology.replace("(","").replace(")","").replace(";","").split(",") };
-	# Retrieval of the tip labels
 
 	if debug == 1:
 		print "TOPOLOGY:", topology;
+
+	nodes = {};
+	for n in topology.replace("(","").replace(")","").replace(";","").split(","):
+		nodes[n] = 'tip';
+	# nodes = { n : 'tip' for n in topology.replace("(","").replace(")","").replace(";","").split(",") };
+	# Retrieval of the tip labels
+
+	if debug == 1:
 		print "NODES:", nodes;
 
 	new_tree = "";
@@ -297,10 +315,12 @@ def treeParse(tree, debug=0):
 			numnodes += 1;
 		z += 1;
 	nodes[node_label] = 'root';
+	rootnode = node_label;
 	# This labels the original tree as new_tree and stores the nodes and their types in the nodes dict
 
 	if debug == 1:
-		print "----------";
+		print "NEW TREE:", new_tree;
+		print "TREE:", tree;
 		print "NODES:", nodes;
 
 	topo = "";
@@ -315,11 +335,18 @@ def treeParse(tree, debug=0):
 		z += 1;
 	# This labels the topology with the same internal labels
 
+	if debug == 1:
+		print "TOPO:", topo;
+
 	for node in nodes:
 	# One loop through the nodes to retrieve all other info
+		if debug == 1:
+			print "NODE:", node;
 
 		if node + ")" in tree or node + "," in new_tree:
 		# If the node is followed immediately by a ) or , then there are no branch lengths or supports to collect
+			if debug == 1:
+				print "NO BL OR LABEL";
 			supports[node] = "NA";
 			bl[node] = "NA";
 
@@ -328,33 +355,56 @@ def treeParse(tree, debug=0):
 			supports[node] = "NA";
 			cur_bl = re.findall(node + ":[\d.Ee-]+", new_tree);
 			cur_bl = cur_bl[0].replace(node + ":", "");
+			if debug == 1:
+				print "FOUND BL:", cur_bl;
 			bl[node] = cur_bl;
 
 		else:
 		# Otherwise we must collect both support and branch length or just support
-			cur_bsl = re.findall(node + "[\d.Ee-]+:[\d.Ee-]+", new_tree);
+			if nodes[node] == 'root':
+				ancs[node] = "NA";
+				bl[node] = "NA";
+				supports[node] = "NA";
+				continue;
+
+			cur_bsl = re.findall(node + "[\d\w<>_*+.Ee-]+:[\d.Ee-]+", new_tree);
 			if cur_bsl:
 			# If the pattern above is found then the node has both support and branch length
 				cur_bs = cur_bsl[0].replace(node, "");
 				cur_bs = cur_bs[:cur_bs.index(":")];
-				cur_bl = cur_bsl[0].replace(node + cur_bs + ":", "");
+				cur_bl = cur_bsl[0].replace(node, "").replace(cur_bs, "").replace(":", "");
+				if debug == 1:
+					print "FOUND BL AND LABEL:", cur_bl, cur_bs;
 				supports[node] = cur_bs;
 				bl[node] = cur_bl;
+				#new_tree = new_tree.replace(cur_bs, "");
 			else:
-			# If it is not found then the branch only has a support label
-				cur_bs = re.findall(node + "[\w.Ee<> -]+", new_tree);
-				supports[node] = cur_bs[0][cur_bs[0].index(">")+1:];
-				## REMEMBER I CHANGED THIS FOR SOMETHING
+			# If it is not found then the branch only has a label
+				cur_bs = re.findall(node + "[\w*+.<> -]+", new_tree);
+				cur_bs = cur_bs[0].replace(node, "");
+				if debug == 1:
+					print "FOUND LABEL:", cur_bs;
+				supports[node] = cur_bs;
 				bl[node] = "NA";
+				#new_tree = new_tree.replace(cur_bs, "");
 
 		# Next we get the ancestral nodes. If the node is the root this is set to NA.
 		if nodes[node] == 'root':
 			ancs[node] = "NA";
 			continue;
 
-		anc_match = re.findall('[(),]' + node + '[:(),]', new_tree);
+		# anc_match = re.findall(node + '[\d:(),]+', new_tree);
+		anc_match = re.findall(node, topo);
+		if debug == 1:
+			print "ANC MATCH:", anc_match;
 		anc_tree = new_tree[new_tree.index(anc_match[0]):][1:];
 		# Ancestral labels are always to the right of the node label in the text of the tree, so we start our scan from the node label
+
+		if debug == 1:
+			print "NODE:", node;
+			print "ANC_MATCH:", anc_match;
+			print "ANC_TREE:", anc_tree;
+			
 
 		cpar_count = 0;
 		cpar_need = 1;
@@ -370,6 +420,9 @@ def treeParse(tree, debug=0):
 				ancs[node] = anc_tree[:anc_tree.index(">")+1];
 				break;
 
+		if debug == 1:
+			print "FOUND ANC:", ancs[node];
+			print "---";
 	nofo = {};
 	for node in nodes:
 		nofo[node] = [bl[node], ancs[node], nodes[node], supports[node]];
@@ -377,28 +430,28 @@ def treeParse(tree, debug=0):
 
 	if debug == 1:
 	# Debugging options to print things out
-		print "\ntree:\n" + tree + "\n";
-		print "new_tree:\n" + new_tree + "\n";
-		print "topology:\n" + topo + "\n";
-		print "nodes:";
-		print nodes;
+		print("\ntree:\n" + tree + "\n");
+		print("new_tree:\n" + new_tree + "\n");
+		print("topology:\n" + topo + "\n");
+		print("nodes:");
+		print(nodes);
 		print
-		print "bl:";
-		print bl;
+		print("bl:");
+		print(bl);
 		print
-		print "supports:";
-		print supports;
+		print("supports:");
+		print(supports);
 		print
-		print "ancs:";
-		print ancs;
+		print("ancs:");
+		print(ancs);
 		print
-		print "-----------------------------------";
+		print("-----------------------------------");
 		print
-		print "nofo:";
-		print nofo;
+		print("nofo:");
+		print(nofo);
 		print
 
-	return nofo, topo;
+	return nofo, topo, rootnode;
 
 #############################################################################
 
