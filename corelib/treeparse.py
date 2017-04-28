@@ -322,6 +322,7 @@ def treeParse(tree, debug=0):
 		print "NEW TREE:", new_tree;
 		print "TREE:", tree;
 		print "NODES:", nodes;
+		print "ROTONODE:", rootnode;
 
 	topo = "";
 	z = 0;
@@ -336,12 +337,11 @@ def treeParse(tree, debug=0):
 	# This labels the topology with the same internal labels
 
 	if debug == 1:
-<<<<<<< HEAD
 		print "TOPO:", topo;
-=======
+
 		print "----------";
 		print "TOPOLOGY:", topo;
->>>>>>> 39c43229cf6eaf050f38caade61471f7ccfdacf7
+
 
 	for node in nodes:
 	# One loop through the nodes to retrieve all other info
@@ -402,13 +402,12 @@ def treeParse(tree, debug=0):
 		# Next we get the ancestral nodes. If the node is the root this is set to NA.
 		anc_match = re.findall('[(),]' + node, new_tree);
 
-<<<<<<< HEAD
+
 		# anc_match = re.findall(node + '[\d:(),]+', new_tree);
 		anc_match = re.findall(node, topo);
 		if debug == 1:
 			print "ANC MATCH:", anc_match;
-=======
->>>>>>> 39c43229cf6eaf050f38caade61471f7ccfdacf7
+
 		anc_tree = new_tree[new_tree.index(anc_match[0]):][1:];
 		# Ancestral labels are always to the right of the node label in the text of the tree, so we start our scan from the node label
 
