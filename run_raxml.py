@@ -77,22 +77,21 @@ starttime = core.getLogTime();
 
 if os.path.isfile(ins):
 	fileflag = 1;
-	indir = os.path.dirname(os.path.realpath(ins)) + "/";
+	indir = os.path.dirname(os.path.realpath(ins));
 	indir, script_outdir = core.getOutdir(indir, "run_raxml", starttime);
-	bestdir = script_outdir + "raxml_best/";
-	outdir = script_outdir + "raxml_out/";
 	filelist = [ins];
 else:
 	fileflag = 0;
 	indir, script_outdir = core.getOutdir(ins, "run_raxml", starttime);
-	bestdir = script_outdir + "raxml_best/";
-	outdir = script_outdir + "raxml_out/";
 	filelist = os.listdir(indir);
+
+bestdir = os.path.join(script_outdir, "raxml_best");
+outdir = os.path.join(script_outdir, "raxml_out");
 
 print core.getTime() + " | Creating main output directory:\t" + script_outdir;
 os.system("mkdir '" + script_outdir +"'");
 
-logfilename = script_outdir + "run_raxml.log";
+logfilename = os.path.join(script_outdir, "run_raxml.log");
 logfile = open(logfilename, "w");
 logfile.write("");
 logfile.close();
@@ -135,14 +134,14 @@ if not os.path.exists(bestdir):
 	cmd = "mkdir '" + bestdir + "'";
 	os.system(cmd);
 
-seedFile = script_outdir + "raxml_seeds.txt";
+seedFile = os.path.join(script_outdir, "raxml_seeds.txt");
 core.logCheck(l, logfilename, core.getTime() + " | Creating seeds file:\t\t\t" + seedFile);
 sFile = open(seedFile, "w");
 sFile.write("");
 sFile.close();
 
 if b > 0:
-	bseedFile = script_outdir + "raxml_bseeds.txt";
+	bseedFile = os.path.join(script_outdir, "raxml_bseeds.txt");
 	core.logCheck(l, logfilename, core.getTime() + " | Creating bootstrap seeds file:\t" + bseedFile);
 	sFile = open(bseedFile, "w");
 	sFile.write("");
@@ -162,7 +161,7 @@ for each in filelist:
 
 	if v == 0 and fileflag == 0:
 		numbars, donepercent = core.loadingBar(i, len(filelist), donepercent, numbars);
-	i = i + 1;
+	i += 1;
 
 	if fileflag == 1:
 		rax_infile = each;
@@ -173,7 +172,7 @@ for each in filelist:
 	else:
 		rax_infile = indir + each;
 		rax_outfile = each[:each.index(".")];
-	rax_outdir = outdir + rax_outfile + "_raxout/";
+	rax_outdir = os.path.join(outdir, rax_outfile + "_raxout/");
 
 	if not os.path.exists(rax_outdir):
 		os.system("mkdir '" + rax_outdir + "'");
@@ -238,7 +237,7 @@ if i > 1 and c == 1:
 	##Combine best trees into a single file.
 	core.logCheck(l, logfilename, "\n" + core.getTime() + " | Combining best trees...");
 	filelist = os.listdir(bestdir);
-	tree_combine = script_outdir + "raxml_best_trees.txt";
+	tree_combine = os.path.join(script_outdir, "raxml_best_trees.txt");
 
 	if ".DS_Store" in filelist:
 		numtrees = len(filelist)-1;
@@ -253,12 +252,36 @@ if i > 1 and c == 1:
 		if each == ".DS_Store":
 			continue;
 
-		infilename = bestdir + each;
+		infilename = os.path.join(bestdir, each);
 		infile = open(infilename, "r");
 		curtree = infile.read();
 		infile.close();
 		outfile.write(curtree);
 	outfile.close();
+
+	if b > 0:
+		core.logCheck(l, logfilename, "\n" + core.getTime() + " | Combining bootstrap trees...");
+		filelist = os.listdir(outdir);
+		bs_filename_file = os.path.join(script_outdir, "bs_files_for_astral.txt");
+		bsfile = open(bs_filename_file, "w");
+		bs_tree_combine = os.path.join(script_outdir, "raxml_bs_trees.txt");
+		bstreefile = open(bs_tree_combine, "w");
+
+		for gene_dir in filelist:
+			if gene_dir == ".DS_Store":
+				continue;
+
+			geneid = gene_dir[:gene_dir.index("_raxout")];
+			bsfilename = os.path.join(outdir, gene_dir, "RAxML_bipartitions." + geneid);
+			bstree = open(bsfilename, "r").read();
+			bstreefile.write(geneid + "\t" + bstree);
+
+			bsfile_filename = os.path.join(outdir, gene_dir, "RAxML_bootstrap." + geneid);
+			bsfile.write(os.path.abspath(bsfile_filename) + "\n");
+
+		bstreefile.close();
+		bsfile.close();
+
 
 core.logCheck(l, logfilename, core.getTime() + " | Done!");
 core.logCheck(l, logfilename, "=======================================================================");
