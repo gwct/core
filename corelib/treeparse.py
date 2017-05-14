@@ -266,6 +266,7 @@ def numInternal(treedict):
 def nodeDist(query_node, target_node, treedict):
 	dist = float(treedict[query_node][0]);
 	ancnode = treedict[query_node][1];
+	#print query_node, '-', dist, '-', ancnode, '-', treedict[ancnode][0];
 	if ancnode == target_node:
 		return dist;
 	else:
