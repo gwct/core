@@ -349,7 +349,7 @@ def treeParse(tree, debug=0):
 		if debug == 1:
 			print "NODE:", node;
 
-		if node + ")" in tree or node + "," in new_tree:
+		if node + ")" in tree or node + ")" in new_tree or node + "," in new_tree:
 		# If the node is followed immediately by a ) or , then there are no branch lengths or supports to collect
 			if debug == 1:
 				print "NO BL OR LABEL";
@@ -373,11 +373,11 @@ def treeParse(tree, debug=0):
 
 		else:
 		# Otherwise we must collect both support and branch length or just support
-			if nodes[node] == 'root':
-				ancs[node] = "NA";
-				bl[node] = "NA";
-				supports[node] = "NA";
-				continue;
+			# if nodes[node] == 'root':
+			# 	ancs[node] = "NA";
+			# 	bl[node] = "NA";
+			# 	supports[node] = "NA";
+			# 	continue;
 
 			cur_bsl = re.findall(node + "[\d\w<>_*+.Ee-]+:[\d.Ee-]+", new_tree);
 			if cur_bsl:
