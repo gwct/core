@@ -53,7 +53,8 @@ def optParse(errorflag):
 	parser = argparse.ArgumentParser(description="A general purpose FASTA editing script.");
 
 	parser.add_argument("-i", dest="input", help="A directory containing FASTA formatted files or a single FASTA file.");
-	parser.add_argument("-r", dest="relabel_opt", help="Option to tell the script whether to relabel the FASTA headers (1,2,3) or not (0). 1: Replace header completely. 2: Add new header to beginning of old header. 3: i5k. Default: 1", type=int, default=1);
+	parser.add_argument("-r", dest="relabel_opt", help="Option to tell the script whether to relabel the FASTA headers (1,2,3) or not (0). 1: Replace header completely. 2: Add new header to beginning of old header. 3: Add new header to end of old header. 4: i5k. Default: 1", type=int, default=1);
+	parser.add_argument("-l", dest="new_label", help="The new header. Must be specified with -r set.")
 	parser.add_argument("-j", dest="seq_keep", help="A comma delimited list of sequence IDs to remove from each file.", default="");
 	parser.add_argument("-s", dest="spec_dict", help="A string formatted as a Python dictionary with the current species ID as the key and the label to add to the beginning of the FASTA header as the value. Must be provided if -r set to 1.");
 	parser.add_argument("-t", dest="trim_opt", help="Boolean to tell the script whether to trim the FASTA headers (1) or not (0). Default: 0", type=int, default=0);
@@ -73,18 +74,23 @@ def optParse(errorflag):
 			core.errorOut(1, "-r must take values of 0, 1, 2, or 3");
 			optParse(1);
 
+		# elif args.relabel_opt == 1:
+		# 	if args.spec_dict == None:
+		# 		core.errorOut(2, "With -r set to 1, 2, or 3, -l must also be specified");
+		# 		optParse(1);
+		# 	else:
+		# 		specs = args.spec_dict.split(",");
+		# 		sd = {};
+		# 		for each in specs:
+		# 			spec = each.split(":");
+		# 			sd[spec[0]] = spec[1];
+		# else:
+		# 	sd = "";
+
 		elif args.relabel_opt == 1:
-			if args.spec_dict == None:
-				core.errorOut(2, "With -r set to 1 or 2, -s must also be specified");
-				optParse(1);
-			else:
-				specs = args.spec_dict.split(",");
-				sd = {};
-				for each in specs:
-					spec = each.split(":");
-					sd[spec[0]] = spec[1];
-		else:
-			sd = "";
+			if args.new_label == None:
+				core.errorOut(2, "With -r set to 1, 2, or 3, -l must also be specified");
+		 		optParse(1);
 
 		if args.trim_opt not in [0,1]:
 			core.errorOut(3, "-t must take values of either 0 or 1");
@@ -113,7 +119,7 @@ def optParse(errorflag):
 					core.errorOut(1, "For -m, the second character entered must be a valid amino acid symbol or ':'");
 					optParse(1);
 
-		return args.input, args.relabel_opt, sd, args.seq_keep, args.trim_opt, args.trim_delim, args.ss_opt, replacement, args.output;
+		return args.input, args.relabel_opt, args.new_label, args.seq_keep, args.trim_opt, args.trim_delim, args.ss_opt, replacement, args.output;
 
 	elif errorflag == 1:
 		parser.print_help();
@@ -123,7 +129,7 @@ def optParse(errorflag):
 #Main Block
 ############################################
 
-ins, r, specdict, seqkeep, t, td, ss, repl, outs = optParse(0);
+ins, r, label, seqkeep, t, td, ss, repl, outs = optParse(0);
 seqkeep = seqkeep.split(",");
 
 suffix = "";
@@ -144,10 +150,11 @@ else:
 	if r >= 1:
 		print "---";
 		print "INFO     | Relabeling FASTA header(s).";
-		print "EXISTING LABEL\t\tADDED LABEL";
-		for sid in specdict:
-			print sid + "\t\t\t" + specdict[sid];
-		print "---";
+		print "INFO		| New label:\t" + label;
+		# print "EXISTING LABEL\t\tADDED LABEL";
+		# for sid in specdict:
+		# 	print sid + "\t\t\t" + specdict[sid];
+		# print "---";
 		suffix = suffix + ".l";
 	else:
 		print "INFO     | NOT relabeling FASTA header(s).";
@@ -216,18 +223,25 @@ for each in filelist:
 	#Re-labels the FASTA headers.
 		rseqs = {};
 		for title in inseqs:
-			if r == 3:
-				curid = title[1:title.index(":")];
-			else:
-				curid = title[1:];
-			for specid in specdict:
-				if curid.find(specid) != -1:
-					if r == 1:
-						newtitle = ">" + specdict[specid];
-					elif r == 2 or 3:
-						newtitle = ">" + specdict[specid] + " " + title[1:];	
-					rseqs[newtitle] = inseqs[title];
-					break;
+			# if r == 3:
+			# 	curid = title[1:title.index(":")];
+			# else:
+			# 	curid = title[1:];
+			# for specid in specdict:
+			# 	if curid.find(specid) != -1:
+			# 		if r == 1:
+			# 			newtitle = ">" + specdict[specid];
+			# 		elif r == 2 or 3:
+			# 			newtitle = ">" + specdict[specid] + " " + title[1:];	
+			# 		rseqs[newtitle] = inseqs[title];
+			# 		break;
+			if r == 1:
+				newtitle = ">" + label;
+			elif r == 2:
+				newtitle = ">" + label + "_" + title[1:];
+			elif r == 3:
+				newtitle = title + "_" + label;
+			rseqs[newtitle] = inseqs[title];
 		inseqs = rseqs;
 
 	if t == 1:
