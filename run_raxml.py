@@ -199,7 +199,7 @@ for each in filelist:
 	if b > 0:
 		rax_cmd = rax_cmd + " -x " + boot_seed + " -# " + str(b) + " ";
 	if t > 1:
-		rax_cmd = rax_cmd + "-T " + str(t) + " ";
+		rax_cmd = rax_cmd + " -T " + str(t) + " ";
 	rax_cmd = rax_cmd + " -s '" + rax_infile + "' -n '" + rax_outfile + "' -w '" + script_outdir + "'";
 
 	if v == 0:
