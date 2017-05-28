@@ -178,7 +178,9 @@ for each in filelist:
 		# 	rax_outfile = each[:each.index(".")];
 	else:
 		rax_infile = os.path.join(ins, each);
-	rax_outfile = each[:each.index(".")];
+	#rax_outfile = each[:each.index(".")];
+	rax_outfile = os.path.basename(each);
+	rax_outfile = rax_outfile[:rax_outfile.index(".")];
 	rax_outdir = os.path.join(outdir, rax_outfile + "-raxout/");
 
 	if not os.path.exists(rax_outdir):
@@ -197,9 +199,9 @@ for each in filelist:
 		rax_cmd = rax_cmd + "-f a ";
 	rax_cmd = rax_cmd + " -m " + model + " -p " + seed;
 	if b > 0:
-		rax_cmd = rax_cmd + " -x " + boot_seed + " -# " + str(b) + " ";
+		rax_cmd = rax_cmd + " -x " + boot_seed + " -# " + str(b);
 	if t > 1:
-		rax_cmd = rax_cmd + " -T " + str(t) + " ";
+		rax_cmd = rax_cmd + " -T " + str(t);
 	rax_cmd = rax_cmd + " -s '" + rax_infile + "' -n '" + rax_outfile + "' -w '" + script_outdir + "'";
 
 	if v == 0:
