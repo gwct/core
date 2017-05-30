@@ -323,8 +323,8 @@ def treeParse(tree, debug=0):
 		print "NEW TREE:", new_tree;
 		print "TREE:", tree;
 		print "NODES:", nodes;
-		print "ROTONODE:", rootnode;
-
+		print "ROOTNODE:", rootnode;
+		#sys.exit();
 	topo = "";
 	z = 0;
 	numnodes = 1;
@@ -339,31 +339,72 @@ def treeParse(tree, debug=0):
 
 	if debug == 1:
 		print "TOPO:", topo;
-
 		print "----------";
 		print "TOPOLOGY:", topo;
 
+	for node in nodes:
+		if node + node in new_tree:
+			new_tree = new_tree.replace(node + node, node);
+
+	# if debug == 1:
+	# 	print new_tree;
+	# 	sys.exit();
 
 	for node in nodes:
 	# One loop through the nodes to retrieve all other info
 		if debug == 1:
 			print "NODE:", node;
 
-		if node + ")" in tree or node + ")" in new_tree or node + "," in new_tree:
-		# If the node is followed immediately by a ) or , then there are no branch lengths or supports to collect
-			if debug == 1:
-				print "NO BL OR LABEL";
+		if nodes[node] == 'tip':
 			supports[node] = "NA";
-			bl[node] = "NA";
+			if node + ":" in tree:
+				cur_bl = re.findall(node + ":[\d.Ee-]+", new_tree);
+				cur_bl = cur_bl[0].replace(node + ":", "");
+				if debug == 1:
+					print "FOUND BL:", cur_bl;
+				bl[node] = cur_bl;				
+			else:
+				bl[node] = "NA";
 
-		elif node + ":" in new_tree:
-		# If the node is followed immediately by a : then there is a branch length, but no support, to collect
-			supports[node] = "NA";
-			cur_bl = re.findall(node + ":[\d.Ee-]+", new_tree);
-			cur_bl = cur_bl[0].replace(node + ":", "");
-			if debug == 1:
-				print "FOUND BL:", cur_bl;
-			bl[node] = cur_bl;
+		elif nodes[node] == 'internal':
+			if node + node in new_tree:
+				new_tree = new_tree.replace(node + node, node);
+
+			if node + "(" in new_tree or node + "," in new_tree or node + ")" in new_tree:
+				if debug == 1:
+					print "NO BL OR LABEL";
+				supports[node] = "NA";
+				bl[node] = "NA";
+
+			elif node + ":" in new_tree:
+				supports[node] = "NA";
+				cur_bl = re.findall(node + ":[\d.Ee-]+", new_tree);
+				cur_bl = cur_bl[0].replace(node + ":", "");
+				if debug == 1:
+					print "FOUND BL:", cur_bl;
+				bl[node] = cur_bl;								
+
+			else:
+				cur_bsl = re.findall(node + "[\d\w<>_*+.Ee-]+:[\d.Ee-]+", new_tree);
+				if cur_bsl:
+				# If the pattern above is found then the node has both support and branch length
+					cur_bs = cur_bsl[0].replace(node, "");
+					cur_bs = cur_bs[:cur_bs.index(":")];
+					cur_bl = cur_bsl[0].replace(node, "").replace(cur_bs, "").replace(":", "");
+					if debug == 1:
+						print "FOUND BL AND LABEL:", cur_bl, cur_bs;
+					supports[node] = cur_bs;
+					bl[node] = cur_bl;
+					#new_tree = new_tree.replace(cur_bs, "");
+				else:
+				# If it is not found then the branch only has a label
+					cur_bs = re.findall(node + "[\w*+.<> -]+", new_tree);
+					cur_bs = cur_bs[0].replace(node, "");
+					if debug == 1:
+						print "FOUND LABEL:", cur_bs;
+					supports[node] = cur_bs;
+					bl[node] = "NA";
+					#new_tree = new_tree.replace(cur_bs, "");
 
 		elif nodes[node] == 'root':
 			bl[node] = "NA";
@@ -371,39 +412,11 @@ def treeParse(tree, debug=0):
 			ancs[node] = "NA";
 			continue;
 
-		else:
-		# Otherwise we must collect both support and branch length or just support
-			# if nodes[node] == 'root':
-			# 	ancs[node] = "NA";
-			# 	bl[node] = "NA";
-			# 	supports[node] = "NA";
-			# 	continue;
-
-			cur_bsl = re.findall(node + "[\d\w<>_*+.Ee-]+:[\d.Ee-]+", new_tree);
-			if cur_bsl:
-			# If the pattern above is found then the node has both support and branch length
-				cur_bs = cur_bsl[0].replace(node, "");
-				cur_bs = cur_bs[:cur_bs.index(":")];
-				cur_bl = cur_bsl[0].replace(node, "").replace(cur_bs, "").replace(":", "");
-				if debug == 1:
-					print "FOUND BL AND LABEL:", cur_bl, cur_bs;
-				supports[node] = cur_bs;
-				bl[node] = cur_bl;
-				#new_tree = new_tree.replace(cur_bs, "");
-			else:
-			# If it is not found then the branch only has a label
-				cur_bs = re.findall(node + "[\w*+.<> -]+", new_tree);
-				cur_bs = cur_bs[0].replace(node, "");
-				if debug == 1:
-					print "FOUND LABEL:", cur_bs;
-				supports[node] = cur_bs;
-				bl[node] = "NA";
-				#new_tree = new_tree.replace(cur_bs, "");
-
 		# Next we get the ancestral nodes. If the node is the root this is set to NA.
 		anc_match = re.findall('[(),]' + node, new_tree);
 
-
+		#if nodes[node] == 'internal':
+		#	sys.exit();
 		# anc_match = re.findall(node + '[\d:(),]+', new_tree);
 		anc_match = re.findall(node, topo);
 		if debug == 1:
@@ -417,7 +430,6 @@ def treeParse(tree, debug=0):
 			print "ANC_MATCH:", anc_match;
 			print "ANC_TREE:", anc_tree;
 			
-
 		cpar_count = 0;
 		cpar_need = 1;
 
