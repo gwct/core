@@ -206,7 +206,7 @@ for each in filelist:
 	if t > 1:
 		rax_cmd = rax_cmd + " -T " + str(t);
 	if const_tree != None:
-		rax_comd += " -g " + const_tree;
+		rax_cmd += " -g " + const_tree;
 	rax_cmd = rax_cmd + " -s '" + rax_infile + "' -n '" + rax_outfile + "' -w '" + script_outdir + "'";
 
 	if v == 0:
