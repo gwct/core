@@ -26,7 +26,7 @@ def optParse(errorflag):
 	parser.add_argument("-b", dest="bootstrap_reps", help="The number of bootstrap replicates you wish RAxML to run with its rapid bootstrapping algorithm. Default: 0", type=int, default=0);
 	parser.add_argument("-t", dest="num_threads", help="The number of threads you wish to use for the analysis. Default: 1", type=int, default=1);
 	parser.add_argument("-v", dest="verbosity", help="An option to control the output printed to the screen. 1: print all RAxML output, 0: print only a progress bar. Default: 1", type=int, default=1);
-	#parser.add_argument("-c", dest="tree_combine", help="A boolean option to tell the script whether to create a file with a list of all the best trees (1) or not (0). Default: 1", type=int, default=1);
+	parser.add_argument("-c", dest="constraint_tree", help="A file containing a constraint tree to be used with RAxML's -g option.");
 	parser.add_argument("-o", dest="output_dir", help="The name of the output directory for this run. Default: [datetime]-run_raxml", default="");
 	parser.add_argument("-l", dest="log_opt", help="A boolean option to tell the script whether to create a logfile (1) or not (0). Default: 1", type=int, default=1);
 
@@ -54,15 +54,15 @@ def optParse(errorflag):
 			core.errorOut(3, "-v must take values of either 1 or 0");
 			optParse(1);
 
-		# if args.tree_combine not in [0,1]:
-		# 	core.errorOut(4, "-t must take values of either 1 or 0");
-		# 	optParse(1);
+		if not os.path.exists(args.constraint_tree):
+			core.errorOut(4, "Cannot find constraint tree (-c) file!");
+			optParse(1);
 
 		if args.log_opt not in [0,1]:
 			core.errorOut(5, "-l mus take values of either 1 or 0");
 			optParse(1);
 
-		return args.input, args.raxml_path, args.raxml_model, args.bootstrap_reps, args.num_threads, args.verbosity, args.output_dir, args.log_opt;
+		return args.input, args.raxml_path, args.raxml_model, args.bootstrap_reps, args.num_threads, args.verbosity, args.constraint_tree, args.output_dir, args.log_opt;
 
 	elif errorflag == 1:
 		parser.print_help();
@@ -72,7 +72,7 @@ def optParse(errorflag):
 #Main Block
 ############################################
 
-ins, rax_path, model, b, t, v, script_outdir, l = optParse(0);
+ins, rax_path, model, b, t, v, const_tree, script_outdir, l = optParse(0);
 
 starttime = core.getLogTime();
 
@@ -127,6 +127,9 @@ if b > 0:
 	core.logCheck(l, logfilename, "INFO     | Performing " + str(b) + " bootstrap replicates per tree.");
 else:
 	core.logCheck(l, logfilename, "INFO     | Not performing bootstrap analysis.");
+if const_tree != None:
+	core.logCheck(l, logfilename, "INFO     | Using constraint tree in file:", const_tree);
+	const_tree = os.path.abspath(const_tree);
 if t > 1:
 	core.logCheck(l, logfilename, "INFO     | Using " + str(t) + " threads.");
 else:
@@ -202,6 +205,8 @@ for each in filelist:
 		rax_cmd = rax_cmd + " -x " + boot_seed + " -# " + str(b);
 	if t > 1:
 		rax_cmd = rax_cmd + " -T " + str(t);
+	if const_tree != None:
+		rax_comd += " -g " + const_tree;
 	rax_cmd = rax_cmd + " -s '" + rax_infile + "' -n '" + rax_outfile + "' -w '" + script_outdir + "'";
 
 	if v == 0:
