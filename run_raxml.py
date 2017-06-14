@@ -128,7 +128,7 @@ if b > 0:
 else:
 	core.logCheck(l, logfilename, "INFO     | Not performing bootstrap analysis.");
 if const_tree != None:
-	core.logCheck(l, logfilename, "INFO     | Using constraint tree in file:", const_tree);
+	core.logCheck(l, logfilename, "INFO     | Using constraint tree in file:" + const_tree);
 	const_tree = os.path.abspath(const_tree);
 if t > 1:
 	core.logCheck(l, logfilename, "INFO     | Using " + str(t) + " threads.");
