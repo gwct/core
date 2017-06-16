@@ -54,7 +54,7 @@ def optParse(errorflag):
 			core.errorOut(3, "-v must take values of either 1 or 0");
 			optParse(1);
 
-		if not os.path.exists(args.constraint_tree):
+		if args.constraint_tree != None and not os.path.exists(args.constraint_tree):
 			core.errorOut(4, "Cannot find constraint tree (-c) file!");
 			optParse(1);
 
