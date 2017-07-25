@@ -27,6 +27,7 @@ def optParse(errorflag):
 	parser.add_argument("-t", dest="num_threads", help="The number of threads you wish to use for the analysis. Default: 1", type=int, default=1);
 	parser.add_argument("-v", dest="verbosity", help="An option to control the output printed to the screen. 1: print all RAxML output, 0: print only a progress bar. Default: 1", type=int, default=1);
 	parser.add_argument("-c", dest="constraint_tree", help="A file containing a constraint tree to be used with RAxML's -g option.");
+	parser.add_argument("--bl", dest="estimate_bl", help="Use with -c to set RAxML to '-f e' to estimate branch lengths only on the constraint tree", action="store_true");
 	parser.add_argument("-o", dest="output_dir", help="The name of the output directory for this run. Default: [datetime]-run_raxml", default="");
 	parser.add_argument("-l", dest="log_opt", help="A boolean option to tell the script whether to create a logfile (1) or not (0). Default: 1", type=int, default=1);
 
@@ -58,11 +59,15 @@ def optParse(errorflag):
 			core.errorOut(4, "Cannot find constraint tree (-c) file!");
 			optParse(1);
 
-		if args.log_opt not in [0,1]:
-			core.errorOut(5, "-l mus take values of either 1 or 0");
+		if args.estimate_bl and args.constraint_tree == None:
+			core.errorOut(5, "With --bl set, a constraint tree must also be set with -c");
 			optParse(1);
 
-		return args.input, args.raxml_path, args.raxml_model, args.bootstrap_reps, args.num_threads, args.verbosity, args.constraint_tree, args.output_dir, args.log_opt;
+		if args.log_opt not in [0,1]:
+			core.errorOut(6, "-l mus take values of either 1 or 0");
+			optParse(1);
+
+		return args.input, args.raxml_path, args.raxml_model, args.bootstrap_reps, args.num_threads, args.verbosity, args.constraint_tree, args.estimate_bl, args.output_dir, args.log_opt;
 
 	elif errorflag == 1:
 		parser.print_help();
@@ -72,7 +77,7 @@ def optParse(errorflag):
 #Main Block
 ############################################
 
-ins, rax_path, model, b, t, v, const_tree, script_outdir, l = optParse(0);
+ins, rax_path, model, b, t, v, const_tree, bl_opt, script_outdir, l = optParse(0);
 
 starttime = core.getLogTime();
 
@@ -207,6 +212,8 @@ for each in filelist:
 		rax_cmd = rax_cmd + " -T " + str(t);
 	if const_tree != None:
 		rax_cmd += " -g " + const_tree;
+		if bl_opt:
+			rax_cmd += " -f e";
 	rax_cmd = rax_cmd + " -s '" + rax_infile + "' -n '" + rax_outfile + "' -w '" + script_outdir + "'";
 
 	if v == 0:
