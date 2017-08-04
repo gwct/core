@@ -98,10 +98,10 @@ for each in filelist:
 	numbars, donepercent = core.loadingBar(i, numfiles, donepercent, numbars);
 	i = i + 1;
 
-	gid = each[:each.index(".fa")];
+	# gid = each[:each.index(".fa")];
 
-	altfilename = os.path.join(altdir + "codeml_out", gid, gid + ".out");
-	nullfilename = os.path.join(nulldir + "codeml_out", gid, gid + ".out");
+	altfilename = os.path.join(altdir + "codeml_out", each, each + ".out");
+	nullfilename = os.path.join(nulldir + "codeml_out", each, each + ".out");
 
 	#Reading the alt file...
 	altfile = open(altfilename, "r");
@@ -117,7 +117,7 @@ for each in filelist:
 				altlnL = altlnL[:altlnL.index(" ")];
 				altlnflag = 1;
 	if altlnflag == 0:
-		noln_genes.append(gid);
+		noln_genes.append(each);
 
 	#Reading the null file...
 	nullfile = open(nullfilename, "r");
@@ -133,8 +133,8 @@ for each in filelist:
 				nulllnL = nulllnL[:nulllnL.index(" ")];
 				nulllnflag = 1;
 	if nulllnflag == 0:
-		if gid not in noln_genes:
-			noln_genes.append(gid);
+		if each not in noln_genes:
+			noln_genes.append(each);
 
 	if nulllnflag == 0 or altlnflag == 0:
 		continue;
@@ -148,12 +148,12 @@ for each in filelist:
 		zcount = zcount + 1;
 
 	if mode == 0:
-		outline = gid + "\t" + str(negnulllnL) + "\t" + str(negaltlnL) + "\t" + str(lr);
+		outline = each + "\t" + str(negnulllnL) + "\t" + str(negaltlnL) + "\t" + str(lr);
 		outfile.write(outline);
 
 	if mode == 3:
 		if lr < crit1:
-			outline = gid + "\t" + str(negnulllnL) + "\t" + str(negaltlnL) + "\t" + str(lr) + "\n";
+			outline = each + "\t" + str(negnulllnL) + "\t" + str(negaltlnL) + "\t" + str(lr) + "\n";
 			outfile.write(outline);
 
 	flag = 0;
@@ -162,7 +162,7 @@ for each in filelist:
 		flag = 1;
 
 		if mode == 2:
-			outline = gid + "\t" + str(negnulllnL) + "\t" + str(negaltlnL) + "\t" + str(lr);
+			outline = each + "\t" + str(negnulllnL) + "\t" + str(negaltlnL) + "\t" + str(lr);
 			outfile.write(outline);
 
 		fcritcount = fcritcount + 1;
@@ -175,7 +175,7 @@ for each in filelist:
 		ocritcount = ocritcount + 1;
 
 		if mode == 1:
-			outline = gid + "\t" + str(negnulllnL) + "\t" + str(negaltlnL) + "\t" + str(lr) + "\t*";
+			outline = each + "\t" + str(negnulllnL) + "\t" + str(negaltlnL) + "\t" + str(lr) + "\t*";
 			outfile.write(outline);
 
 		if mode == 0 or mode == 1:
