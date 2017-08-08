@@ -252,23 +252,18 @@ def errorOut(errnum, errmsg):
 
 #############################################################################
 
-def getOutdir(indir, prefix, stime):
+def getOutdir(indir, prefix, suffix, stime):
 #Retrieves full input directory name and proper output directory name for other scripts.
 	if not os.path.isdir(indir):
 		errorOut(0, "-i must be a valid directory path");
 		sys.exit();
 	indir = os.path.abspath(indir);
-	if indir[-1] != "/":
-		indir = indir + "/";
 	filelist = os.listdir(indir);
-	used = [];
+	used = [0];
 	for each in filelist:
 		if each.find("-" + prefix) != -1:
 			used.append(int(each[:each.index("-")]));
-	if used != []:
-		outdir = indir + str(max(used)+1) + "-" + prefix + "-" + stime + "/";
-	else:
-		outdir = indir + "1-" + prefix + "-" + stime + "/";
+	outdir = os.path.join(indir, str(max(used)+1) + "-" + prefix + "-" + stime + suffix);
 
 	return indir, outdir;
 

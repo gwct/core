@@ -33,7 +33,7 @@ def optParse(errorflag):
 	parser.add_argument("-a", dest="anc_opt", help="Option to tell PAML to do ancestral reconstruction (1) or not (0). Default: 0.", type=int, default=0);
 	parser.add_argument("-v", dest="verbosity", help="An option to control the output printed to the screen. 1: print all codeml output, 0: print only a progress bar. Default: 1", type=int, default=1);
 	parser.add_argument("-l", dest="log_opt", help="A boolean option to tell the script whether to create a logfile (1) or not (0). Default: 1", type=int, default=1);
-	parser.add_argument("-x", dest="logdir_suffix", help="A string to add on to the end of the output directory.");
+	parser.add_argument("-x", dest="logdir_suffix", help="A string to add on to the end of the output directory.", default="");
 
 	args = parser.parse_args();
 
@@ -100,38 +100,36 @@ starttime = core.getLogTime();
 if not os.path.isdir(ppath):
 	core.errorOut(10, "-c must be a valid directory path");
 	optParse(1);
-elif ppath[-1] != "/":
-	ppath = ppath + "/";
+codeml_path = os.path.join(ppath, "bin", "codeml");
+if outdir_suffix != "":
+	outdir_suffix = "-" + outdir_suffix;
+
 
 if os.path.isfile(ins):
 	fileflag = 1;
-	indir = os.path.dirname(os.path.realpath(ins)) + "/";
+	indir = os.path.dirname(os.path.realpath(ins));
 	indir, script_outdir = core.getOutdir(indir, "run_codeml", starttime);
-	outdir = script_outdir + "codeml_out/";
+	outdir = os.path.join(script_outdir, "codeml_out");
 	if aopt == 1:
-		ancdir = script_outdir + "anc_seqs_fa/";
+		ancdir = os.path.join(script_outdir, "anc_seqs_fa");
 	filelist = [ins];
 
 else:
 	fileflag = 0;
-	indir, script_outdir = core.getOutdir(ins, "run_codeml", starttime);
-	if outdir_suffix != None:
-		if script_outdir[-1] == "/":
-			script_outdir = script_outdir[:len(script_outdir)-1] + "-" + outdir_suffix + "/";
-		else:
-			script_outdir = script_outdir + "-" + outdir_suffix + "/";
-	outdir = script_outdir + "codeml_out/";
+	indir, script_outdir = core.getOutdir(ins, "run_codeml", outdir_suffix, starttime);
+	outdir = os.path.join(script_outdir, "codeml_out");
 	filelist = os.listdir(indir);
 	if aopt == 1:
-		ancdir = script_outdir + "anc_seqs_fa/";
+		ancdir = os.path.join(script_outdir, "anc_seqs_fa");
 
 print core.getTime() + " | Creating main output directory:\t" + script_outdir;
-os.system("mkdir " + script_outdir);
+mk_cmd = "mkdir " + script_outdir;
+os.system(mk_cmd);
 
-logfilename = script_outdir + "run_codeml.log";
-logfile = open(logfilename, "w");
-logfile.write("");
-logfile.close();
+logfilename = os.path.join(script_outdir, "run_codeml.log");
+# logfile = open(logfilename, "w");
+# logfile.write("");
+# logfile.close();
 
 core.logCheck(l, logfilename, "=======================================================================");
 core.logCheck(l, logfilename, "\t\t\tRunning codeml");
@@ -181,7 +179,7 @@ if aopt == 1:
 
 if prune == 1:
 	core.logCheck(l, logfilename, core.getTime() + " | Retrieving tree info...");
-	td, tree = treeparse.treeParseNew(open(treefile, "r").read().replace("\n",""),1);
+	td, tree, root = treeparse.treeParse(open(treefile, "r").read().replace("\n",""));
 
 	tips = [];
 	for node in td:
@@ -190,7 +188,7 @@ if prune == 1:
 
 core.logCheck(l, logfilename, core.getTime() + " | Starting codeml runs...\n");
 if v == 0:
-	codeml_logfile = script_outdir + "codeml.log";
+	codeml_logfile = os.path.join(script_outdir, "codeml.log");
 
 ctlfilename = "codeml.ctl";
 
@@ -210,9 +208,9 @@ for each in filelist:
 		infilename = each;
 
 	else:
-		infilename = indir + each;
-	gid = each[:each.index(".")];
-	run_outdir = outdir + gid + "/";
+		infilename = os.path.join(indir, each);
+	#gid = each[:each.index(".")];
+	run_outdir = os.path.join(outdir, each);
 	if not os.path.exists(run_outdir):
 		os.system("mkdir " + run_outdir);
 
@@ -222,13 +220,12 @@ for each in filelist:
 		for tip in tips:
 			if (">" + tip) not in seqs:
 				to_prune.append(tip);
-
 		nw_cmd = "nw_prune " + treefile + " ";
 		for tip in to_prune:
 			nw_cmd = nw_cmd + tip + " ";
 		nw_cmd = nw_cmd + " > pruned.tre";
-#		print nw_cmd;
 		os.system(nw_cmd);
+	# Tree pruning.
 
 	ctlFile = open(ctlfilename, "w");
 
@@ -240,7 +237,7 @@ for each in filelist:
 		else:
 			treeline = "treefile = " + treefile + "\n";
 		ctlFile.write(treeline);
-	outline = "outfile = " + run_outdir + gid + ".out\n\n";
+	outline = "outfile = " + run_outdir + "/" + each + ".out\n\n";
 	ctlFile.write(outline);
 
 	ctlFile.write("noisy = 3\n");
@@ -287,7 +284,7 @@ for each in filelist:
 
 	ctlFile.close();
 
-	codeml_cmd = ppath + "bin/codeml " + ctlfilename;
+	codeml_cmd = codeml_path + " " + ctlfilename;
 	if v == 0:
 		if os.path.isfile(ins):
 			codeml_cmd = codeml_cmd + " >> " + codeml_logfile;
