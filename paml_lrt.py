@@ -8,7 +8,9 @@
 #Gregg Thomas, Fall 2015
 #############################################################################
 
-import sys, os, math, argparse, core
+import sys, os, math, argparse
+sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
+import core
 
 ############################################
 #Function Definitions
