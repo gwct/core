@@ -4,7 +4,12 @@
 #August 2013-present
 #############################################################################
 
-import string, sys, os, re, subprocess,datetime
+import string
+import sys
+import os
+import re
+import subprocess
+import datetime
 
 #############################################################################
 
@@ -241,9 +246,9 @@ def logCheck(lopt, lfilename, outline):
 
 def errorOut(errnum, errmsg):
 #Formatting for error messages.
-	fullmsg = "|** Error " + str(errnum) + ": " + errmsg + " |";
+	fullmsg = "|**Error " + str(errnum) + ": " + errmsg + " |";
 	border = " " + "-" * (len(fullmsg)-2);
-	print "\n" + border + "\n" + fullmsg + "\n" + border + "\n";
+	print border + "\n" + fullmsg + "\n" + border;
 
 #############################################################################
 
@@ -284,17 +289,6 @@ def listCheck(lst):
 		return True;
 	else:
 		return False;
-
-#############################################################################
-
-def checkAlign(seqdict):
-# Checks if a set of sequences is of equal length.
-	aln_flag = True;
-	seqlen = len(seqdict[seqdict.keys()[0]]);
-	for title in seqdict:
-		if len(seqdict[title]) != seqlen:
-			aln_flag = False;
-	return aln_flag;
 
 #############################################################################
 ##########################################################################################################################################################
@@ -341,48 +335,6 @@ def fastaGetLists(i_name):
 
 #############################################################################
 
-def fastaReader(i_name):
-# This function takes an input file and determines if it is a compressed or
-# uncompressed FASTA file (.fa). If it doesn't end with .fa it returns it to
-# be skipped.
-	try:
-		if i_name.endswith(".fa.gz"):
-			seqs = fastaGetDictCompressed(i_name);
-		elif i_name.endswith(".fa"):
-			seqs = fastaGetDict(i_name);
-		else:
-			return None, i_name;
-	except:
-		return None, i_name;
-	return seqs, False;
-	# If the reading of the file was successful, it returns the sequences. If not,
-	# it returns the file name to be recorded as being skipped.
-
-#############################################################################
-
-def relabelHeader(title, new_label, header_delim, ropt):
-	if ropt == 1:
-		new_title = ">" + new_label + header_delim + title[1:];
-	elif ropt == 2:
-		new_title = ">" + new_label;
-	elif ropt == 3:
-		new_title = title + header_delim + new_label;
-	return new_title;
-
-#############################################################################
-
-def getOutFile(fasta_file, file_flag, out_dest, label):
-	if file_flag:
-		if out_dest:
-			outfilename = out_dest;
-		else:
-			outfilename = os.path.splitext(fasta_file)[0] + "." + label + os.path.splitext(fasta_file)[1];
-	else:
-		outfilename = os.path.join(out_dest, os.path.splitext(os.path.basename(fasta_file))[0] + "." + label + os.path.splitext(fasta_file)[1]);
-	return outfilename;
-
-#############################################################################
-
 def fastaGetDict(i_name):
 #fastaGetDict reads a FASTA file and returns a dictionary containing all sequences in the file with 
 #the key:value format as title:sequence.
@@ -397,25 +349,6 @@ def fastaGetDict(i_name):
 			seqdict[curkey] = seqdict[curkey] + line;
 
 	return seqdict;
-
-#############################################################################
-
-def fastaGetDictCompressed(i_name):
-#fastaGetDict reads a FASTA file and returns a dictionary containing all sequences in the file with 
-#the key:value format as title:sequence.
-	import gzip
-
-	seqdict = {};
-	for line in gzip.open(i_name, "rb"):
-		line = line.replace("\n", "");
-		if line[:1] == '>':
-			curkey = line;
-			seqdict[curkey] = "";
-		else:
-			seqdict[curkey] = seqdict[curkey] + line;
-
-	return seqdict;
-
 
 #############################################################################
 
