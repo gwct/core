@@ -53,9 +53,12 @@ for line in open(genefilename):
 	total_trees += 1.0;
 
 for node in node_counts:
-	print node, round(node_counts[node]/total_trees,2);
+	cf = round(node_counts[node]/total_trees,2)
+	print node, cf;
+	stree = stree.replace(node, node+ "_" + str(cf));
 
 print "-----";
+print stree;
 print total_trees;
 print lines_skipped;
 
