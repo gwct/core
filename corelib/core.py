@@ -221,12 +221,12 @@ def getLogTime():
 
 #############################################################################
 
-def printWrite(o_name, o_line):
+def printWrite(o_name, o_line, file_flag=True):
 #Function to print a string AND write it to the file.
 	print o_line;
-	f = open(o_name, "a");
-	f.write(o_line + "\n");
-	f.close();
+	if file_flag == False:
+		with open(o_name, "a") as f:
+			f.write(o_line + "\n");
 
 #############################################################################
 
