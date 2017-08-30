@@ -297,6 +297,53 @@ def checkAlign(seqdict):
 	return aln_flag;
 
 #############################################################################
+
+def defaultOutFile(input_name, file_flag, suffix="", output_init=False):
+	i = 2;
+	if suffix != "" and suffix[0] != "-":
+		suffix = "-" + suffix;
+	if not output_init:
+		output = os.path.splitext(input_name);
+	# If the user did not specify an output file name, take the base of the input file name.
+	else:
+		output = os.path.splitext(output_init);
+	# Otherwise, use the user specified option.
+	output = output[0] + suffix + "-1" + output[1];
+	if not file_flag:
+		output += ".txt";
+
+	while os.path.exists(output) or os.path.exists(os.path.splitext(output)[0]):
+		output = os.path.splitext(output);
+		output = output[0][:output[0].rindex("-")+1] + str(i) + output[1];
+		i += 1;
+	# If the chosen output file exists, this will continually add 1 to a counter label at the end
+	# of the file until a new file is chosen that does not exist.
+
+	return output, (i-1);
+
+#############################################################################
+
+def defaultOutDir(input_name, file_flag, suffix="", output_init=False):
+	i = 2;
+	if suffix != "" and suffix[0] != "-":
+		suffix = "-" + suffix;
+	if not output_init:
+		output = os.path.splitext(input_name)[0].rstrip("/").rstrip("\\") + suffix;
+	# If the user did not specify an output name, a directory will be made based on the input directory name.
+	else:
+		output = output_init;
+	# Otherwise, use the user specified option.
+	output += "-1";
+
+	while os.path.exists(output):
+		output = output[:output.rindex("-")+1] + str(i);
+		i += 1;
+	# If the chosen output directory exists, this will continually add 1 to a counter label at the end
+	# of the directory until a new directory is chosen that does not exist.
+
+	return output, (i-1);
+
+#############################################################################
 ##########################################################################################################################################################
 #SEQUENCE FORMAT READERS AND WRITERS
 ##########################################################################################################################################################

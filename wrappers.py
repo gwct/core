@@ -1,6 +1,6 @@
 #!/usr/bin/python
 ########################################################################################
-# A general purpose batch FASTA editing script.
+# A script with wrapper modules for many evolutionary analysis programs.
 #
 # Dependencies: core
 #
@@ -12,7 +12,7 @@ sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/
 import core, wrapperlib as wrap
 
 ####################
-parser = argparse.ArgumentParser(description="A general purpose FASTA editing script.");
+parser = argparse.ArgumentParser(description="A script with wrapper modules for many evolutionary analysis programs");
 parser.add_argument("-i", dest="input", help="A directory containing FASTA formatted files or a single FASTA file.", default=False);
 parser.add_argument("-p", dest="path", help="The full path to the program you want to run. If none is specified, the script will simply try the name of the program.", default=False);
 parser.add_argument("-v", dest="verbosity", help="The amount of output to print to the screen. 1 (default): print all output from the specified program, 0: print only a progress bar, program output will be redirected (maybe?).", type=int, default=1); 
