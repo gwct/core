@@ -303,14 +303,17 @@ def defaultOutFile(input_name, file_flag, suffix="", output_init=False):
 	if suffix != "" and suffix[0] != "-":
 		suffix = "-" + suffix;
 	if not output_init:
-		output = os.path.splitext(input_name);
+		output, ext = list(os.path.splitext(input_name));
 	# If the user did not specify an output file name, take the base of the input file name.
 	else:
-		output = os.path.splitext(output_init);
+		output, ext = list(os.path.splitext(output_init));
 	# Otherwise, use the user specified option.
-	output = output[0] + suffix + "-1" + output[1];
 	if not file_flag:
-		output += ".txt";
+		if output[-1] in ["\\", "/"]:
+			output = output[:-1];
+		output = output + suffix + "-1" + ".txt";
+	else:
+		output = output + suffix + "-1" + ext;
 
 	while os.path.exists(output) or os.path.exists(os.path.splitext(output)[0]):
 		output = os.path.splitext(output);

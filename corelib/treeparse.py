@@ -51,6 +51,19 @@ def remBranchLength(treestring):
 
 #############################################################################
 
+def addBranchLength(tree, treedict):
+# Re-writes the branch lengths onto a topology parsed by treeParse.
+	for node in treedict:
+		if treedict[node][0] != "NA":
+			tree = tree.replace(node, node + ":" + treedict[node][0]);
+			if treedict[node][3] != "NA":
+				tree = tree.replace(node + ":" + treedict[node][0], node + "_" + treedict[node][3] + ":" + treedict[node][0]);
+		elif treedict[node][3] != "NA":
+			tree = tree.replace(node, node + "_" + treedict[node][3]);
+	return tree;
+
+#############################################################################
+
 def getDesc(d_spec, d_treedict):
 # This function takes a species in the current tree and the dictionary of the current tree
 # returned by treeparse and finds the direct descendants of the species.
@@ -408,7 +421,7 @@ def treeParse(tree, debug=0):
 
 		elif nodes[node] == 'root':
 			bl[node] = "NA";
-			supports[node] = new_tree[new_tree.index(node):];
+			supports[node] = new_tree[new_tree.index(node)+len(node):];
 			ancs[node] = "NA";
 			continue;
 
