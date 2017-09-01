@@ -289,6 +289,18 @@ def nodeDist(query_node, target_node, treedict):
 
 #############################################################################
 
+def rootedOrNot(treedict):
+	num_tips = len([n for n in treedict if treedict[n][2] == 'tip']);
+	num_internal = len([n for n in treedict if treedict[n][2] != 'tip']);
+	if num_internal != (num_tips - 1):
+		return 0;
+	elif num_internal == (num_tips - 1):
+		return 1;
+	else:
+		return -1;
+
+#############################################################################
+
 def treeParse(tree, debug=0):
 # The treeParse function takes as input a rooted phylogenetic tree with branch lengths and returns the tree with node labels and a
 # dictionary with usable info about the tree in the following format:
