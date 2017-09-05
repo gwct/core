@@ -23,12 +23,15 @@ parser.add_argument("--rootcheck", dest="root_check", help="Given an input file 
 parser.add_argument("--root", dest="root_tree", help="Given an input file or tree string, this will root the tree with the specified outgroup(s).", action="store_true");
 parser.add_argument("--concordance", dest="fotc", help="Given an input species tree and a file containing many single-copy gene trees this module will calculate concordance factors for each node in the species tree. Use -genetrees for the input gene tree file and -i for the input species tree file or string.", action="store_true");
 parser.add_argument("--tipcount", dest="count_tips", help="Given a file with many trees, simply count the number of unique tip labels in all trees.", action="store_true");
-parser.add_argument("--relabeltips", dest="relabel", help="Given a file with many trees and a set of labels defined by -labels, this will relabel tip nodes.", action="store_true");
+parser.add_argument("--relabeltips", dest="relabel", help="Given a file with many trees and a set of labels defined by -labels, this will relabel tip nodes. Use -m to decide placement of new label, and -delim to enter delimiting character.", action="store_true");
+parser.add_argument("--rmlabels", dest="rmlabel", help="Given a file with many trees with the internal nodes labeled, this will write a file with the same trees but WITHOUT internal nodes labeled.", action="store_true");
 
 parser.add_argument("-prefix", dest="file_prefix", help="For --sep, a string that will be used as the base file name for each output file.", default=False);
 parser.add_argument("-outgroup", dest="outgroup", help="For --root, a comma separated list of tip labels common between trees to use as the outgroup for rooting", default=False);
 parser.add_argument("-genetrees", dest="genetrees", help="For --concordance, this is the file containing the gene trees.", default=False);
 parser.add_argument("-labels", dest="labels", help="For --relabeltip, the old label and the newlabel in the format: \"old1,new1 old2,new2\". Old labels don't need to match exactly with existing labels to allow for matching substrings.", default=False);
+parser.add_argument("-m", dest="run_mode", help="Run mode for --rmlabels. 1 (default): Remove only internal node labels; 2: remove only branch lengths; 3: remove internal node labels and branch lengths. For --relabeltips, 1 (default): Replace old label with new label; 2: Add new label to beginning of old label; 3: Add new label to end of old label.", type=int, default=1);
+parser.add_argument("-delim", dest="delim", help="For --relabeltips, with run modes 2 and 3 this is the character that will be placed between the old and new label. Underscore (_) is default. Enter 'space' for space character.", default="_");
 
 args = parser.parse_args();
 # Input option definitions.
@@ -196,12 +199,39 @@ if args.relabel:
 		sys.exit(core.errorOut(14, "--relabeltips takes an input (-i) FILE only."));
 	if not args.labels:
 		sys.exit(core.errorOut(15, "-labels must be entered with --relabeltips"));
+	if args.run_mode not in [1,2,3]:
+		sys.exit(core.errorOut(16, "-m must take values of 1, 2, or 3."));
 	print "=======================================================================";
 	print "\t\t\t" + core.getDateTime();
 	print core.spacedOut("Relabeling tips in:", pad), args.input;
 	output, outnum = core.defaultOutFile(args.input, file_flag, "relabel", args.output);
+	if args.run_mode == 1:
+		print "Replacing old labels";
+	if args.run_mode == 2:
+		print "Adding new labels to beginning of old labels.";
+	if args.run_mode == 3:
+		print "Adding new labels to end of old labels.";
+	if args.run_mode in [2,3]:
+		print core.spacedOut("Using delimiter:", pad), args.delim;
+		if args.delim == 'space':
+			args.delim = ' ';
 	print core.spacedOut("Writing output to:", pad), output;
-	tree.relabelTips(filelist[0], args.labels, output);
+	tree.relabelTips(filelist[0], args.labels, args.run_mode, args.delim, output);
 	sys.exit();
 # --relabeltips : in a file containing many trees, relabels all tips containing an old label with a new label specified by user
+
+if args.rmlabel:
+	if not file_flag:
+		sys.exit(core.errorOut(18, "--rmlabels takes an input (-i) FILE only."));
+	if args.run_mode not in [1,2,3]:
+		sys.exit(core.errorOut(19, "-m must take values of 1, 2, or 3."));
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Removing internal node labels from:", pad), args.input;
+	output, outnum = core.defaultOutFile(args.input, file_flag, "rmlabel", args.output);
+	print core.spacedOut("Writing output to:", pad), output;
+	tree.rmLabel(filelist[0], args.run_mode, output);
+	sys.exit();
+
+
 

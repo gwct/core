@@ -4,7 +4,7 @@
 # August 2017
 #############################################################################
 
-import core, sys, os, subprocess, treeparse as tp
+import core, sys, os, subprocess, treeparse as tp, re
 from collections import defaultdict
 
 #############################################################################
@@ -54,12 +54,6 @@ def treeJoin(infiles, outfilename):
 	with open(outfilename, "w") as treefile:
 		for infile in infiles:
 			num_files += 1;
-			if not infile.endswith(".tre"):
-				tre_skip.append(infile);
-				continue;
-			num_read += 1;
-			# Check to make sure each file is a .tre file. Maybe I shouldn't do this...
-
 			for line in open(infile):
 				line = line.strip();
 				try:
@@ -76,7 +70,6 @@ def treeJoin(infiles, outfilename):
 	print "\n" + core.getTime() + " Done!";
 	print "-----";
 	print str(num_files) + " total files.";
-	print str(num_read) + " files read.";
 	if tre_skip != []:
 		print "The following " + str(len(tre_skip)) + " file(s) were skipped because they couldn't be read as tree files: " + ",".join([os.path.basename(f) for f in tre_skip]);
 	print str(num_trees) + " trees joined.";
@@ -364,7 +357,6 @@ def countTips(infile):
 	for tip in tips:
 		print core.spacedOut(tip, pad), tips[tip];
 	# Print the tip labels and counts.
-	print "\n" + core.getTime() + " Done!";
 	print "\n-----";
 	print str(num_lines) + " total lines in input file.";
 	if tre_skip != []:
@@ -374,14 +366,17 @@ def countTips(infile):
 
 #############################################################################
 
-def relabelTips(infile, labels, output):
+def relabelTips(infile, labels, mode, delim, output):
 # This function takes a file with many trees and searches the tip labels to match
 # strings for replacements.
 	try:
 		labels = {l.split(",")[0] : l.split(",")[1] for l in labels.split(" ")};
 	except:
-		sys.exit(core.errorOut(16, "-labels was not input correctly! Format 'oldlabel1,newlabel1 oldlabel2,newlabel2'"));
+		sys.exit(core.errorOut(17, "-labels was not input correctly! Format 'oldlabel1,newlabel1 oldlabel2,newlabel2'"));
 	# Check to make sure the labels were input properly by the user.
+
+	if delim == 'space':
+		delim = ' ';
 
 	pad = 20;
 	print "\n---------Relabeling tips---------";
@@ -407,7 +402,17 @@ def relabelTips(infile, labels, output):
 			for node in td:
 				for old in labels:
 					if old in node:
-						line = line.replace(node, labels[old]);
+						if mode == 1:
+							line = line.replace(node, labels[old]);
+						if mode == 2:
+							line = line.replace(node, labels[old] + delim + node);
+						if mode == 3:
+							line = line.replace(node, node + delim + labels[old]);
+			# Check and relabel every tip in the current tree.
+			# mode == 1 : replace old label with new label
+			# mode == 2 : put new label on beginning of old label
+			# mode == 3 : put new label at end of old label
+
 			outfile.write(line + "\n");
 			# For each node in the tree, check if it contains the text of one of the labels to replace.
 			# If so, replace it.
@@ -421,3 +426,47 @@ def relabelTips(infile, labels, output):
 	print "=======================================================================";
 
 #############################################################################
+
+def rmLabel(infile, mode, outfilename):
+# Takes a file with many trees and removes internal node labels and/or branch lengths (depending on mode).
+	num_lines, num_trees, tre_skip = 0,0,[];
+	with open(outfilename, "w") as treefile:
+		for line in open(infile):
+			num_lines +=1;
+			line = line.strip();
+			try:
+				td, out_tree, r = tp.treeParse(line);
+			except:
+				if infile not in parse_skip:
+					parse_skip.append(infile);
+				continue;
+			num_trees += 1;
+			# Check if each line in the genetrees file is a Newick string.
+
+			if mode == 1:
+				out_tree = re.sub('<[\d]+>', '', out_tree);
+				out_tree = tp.addBranchLength(out_tree, td);
+			if mode == 2:
+				out_tree = re.sub(':[\d.eE-]+', '', line.strip());
+			if mode == 3:
+				out_tree = re.sub('<[\d]+>', '', out_tree);
+			# mode == 1 : remove internal node labels only
+			# mode == 2 : remove branch lengths only
+			# mode == 3 : remove both internal node labels and branch lengths
+
+			treefile.write(out_tree + "\n");
+			# Write the edited tre to the output file.
+
+	print "\n-----";
+	print "\n" + core.getTime() + " Done!";
+	print str(num_lines) + " total lines in input file.";
+	if tre_skip != []:
+		print "The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip);
+	print str(num_trees) + " trees read.";
+	print "=======================================================================";
+
+
+
+
+
+
