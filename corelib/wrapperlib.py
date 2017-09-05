@@ -4,7 +4,7 @@
 # August 2017
 #############################################################################
 
-import core, sys, os, subprocess
+import core, sys, os, subprocess, treeparse as tp
 
 #############################################################################
 
@@ -826,6 +826,68 @@ def runReights(infiles, file_flag, path, numsites, calspec, calage, output, logf
 	print div_tree;
 	print core.getTime() + " Done!";
 	print "=======================================================================";
+
+#############################################################################
+
+def runNotung(infiles, file_flag, path, spectree, rearrange, bsthresh, bsroot, v, output, logfilename):
+# This module runs Notung on a set of gene trees for bootstrap rearrangement and rooting.
+	print "Running Notung...";
+	try:
+		specline = open(spectree, "r").read();
+		td, tree, r = tp.treeParse(specline);
+	except:
+		sys.exit(core.errorOut(19, "Could not read species tree (-s) as a Newick tree!"));
+	# First check to make sure the species tree file is a valid Newick tree.
+
+	if v == 0 and not file_flag:
+		stdoutlog = os.path.join(output, "notung.stdout");
+	# If the user specifies nothing to be printed to the screen, MUSCLE's output will instead be
+	# redirected to a file.
+
+	if file_flag:
+		sys.exit();
+	# Single file Notung commands not yet implemented
+
+	output = os.path.abspath(output);
+	batchfilename = os.path.join("run-notung.batch");
+	tre_skip = [];
+	with open(batchfilename, "w") as batchfile:
+		batchfile.write(spectree + "\n");
+		for infile in infiles:
+			line = open(infile, "r").read();
+			try:
+				td, tree, r = tp.treeParse(line);
+			except:
+				tre_skip.append(infile);
+				continue;
+			batchfile.write(infile + "\n");
+	# This section creates Notungs batch file. The first line contains the file path to the species tree
+	# while all subsequent lines contain file paths to gene trees.
+
+	notung_cmd = "java -jar ~/bin/Notung-2.8.1.6-beta/Notung-2.8.1.6-beta.jar -b '" + batchfilename + "'";
+	if rearrange:
+		notung_cmd += " --rearrange --threshold " + str(bsthresh);
+	elif bsroot:
+		notung_cmd += " --root";
+	notung_cmd += " --speciestag postfix --edgeweights name --treeoutput newick --nolosses --outputdir '" + output + "'";
+	if v == 0 and not file_flag:
+		notung_cmd += ">> " + stdoutlog + " 2>&1";
+	os.system(notung_cmd);
+	if not file_flag:
+		with open(logfilename, "a") as logfile:
+			logfile.write(notung_cmd + "\n");
+	# The Notung call
+
+	os.system("mv " + batchfilename + " " + os.path.join(output, batchfilename));
+	# Move the batch file to the output directory.
+
+	print "\n" + core.getTime() + " Done!";
+	core.printWrite(logfilename,"-----", file_flag);
+	core.printWrite(logfilename,"# Total files in input directory:\t" + str(len(infiles)), file_flag);
+	if tre_skip != []:
+		core.printWrite(logfilename,"# The following " + str(len(tre_skip)) + " file(s) were skipped because they couldn't be read as Newick trees: " + ",".join([os.path.basename(f) for f in tre_skip]), file_flag);
+	print "=======================================================================";
+
 
 
 

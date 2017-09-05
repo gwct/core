@@ -13,7 +13,7 @@ import core, wrapperlib as wrap
 
 ####################
 parser = argparse.ArgumentParser(description="A script with wrapper modules for many evolutionary analysis programs");
-parser.add_argument("-i", dest="input", help="A directory containing FASTA formatted files or a single FASTA file.", default=False);
+parser.add_argument("-i", dest="input", help="A directory containing input files or a input file.", default=False);
 parser.add_argument("-p", dest="path", help="The full path to the program you want to run. If none is specified, the script will simply try the name of the program.", default=False);
 parser.add_argument("-v", dest="verbosity", help="The amount of output to print to the screen. 1 (default): print all output from the specified program, 0: print only a progress bar, program output will be redirected (maybe?).", type=int, default=1); 
 parser.add_argument("-o", dest="output", help="Desired output location. If input is a file this should be a file, if a directory this will be a directory.", default=False);
@@ -26,6 +26,7 @@ parser.add_argument("--raxml", dest="raxml", help="To make gene trees from align
 parser.add_argument("--codeml", dest="codeml", help="To make ancesntral reconstructions or run the branch-site test with PAML's codmel.", action="store_true");
 parser.add_argument("--sdm", dest="sdm", help="To use SDM to make an average consensus distance matrix, and then R to build a neighbor-joining tree from it.", action="store_true");
 parser.add_argument("--r8s", dest="r8s", help="To use r8s to estimate divergence times of a phylogeny.", action="store_true");
+parser.add_argument("--notung", dest="notung", help="To use Notung to do bootstrap rearrangement or bootstrap rooting on a set of gene trees.", action="store_true");
 # The various programs I have implemented wrappers for.
 
 parser.add_argument("-seqtype", dest="seqtype", help="Specify sequence type for PASTA, GBlocks, and codeml: dna, rna, codon, or protein (default)", default="protein");
@@ -51,6 +52,12 @@ parser.add_argument("-numsites", dest="numsites", help="r8s: The total number of
 parser.add_argument("-calspec", dest="calspecs", help="r8s: A list of PAIRS of species that define nodes you wish to constrain times on. Species within a pair should be separated by a comma, pairs should be separated by a space (eg 'pair1s1,pair1s2 pair2s1,pair2s2').", default=False);
 parser.add_argument("-calage", dest="calage", help="r8s: The calibration ages of the nodes defined by the species with -calspec. The order of this list corresponds to the order of -s. Separate ages by spaces. If constraints are to be used the keywords min and/or max are used with hyphens (eg '324 min-99.9-max-121' defines one fixed age of 324 and one constrained age).", default=False);
 # r8s specific options.
+
+parser.add_argument("-s", dest="spectree", help="Notung: A file containing a single rooted, Newick species tree for the analysis.", default=False);
+parser.add_argument("--rearrange", dest="rearrange", help="Notung: Use this option to perform bootstrap rearrangement on the input gene trees.", action="store_true");
+parser.add_argument("--bsroot", dest="bsroot", help="Notung: Use this option to perform bootstrap rooting on the input gene trees.", action="store_true");
+parser.add_argument("-bsthresh", dest="bsthresh", help="Notung: Used with --rearrange, this specifies the bootstrap threshold for rearrangements. Default: 70", type=int, default=70);
+# Notung specific options
 
 args = parser.parse_args();
 # Input option definitions.
@@ -200,4 +207,27 @@ if args.r8s:
 	wrap.runReights(filelist, file_flag, path, args.numsites, args.calspecs, args.calage, output, logfilename);
 	sys.exit();
 # --r8s
+
+if args.notung:
+	if file_flag:
+		sys.exit(core.errorOut(-1, "Single file Notung commands not yet implemented..."));
+	if (not args.rearrange and not args.bsroot) or (args.rearrange and args.bsroot):
+		sys.exit(core.errorOut(16, "One and only one of --rearrange and --bsroot can be specified when using Notung."));
+	if not args.spectree or not os.path.isfile(args.spectree):
+		sys.exit(core.errorOut(17, "Not a valid species tree file (-s)!"));
+	else:
+		args.spectree = os.path.abspath(args.spectree);
+	if args.bsthresh < 0 or args.bsthresh > 100:
+		sys.exit(core.errorOut(18, "The bootstrap threshold (-bsthresh) for rearrangments (--rearrange) must be between 0 and 100."));
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "** For --notung, only options -i, -p, -s, --rearrange, --bsroot, -v, and -o are used!";
+	print core.spacedOut("Using species tree in file:", pad), args.spectree;
+	path, output, logfilename = wrap.ioInfo(args.input, args.path, args.output, "notung", file_flag);
+	wrap.runNotung(filelist, file_flag, path, args.spectree, args.rearrange, args.bsthresh, args.bsroot, args.verbosity, output, logfilename);
+	sys.exit();
+# --notung
+
+
+
 	
