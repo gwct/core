@@ -577,6 +577,8 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, prune, branch_site, a
 		# Write the control file based on the input options.
 
 		codeml_cmd = os.path.join(path, "bin", "codeml " + ctlfilename);
+		print codeml_cmd;
+		continue;
 		if v == 0:
 			codeml_cmd += " >> " + stdoutlog + " 2>&1";
 		with open(logfilename, "a") as logfile:
