@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import sys, os
 
 if len(sys.argv) not in [2,3] or not os.path.exists(os.path.abspath(sys.argv[1])) or (len(sys.argv) == 3 and sys.argv[2] != "1"):
