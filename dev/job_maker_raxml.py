@@ -67,17 +67,17 @@ for chunk in chunks:
 	jobfile.write("#PBS -m abe\n");
 	jobfile.write("#PBS -N " + curorder + "-" + str(chunk_num) + "\n");
 	jobfile.write("#PBS -j oe\n");
-	jobfile.write("#PBS -o /N/dc2/scratch/grthomas/i5k/\n");
-	jobfile.write("#PBS -d /N/dc2/scratch/grthomas/i5k/\n");
+	jobfile.write("#PBS -o /N/u/grthomas/Carbonate\n");
+	jobfile.write("#PBS -d /N/u/grthomas/Carbonate\n");
 
 	cmd = "time -p python /N/u/grthomas/Carbonate/bin/core/wrappers.py --raxml -i " + chunkdir + " -p /N/u/grthomas/Carbonate/bin/raxml/raxml -model " + model + " ";
 	if bs != 0:
 		cmd += "-b " + bs + " ";
 	if proc != '1':
 		cmd += "-t " + str(int(proc)-1) + " ";
-	cmd += "-v 0 -o " + chunkoutdir;
+	cmd += "-o " + chunkoutdir;
+	# cmd += "-v 0 -o " + chunkoutdir;
 	jobfile.write(cmd);
-
 	jobfile.close();
 	chunk_num += 1;
 

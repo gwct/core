@@ -364,7 +364,7 @@ def runRaxml(infiles, file_flag, path, model, bs_reps, threads, constraint_tree,
 			raxml_cmd += "-f a ";
 		raxml_cmd += " -m " + model + " -p " + seed;
 		if bs_reps > 0:
-			raxml_cmd += " -x " + boot_seed + " -# " + str(b);
+			raxml_cmd += " -x " + boot_seed + " -# " + str(bs_reps);
 		if threads > 1:
 			raxml_cmd += " -T " + str(threads);
 		if constraint_tree:
