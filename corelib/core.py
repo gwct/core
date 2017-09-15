@@ -396,7 +396,7 @@ def fastaReader(i_name):
 # uncompressed FASTA file (.fa). If it doesn't end with .fa it returns it to
 # be skipped.
 	try:
-		if i_name.endswith(".fa.gz"):
+		if i_name.endswith(".fa.gz") or i_name.endswith(".faa.gz") or i_name.endswith(".fna.gz"):
 			seqs = fastaGetDictCompressed(i_name);
 		elif i_name.endswith(".fa"):
 			seqs = fastaGetDict(i_name);
