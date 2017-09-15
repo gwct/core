@@ -70,7 +70,7 @@ for chunk in chunks:
 	jobfile.write("#PBS -o /N/dc2/scratch/grthomas/i5k/\n");
 	jobfile.write("#PBS -d /N/dc2/scratch/grthomas/i5k/\n");
 
-	cmd = "time -p python /N/u/grthomas/Carbonate/bin/core/wrappers.py --raxml -i " + chunkdir + " -p /N/u/grthomas/Carbonate/bin/raxml/raxml-pthreads -model " + model + " ";
+	cmd = "time -p python /N/u/grthomas/Carbonate/bin/core/wrappers.py --raxml -i " + chunkdir + " -p /N/u/grthomas/Carbonate/bin/raxml/raxml -model " + model + " ";
 	if bs != 0:
 		cmd += "-b " + bs + " ";
 	if proc != '1':
