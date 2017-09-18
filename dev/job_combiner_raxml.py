@@ -38,7 +38,7 @@ for jobdir in dirlist:
 	print "Current job directory: " + fulldir;
 	fulllist = os.listdir(fulldir);
 
-	cur_num_files = len([f for f in fulllist if os.path.isfile(f)]);
+	cur_num_files = len([f for f in fulllist if os.path.isfile(os.path.join(fulldir, f))]);
 	print "# of files: ", cur_num_files;
 	num_files += cur_num_files;
 
