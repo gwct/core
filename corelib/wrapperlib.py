@@ -16,8 +16,8 @@ def ioInfo(input_init, path, output_init, program, file_flag):
 	print core.spacedOut("Running " + program + " on FASTA files in:", pad), input_init;
 	if path:
 		print core.spacedOut("User specified path to " + program + ":", pad), path;
-		if not os.path.exists(path):
-			sys.exit(core.errorOut(2, "Path (-p) to program not found!!"));
+		#if not os.path.exists(path):
+		#	sys.exit(core.errorOut(2, "Path (-p) to program not found!!"));
 	else:
 		print core.spacedOut("No path to " + program + " specified. Trying:", pad), program.lower();
 		path = program.lower();

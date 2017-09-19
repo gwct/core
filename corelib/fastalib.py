@@ -197,7 +197,7 @@ def concat(fasta_files, header_delim, outfilename):
 	print "-----";
 	print "Total alignments:\t", total_aln;
 	print "Total sequences:\t", total_seq;
-	print "Total positions:\t", total_pos;
+	print "Total columns:\t", total_pos;
 	if fa_skip != []:
 		print "The following", str(len(fa_skip)), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]);
 	if aln_skip != []:
