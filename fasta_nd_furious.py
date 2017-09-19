@@ -80,7 +80,7 @@ if args.concat:
 	print "\t\t\t" + core.getDateTime();
 	print core.spacedOut("Concatenating alignments in:", 40), args.input;
 	print core.spacedOut("Writing concatenated alignments to:", 40), args.outfile;
-	if args.header_delim == None:
+	if args.header_delim == False:
 		print "\n** Warning: No FASTA header delimiter set (-delim). Full FASTA headers will be used for concatenation.";
 	fa.concat(filelist, args.header_delim, args.outfile);
 	sys.exit();

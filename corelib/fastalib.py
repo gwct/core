@@ -130,7 +130,7 @@ def concat(fasta_files, header_delim, outfilename):
 		total_aln += 1;
 		for title in seqs:
 			total_seq += 1;
-			if header_delim != None:
+			if header_delim != False:
 				if header_delim not in title:
 					print "\n** WARNING! Specified header delimiter (-delim) not found for the following sequence:\t" + os.path.basename(fasta_file) + " : " + title;
 					sys.exit("Exiting...\n");
