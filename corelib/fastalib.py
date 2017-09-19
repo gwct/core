@@ -170,7 +170,7 @@ def concat(fasta_files, header_delim, outfilename):
 
 		cur_specs = [];
 		for title in seqs:
-			if header_delim != None:
+			if header_delim != False:
 				cur_spec = title[1:title.index(header_delim)];
 			else:
 				cur_spec = title[1:];
