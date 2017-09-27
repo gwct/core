@@ -308,6 +308,8 @@ def flightOfTheConcordance(infiles, tree_flag, genefilename):
 			stree = stree.replace(node, node+ "_" + sinfo[node][3] + "_" + str(cf));
 		else:
 			stree = stree.replace(node, node+ "_" + str(cf));
+
+	stree = tp.addBranchLength(stree, sinfo);
 	print "\n----Concordance factor tree----";
 	print stree;
 	print
