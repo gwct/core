@@ -492,7 +492,7 @@ def runRaxml(infiles, file_flag, path, model, bs_reps, threads, constraint_tree,
 
 #############################################################################
 
-def runCodeml(infiles, file_flag, path, seqtype, treefile, prune, branch_site, anc, v, output, logfilename):
+def runCodeml(infiles, file_flag, path, seqtype, treefile, prune, branch_site, anc, codonds, v, output, logfilename):
 # This module runs codeml for several purposes including the null and alternate models of the branch-site test and for
 # ancestral reconstructions of input sequences.
 	import treeparse as tr
@@ -519,6 +519,7 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, prune, branch_site, a
 	os.system("mkdir '" + codeml_outdir + "'");
 	# Create the codeml-out directory within the main output directory.
 
+	treefile = os.path.abspath(treefile);
 	if prune:
 		td, tree, root = tr.treeParse(open(treefile, "r").read());
 		tips = [node for node in td if td[node][2] == 'tip'];
@@ -531,10 +532,11 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, prune, branch_site, a
 	fa_skip, aln_skip, num_files_read, num_pruned, no_anc = [],[],0,0,[];
 
 	for infile in infiles:
+		#print os.path.splitext(infile);
 		if v == 0 and not file_flag:
 			numbars, donepercent = core.loadingBar(i, num_files, donepercent, numbars);
 		i += 1;
-		if not infile.endswith(".fa"):
+		if os.path.splitext(infile)[1] not in [".fa",".fas"]:	
 			fa_skip.append(infile);
 			continue;
 		# Read the file if it is a FASTA (.fa) file.
@@ -575,14 +577,16 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, prune, branch_site, a
 					treeline = "treefile = " + treefile + "\n";
 				ctlFile.write(treeline);
 			if file_flag:
-				outline = "outfile = " + os.path.join(output, codeml_outfile + ".out") + "\n\n";
+				outline = "outfile = " + os.path.abspath(os.path.join(output, codeml_outfile + ".out")) + "\n\n";
 			else:
-				outline = "outfile = " + os.path.join(cur_outdir, codeml_outfile + ".out") + "\n\n";
+				outline = "outfile = " + os.path.abspath(os.path.join(cur_outdir, codeml_outfile + ".out")) + "\n\n";
 			ctlFile.write(outline);
 
 			ctlFile.write("noisy = 3\n");
 			ctlFile.write("verbose = 0\n");
-			if treefile != "":
+			if codonds:
+				ctlFile.write("runmode = -2\n\n");
+			elif treefile != "":
 				ctlFile.write("runmode = 0\n\n");
 			else:
 				ctlFile.write("runmode = 2\n\n");
@@ -595,7 +599,7 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, prune, branch_site, a
 			ctlFile.write("CodonFreq = 2\n");
 			ctlFile.write("clock = 0\n");
 			ctlFile.write("aaDist = 0\n");
-			ctlFile.write("aaRatefile = " + os.path.join(path, "dat", "wag.dat") + "\n");
+			ctlFile.write("aaRatefile = " + os.path.join(path, "dat", "wag.dat\n"));
 			ctlFile.write("model = 2\n\n");
 
 			if branch_site in [1,2]:
@@ -624,8 +628,6 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, prune, branch_site, a
 		# Write the control file based on the input options.
 
 		codeml_cmd = os.path.join(path, "bin", "codeml " + ctlfilename);
-		print codeml_cmd;
-		continue;
 		if v == 0:
 			codeml_cmd += " >> " + stdoutlog + " 2>&1";
 		with open(logfilename, "a") as logfile:
@@ -712,15 +714,15 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, prune, branch_site, a
 		# the sequences with their probabilities, and the tree with node labels for each alignment.
 		#####
 
-	newfilelist = os.listdir(os.getcwd());
-	for each in newfilelist:
-		if each in ["2NG.dN","2NG.dS","2NG.t","codeml.ctl","lnf","rst","rst1","rub","pruned.tre"]:
-			if file_flag:
-				mv_cmd = "mv " + each + " " + output;
-			else:
-				mv_cmd = "mv " + each + " " + cur_outdir;
-			os.system(mv_cmd);
-	# Move all of codeml's output files to the correct place.
+		newfilelist = os.listdir(os.getcwd());
+		for each in newfilelist:
+			if each in ["2ML.dN","2ML.dS","2ML.t","2NG.dN","2NG.dS","2NG.t","codeml.ctl","lnf","rst","rst1","rub","pruned.tre"]:
+				if file_flag:
+					mv_cmd = "mv " + each + " " + output;
+				else:
+					mv_cmd = "mv " + each + " " + cur_outdir;
+				os.system(mv_cmd);
+		# Move all of codeml's output files to the correct place.
 
 	if v == 0 and not file_flag:
 		pstring = "100.0% complete.";

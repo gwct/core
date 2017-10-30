@@ -47,6 +47,7 @@ parser.add_argument("-tree", dest="tree", help="codeml: The species tree file to
 parser.add_argument("--prune", dest="prune", help="codeml: If not all species present in the tree will be present in each alignment, set this to prune the tree for each file. NOTE: requires Newick Utilities to be installed.", action="store_true");
 parser.add_argument("--branchsite", dest="branch_site", help="codeml: By default, this program runs the null model of the branch-site test (model=2, NSsite=2, fix_omega=1, omega=1). Set this option to run the alternate model (model=2, NSsite=2, fix_omega=0, omega=1). A branch must be specified in your tree file.", action="store_true");
 parser.add_argument("--anc", dest="anc", help="codeml: Set this option to perform ancestral reconstructions.", action="store_true");
+parser.add_argument("--codonds", dest="codonds", help="codeml: On codon alignments calculate pairwise dn and ds rates between lineages (runmode=-2)", action="store_true");
 # codeml specific options.
 
 parser.add_argument("-numsites", dest="numsites", help="r8s: The total number of alignment columns (sites) used to build the input phylogeny.", type=int, default=False);
@@ -169,6 +170,8 @@ if args.codeml:
 		sys.exit(core.errorOut(10, "A path (-p) must be specified for codeml!"));
 	if args.seqtype not in ['codon','protein']:
 		sys.exit(core.errorOut(11, "codeml accepts sequence types (-seqtype) of codon and protein."));
+	if args.codonds and args.seqtype != 'codon':
+		sys.exit(core.errorOut("11a", "The --codonds option requires -seqtype codon."))
 	if not args.tree or not os.path.isfile(args.tree):
 		sys.exit(core.errorOut(12, "Invalid tree file name!"));
 	if args.prune:
@@ -189,7 +192,7 @@ if args.codeml:
 	if args.prune:
 		print "Pruning species tree when necessary."
 	print "-------------------------";
-	wrap.runCodeml(filelist, file_flag, path, args.seqtype, args.tree, args.prune, args.branch_site, args.anc, args.verbosity, output, logfilename);
+	wrap.runCodeml(filelist, file_flag, path, args.seqtype, args.tree, args.prune, args.branch_site, args.anc, args.codonds, args.verbosity, output, logfilename);
 	sys.exit()
 # --codeml
 
