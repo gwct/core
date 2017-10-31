@@ -298,18 +298,18 @@ def flightOfTheConcordance(infiles, tree_flag, genefilename):
 		# Check if each species tree clade is in the gene tree.
 		total_trees += 1.0;
 
-
+	stree = tp.addBranchLength(stree, sinfo);
 	print "\n" + core.getTime() + " Done!";
 	print "\n----Concordance factor nodes----";
 	for node in node_counts:
 		cf = round(node_counts[node]/total_trees,2)
 		print node, cf;
 		if sinfo[node][3] not in  ["NA",'']:
-			stree = stree.replace(node, node+ "_" + sinfo[node][3] + "_" + str(cf));
+			stree = stree.replace(node, node + "_" + str(cf));
 		else:
 			stree = stree.replace(node, node+ "_" + str(cf));
 
-	stree = tp.addBranchLength(stree, sinfo);
+	
 	print "\n----Concordance factor tree----";
 	print stree;
 	print
