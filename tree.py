@@ -25,6 +25,7 @@ parser.add_argument("--concordance", dest="fotc", help="Given an input species t
 parser.add_argument("--tipcount", dest="count_tips", help="Given a file with many trees, simply count the number of unique tip labels in all trees.", action="store_true");
 parser.add_argument("--relabeltips", dest="relabel", help="Given a file with many trees and a set of labels defined by -labels, this will relabel tip nodes. Use -m to decide placement of new label, and -delim to enter delimiting character.", action="store_true");
 parser.add_argument("--rmlabels", dest="rmlabel", help="Given a file with many trees with the internal nodes labeled, this will write a file with the same trees but WITHOUT internal nodes labeled.", action="store_true");
+parser.add_argument("--scale", dest="scale", help="Scale the branch lengths of the input tree(s) by an operation and value given. For example, enter '/2' to divide all branch lengths by 2, or '*5' to multiply all branch lengths by 5.", default=False);
 
 parser.add_argument("-prefix", dest="file_prefix", help="For --sep, a string that will be used as the base file name for each output file.", default=False);
 parser.add_argument("-outgroup", dest="outgroup", help="For --root, a comma separated list of tip labels common between trees to use as the outgroup for rooting", default=False);
@@ -231,6 +232,23 @@ if args.rmlabel:
 	output, outnum = core.defaultOutFile(args.input, file_flag, "rmlabel", args.output);
 	print core.spacedOut("Writing output to:", pad), output;
 	tree.rmLabel(filelist[0], args.run_mode, output);
+	sys.exit();
+# --rmlabel : in a file containing one or more tree, this removes any internal node labels in the tree(s)
+
+if args.scale != False:
+	scale_op, scale_factor = args.scale[0], args.scale[1:];
+	if scale_op not in ["/","*","+","-"]:
+		sys.exit(core.errorOut(20, "The first charcater of --scale must be /, *, +, or -."));
+	try:
+		scale_factor = float(scale_factor);
+	except:
+		sys.exit(core.errorOut(21, "The scale factor must be an integer or a float."));
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Scaling branch lengths on trees in:", pad), args.input;
+	output, outnum = core.defaultOutFile(args.input, file_flag, "scale", args.output);
+	print core.spacedOut("Writing output to:", pad), output;
+	tree.scaleBL(filelist[0], scale_op, scale_factor, output);
 	sys.exit();
 
 

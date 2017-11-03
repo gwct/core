@@ -434,7 +434,7 @@ def relabelTips(infile, labels, mode, delim, output):
 
 def rmLabel(infile, mode, outfilename):
 # Takes a file with many trees and removes internal node labels and/or branch lengths (depending on mode).
-	num_lines, num_trees, tre_skip = 0,0,[];
+	num_lines, num_trees, tre_skip, parse_skip = 0,0,[],[];
 	with open(outfilename, "w") as treefile:
 		for line in open(infile):
 			num_lines +=1;
@@ -470,6 +470,49 @@ def rmLabel(infile, mode, outfilename):
 	print str(num_trees) + " trees read.";
 	print "=======================================================================";
 
+#############################################################################
+
+def scaleBL(infile, op, factor, outfilename):
+# Takes a file with many trees and removes internal node labels and/or branch lengths (depending on mode).
+	num_lines, num_trees, tre_skip, parse_skip = 0,0,[],[];
+	with open(outfilename, "w") as treefile:
+		for line in open(infile):
+			num_lines +=1;
+			line = line.strip();
+			try:
+				td, out_tree, r = tp.treeParse(line);
+			except:
+				if infile not in parse_skip:
+					parse_skip.append(infile);
+				continue;
+			num_trees += 1;
+			# Check if each line in the genetrees file is a Newick string.
+
+			for node in td:
+				if node == r:
+					continue;
+				old_bl = float(td[node][0]);
+				if op == "/":
+					new_bl = old_bl / factor;
+				elif op == "*":
+					new_bl = old_bl * factor;
+				elif op == "+":
+					new_bl = old_bl + factor;
+				elif op == "-":
+					new_bl = old_bl - factor;
+				td[node][0] = str(new_bl);
+
+			out_tree = tp.addBranchLength(out_tree, td);
+			treefile.write(out_tree + "\n");
+			# Write the edited tre to the output file.
+
+	print "\n-----";
+	print "\n" + core.getTime() + " Done!";
+	print str(num_lines) + " total lines in input file.";
+	if tre_skip != []:
+		print "The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip);
+	print str(num_trees) + " trees read.";
+	print "=======================================================================";
 
 
 
