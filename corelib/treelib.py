@@ -514,7 +514,88 @@ def scaleBL(infile, op, factor, outfilename):
 	print str(num_trees) + " trees read.";
 	print "=======================================================================";
 
+#############################################################################
 
+def robF(infiles, tree_flag, genefilename, raxpath, outfile):
+# This function calls RAxML to calculate Robinson-Foulds distances for each gene tree to the species tree.
+	import re
+	raxlog = os.path.splitext(outfile)[0] + ".raxlog";
 
+	if tree_flag:
+		sinfo, stree, sroot, sfilename = infiles;
+	else:
+		try:
+			sinfo, stree, sroot = tp.treeParse(open(infiles[0], "r").read());
+		except:
+			sys.exit(core.errorOut(26, "Could not read species tree (-s) as a Newick tree!"));
+		# If the input species tree was a file check to make sure it contains a valid Newick tree.	
 
+	stips = [node for node in sinfo if sinfo[node][1] == 'tip'];
+	# Get the tips in the species tree.
 
+	stree = re.sub("<[\d]+>", "", stree);
+	# Remove node labels from species tree.
+
+	num_lines, tre_skip, sc_skip, raxfail = 0, [], [], [];
+	rfs, wrfs = [], [];
+	total_trees = 0.0;
+	tmpfile = "tmp74ghr2.tmp";
+	rfoutfile = "RAxML_RF-Distances.RFtmp7f";
+
+	with open(outfile, "w") as out:
+		for line in open(genefilename):
+			num_lines += 1;
+			try:
+				ginfo, gtree, groot = tp.treeParse(line);
+			except:
+				out.write("Couldn't read as Newick string -- Skipping.\n");
+				tre_skip.append(str(num_lines));
+				continue;
+			# Check if each line in the genetrees file is a Newick string.
+
+			gtips = [node for node in ginfo if ginfo[node][1] == 'tip'];
+			if set(gtips) != set(stips) or len(gtips) != len(stips):
+				out.write("Tip labels not identical to species tree -- Skipping.\n");
+				sc_skip.append(str(num_lines));
+				continue;
+			# Check to make sure the tips are identical in the current gene tree and the species tree.
+
+			gtree = re.sub("<[\d]+>", "", gtree);
+			# Remove node labels from gene tree.
+
+			with open(tmpfile, "w") as tfile:
+				tfile.write(stree + ";\n");
+				tfile.write(gtree + ";");
+
+			raxcall = raxpath + " -m PROTGAMMAJTTF -z " + tmpfile + " -f r -n RFtmp7f >> " + raxlog;
+			#print num_lines, raxcall;
+			os.system(raxcall);
+
+			if os.path.exists(rfoutfile):
+				curout = open(rfoutfile, "r").read().strip().split(" ");
+				cur_rf, cur_wrf = curout[2], curout[3];
+				rfs.append(float(cur_rf));
+				wrfs.append(float(cur_wrf));
+				out.write(cur_rf + " " + cur_wrf + "\n");
+			else:
+				out.write("RAxML failed -- Skipping.\n");
+				raxfail.append(str(num_lines));
+
+			os.system("rm " + rfoutfile);
+			os.system("rm RAxML_info.RFtmp7f");
+			total_trees += 1.0;
+
+	print "-----";
+	print "Average RF distance for all gene trees:", float(sum(rfs)) / float(len(rfs));
+	print "Average weighted RF distance for all gene trees:", round(float(sum(wrfs)) / float(len(wrfs)),3);
+	os.system("rm " + tmpfile);
+	print "-----";
+	print str(num_lines) + " total lines in gene tree file.";
+	if tre_skip != []:
+		print "The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip);
+	if sc_skip != []:
+		print "The following " + str(len(sc_skip)) + " lines were skipped because they didn't have the same number of nodes as the species tree: " + ",".join(sc_skip);
+	if sc_skip != []:
+		print "The following " + str(len(sc_skip)) + " lines were skipped because they didn't have the same number of nodes as the species tree: " + ",".join(sc_skip);
+	print str(total_trees) + " trees successfully read and calculated RF distances.";
+	print "=======================================================================";

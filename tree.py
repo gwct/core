@@ -21,11 +21,12 @@ parser.add_argument("--join", dest="tree_join", help="Given an input directory w
 parser.add_argument("--label", dest="label_tree", help="Given an input file or tree string, this will add internal node labels to the tree(s).", action="store_true");
 parser.add_argument("--rootcheck", dest="root_check", help="Given an input file or tree string, this will check if the tree(s) are rooted or not.", action="store_true");
 parser.add_argument("--root", dest="root_tree", help="Given an input file or tree string, this will root the tree with the specified outgroup(s).", action="store_true");
-parser.add_argument("--concordance", dest="fotc", help="Given an input species tree and a file containing many single-copy gene trees this module will calculate concordance factors for each node in the species tree. Use -genetrees for the input gene tree file and -i for the input species tree file or string.", action="store_true");
+parser.add_argument("--concordance", dest="fotc", help="Given an input ROOTED species tree and a file containing many single-copy ROOTED gene trees this module will calculate concordance factors for each node in the species tree. Use -genetrees for the input gene tree file and -i for the input species tree file or string.", action="store_true");
 parser.add_argument("--tipcount", dest="count_tips", help="Given a file with many trees, simply count the number of unique tip labels in all trees.", action="store_true");
 parser.add_argument("--relabeltips", dest="relabel", help="Given a file with many trees and a set of labels defined by -labels, this will relabel tip nodes. Use -m to decide placement of new label, and -delim to enter delimiting character.", action="store_true");
 parser.add_argument("--rmlabels", dest="rmlabel", help="Given a file with many trees with the internal nodes labeled, this will write a file with the same trees but WITHOUT internal nodes labeled.", action="store_true");
 parser.add_argument("--scale", dest="scale", help="Scale the branch lengths of the input tree(s) by an operation and value given. For example, enter '/2' to divide all branch lengths by 2, or '*5' to multiply all branch lengths by 5.", default=False);
+parser.add_argument("--rf", dest="rf", help="Given an input UNROOTED species tree and a file containing many single-copy UNROOTED gene trees this module will call RAxML to calculate Robinson-Foulds distance for each gene tree to the species tree. Use -genetrees for the input gene tree file and -i for the input species tree file or string.", action="store_true");
 
 parser.add_argument("-prefix", dest="file_prefix", help="For --sep, a string that will be used as the base file name for each output file.", default=False);
 parser.add_argument("-outgroup", dest="outgroup", help="For --root, a comma separated list of tip labels common between trees to use as the outgroup for rooting", default=False);
@@ -33,6 +34,7 @@ parser.add_argument("-genetrees", dest="genetrees", help="For --concordance, thi
 parser.add_argument("-labels", dest="labels", help="For --relabeltip, the old label and the newlabel in the format: \"old1,new1 old2,new2\". Old labels don't need to match exactly with existing labels to allow for matching substrings.", default=False);
 parser.add_argument("-m", dest="run_mode", help="Run mode for --rmlabels. 1 (default): Remove only internal node labels; 2: remove only branch lengths; 3: remove internal node labels and branch lengths. For --relabeltips, 1 (default): Replace old label with new label; 2: Add new label to beginning of old label; 3: Add new label to end of old label.", type=int, default=1);
 parser.add_argument("-delim", dest="delim", help="For --relabeltips, with run modes 2 and 3 this is the character that will be placed between the old and new label. Underscore (_) is default. Enter 'space' for space character.", default="_");
+parser.add_argument("-raxpath", dest="raxpath", help="For --rf, the full path to your RAxML executable. By default, will simply try 'raxml'.", default="raxml");
 
 args = parser.parse_args();
 # Input option definitions.
@@ -160,9 +162,9 @@ if args.root_tree:
 
 if args.fotc:
 	if file_flag == False and tree_flag == False:
-		sys.exit(core.errorOut(11, "--concordance only works on an input FILE containing many trees or a TREE STRING."));
+		sys.exit(core.errorOut(11, "--concordance only works on an input FILE containing a rooted tree or a rooted TREE STRING."));
 	if not os.path.isfile(args.genetrees):
-		sys.exit(core.errorOut(12, "-genetrees must be a valide file name!"));
+		sys.exit(core.errorOut(12, "-genetrees must be a valid file name!"));
 	else:
 		args.genetrees = os.path.abspath(args.genetrees);
 	# Check if the input files are valid.
@@ -251,5 +253,38 @@ if args.scale != False:
 	tree.scaleBL(filelist[0], scale_op, scale_factor, output);
 	sys.exit();
 
+if args.rf:
+	#if not os.path.exists(args.raxpath):
+	#	sys.exit(core.errorOut(22, "Path to RAxML (" + args.raxpath + ") not found!"));
+	if args.raxpath:
+		print "User specified path to RAxML:", args.raxpath;
+	else:
+		print "No path to RAxML specified. Trying 'raxml'";
+	# Checking the input raxpath.
+
+	if file_flag == False and tree_flag == False:
+		sys.exit(core.errorOut(23, "--rf only works on an input FILE containing an unrooted tree or an unrooted TREE STRING."));
+	if not os.path.isfile(args.genetrees):
+		sys.exit(core.errorOut(24, "-genetrees must be a valid file name!"));
+	else:
+		args.genetrees = os.path.abspath(args.genetrees);
+	# Check if the input files are valid.
+
+	if tree_flag:
+		try:
+			td, t, root = tp.treeParse(args.input);
+			filelist = [td,t,root,args.input];
+			# Weird hack.
+		except:
+			sys.exit(core.errorOut(25, "Couldn't read the input string as a Newick tree!"));
+	# If the input is not a file, check to see if it's a Newick string.
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "Calculating Robinson-Foulds distance for each gene tree to the species tree.";
+	print core.spacedOut("Using gene trees in:", pad), args.genetrees;
+	output, outnum = core.defaultOutFile(args.genetrees, file_flag, "RF", args.output);
+	print core.spacedOut("Writing output to:", pad), output;
+	tree.robF(filelist, tree_flag, args.genetrees, args.raxpath, output);
+	sys.exit();
 
 
