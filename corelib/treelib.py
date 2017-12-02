@@ -251,7 +251,7 @@ def rootTrees(infiles, tree_flag, outgroup, outfilename):
 
 #############################################################################
 
-def flightOfTheConcordance(infiles, tree_flag, genefilename):
+def flightOfTheConcordance(infiles, tree_flag, genefilename, count_tops):
 # This function calculates concordance factors for each node in a species tree given a
 # set of singly-copy gene trees.
 	if tree_flag:
@@ -270,6 +270,8 @@ def flightOfTheConcordance(infiles, tree_flag, genefilename):
 	node_counts = defaultdict(float);
 	num_lines, tre_skip, sc_skip = 0, [], [];
 	total_trees = 0.0;
+	if count_tops:
+		tops, top_counts, top_trees = [], [], [];
 
 	for line in open(genefilename):
 		num_lines += 1;
@@ -279,6 +281,16 @@ def flightOfTheConcordance(infiles, tree_flag, genefilename):
 			tre_skip.append(str(num_lines));
 			continue;
 		# Check if each line in the genetrees file is a Newick string.
+
+		if count_tops:
+			gclade = [set(tp.getClade(node, ginfo)) for node in ginfo if ginfo[node][2] != 'tip'];
+			if gclade in tops:
+				topind = tops.index(gclade);
+				top_counts[topind] += 1;
+			else:
+				tops.append(gclade);
+				top_counts.append(1);
+				top_trees.append(gtree);
 
 		gtips = [node for node in ginfo if ginfo[node][1] == 'tip'];
 		if set(gtips) != set(stips) or len(gtips) != len(stips):
@@ -300,6 +312,16 @@ def flightOfTheConcordance(infiles, tree_flag, genefilename):
 
 
 	print "\n" + core.getTime() + " Done!";
+
+	if count_tops:
+		print "\n----Topology counts----";
+		tops_dict = {};
+		for x in range(len(tops)):
+			tops_dict[top_trees[x]] = top_counts[x];
+		for item in sorted(tops_dict.items(), key=lambda x: x[1], reverse=True):
+			print item[0], item[1];
+		print len(tops_dict), "total topologies found";
+
 	print "\n----Concordance factor nodes----";
 	stree = tp.addBranchLength(stree, sinfo);
 	for node in node_counts:

@@ -31,6 +31,7 @@ parser.add_argument("--rf", dest="rf", help="Given an input UNROOTED species tre
 parser.add_argument("-prefix", dest="file_prefix", help="For --sep, a string that will be used as the base file name for each output file.", default=False);
 parser.add_argument("-outgroup", dest="outgroup", help="For --root, a comma separated list of tip labels common between trees to use as the outgroup for rooting", default=False);
 parser.add_argument("-genetrees", dest="genetrees", help="For --concordance, this is the file containing the gene trees.", default=False);
+parser.add_argument("--count", dest="count_tops", help="For --concordance. If set, the module will print out the number of times each topology was found.", action="store_true", default=False);
 parser.add_argument("-labels", dest="labels", help="For --relabeltip, the old label and the newlabel in the format: \"old1,new1 old2,new2\". Old labels don't need to match exactly with existing labels to allow for matching substrings.", default=False);
 parser.add_argument("-m", dest="run_mode", help="Run mode for --rmlabels. 1 (default): Remove only internal node labels; 2: remove only branch lengths; 3: remove internal node labels and branch lengths. For --relabeltips, 1 (default): Replace old label with new label; 2: Add new label to beginning of old label; 3: Add new label to end of old label.", type=int, default=1);
 parser.add_argument("-delim", dest="delim", help="For --relabeltips, with run modes 2 and 3 this is the character that will be placed between the old and new label. Underscore (_) is default. Enter 'space' for space character.", default="_");
@@ -182,7 +183,7 @@ if args.fotc:
 	print "Calculating concordance factors for your species tree.";
 	print core.spacedOut("Using gene trees in:", pad), args.genetrees;
 	print "Simply printing output to the screen";
-	tree.flightOfTheConcordance(filelist, tree_flag, args.genetrees);
+	tree.flightOfTheConcordance(filelist, tree_flag, args.genetrees, args.count_tops);
 	sys.exit();
 # --concordance : takes an input species tree (Newick string or file) and single-copy gene trees (file) 
 # and calculates concordance factors for each internal node of the species tree.
