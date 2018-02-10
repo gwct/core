@@ -180,14 +180,14 @@ def rootTrees(infiles, tree_flag, outgroup, outfilename):
 	try:
 		outgroup = outgroup.split(",");
 	except:
-		sys.exit(core.errorOut(11, "-outgroup entered incorrectly! Should be comma delimited list of tip labels."));
+		sys.exit(core.errorOut(26, "-outgroup entered incorrectly! Should be comma delimited list of tip labels."));
 	# Check to make sure the outgroups were entered correctly.
 
 	if tree_flag:
 		td, tree, r, tree_string = infiles;
 		lca, monophyletic = tp.LCA(outgroup, td);
 		if monophyletic == 0:
-			sys.exit(core.errorOut(12, "Your outgroup labels (-outgroup) must be monophyletic!"));
+			sys.exit(core.errorOut(27, "Your outgroup labels (-outgroup) must be monophyletic!"));
 		# Specified outgroups must be monophyletic.
 		
 		with open(tmpfilename, "w") as tmpfile:
@@ -260,7 +260,7 @@ def flightOfTheConcordance(infiles, tree_flag, genefilename, count_tops):
 		try:
 			sinfo, stree, sroot = tp.treeParse(open(infiles[0], "r").read());
 		except:
-			sys.exit(core.errorOut(19, "Could not read species tree (-s) as a Newick tree!"));
+			sys.exit(core.errorOut(28, "Could not read species tree (-s) as a Newick tree!"));
 		# If the input species tree was a file check to make sure it contains a valid Newick tree.	
 
 	stips = [node for node in sinfo if sinfo[node][1] == 'tip'];
@@ -393,13 +393,47 @@ def countTips(infile):
 
 #############################################################################
 
+def countClade(infile, clade):
+# This function counts all unique tip labels given a set of trees.
+
+	num_lines, num_trees, tre_skip, clade_count = 0, 0, [], 0;
+
+	for line in open(infile):
+		num_lines += 1;
+		try:
+			td, tree, root = tp.treeParse(line);
+		except:
+			tre_skip.append(str(num_lines));
+			continue;
+		num_trees += 1;
+		# Check if each line in the genetrees file is a Newick string.
+
+		for node in td:
+			if td[node][2] != 'tip':
+				cur_clade = set(tp.getClade(node, td));
+				if cur_clade == clade:
+					clade_count += 1;
+		# Iterate the dictionary for the clade in the current tree.
+
+	print "\n" + core.getTime() + " Done!";
+	print "\n----Clade counts----";
+	print "# of trees with clade:\t", clade_count;
+	# Print the # of trees containing the clade.
+	print "\n-----";
+	print str(num_lines) + " total lines in input file.";
+	if tre_skip != []:
+		print "The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip);
+	print str(num_trees) + " trees read.";
+	print "=======================================================================";
+
+#############################################################################
 def relabelTips(infile, labels, mode, delim, output):
 # This function takes a file with many trees and searches the tip labels to match
 # strings for replacements.
 	try:
 		labels = {l.split(",")[0] : l.split(",")[1] for l in labels.split(" ")};
 	except:
-		sys.exit(core.errorOut(17, "-labels was not input correctly! Format 'oldlabel1,newlabel1 oldlabel2,newlabel2'"));
+		sys.exit(core.errorOut(29, "-labels was not input correctly! Format 'oldlabel1,newlabel1 oldlabel2,newlabel2'"));
 	# Check to make sure the labels were input properly by the user.
 
 	if delim == 'space':
@@ -549,7 +583,7 @@ def robF(infiles, tree_flag, genefilename, raxpath, outfile):
 		try:
 			sinfo, stree, sroot = tp.treeParse(open(infiles[0], "r").read());
 		except:
-			sys.exit(core.errorOut(26, "Could not read species tree (-s) as a Newick tree!"));
+			sys.exit(core.errorOut(30, "Could not read species tree (-s) as a Newick tree!"));
 		# If the input species tree was a file check to make sure it contains a valid Newick tree.	
 
 	stips = [node for node in sinfo if sinfo[node][1] == 'tip'];

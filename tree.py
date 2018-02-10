@@ -23,6 +23,7 @@ parser.add_argument("--rootcheck", dest="root_check", help="Given an input file 
 parser.add_argument("--root", dest="root_tree", help="Given an input file or tree string, this will root the tree with the specified outgroup(s).", action="store_true");
 parser.add_argument("--concordance", dest="fotc", help="Given an input ROOTED species tree and a file containing many single-copy ROOTED gene trees this module will calculate concordance factors for each node in the species tree. Use -genetrees for the input gene tree file and -i for the input species tree file or string.", action="store_true");
 parser.add_argument("--tipcount", dest="count_tips", help="Given a file with many trees, simply count the number of unique tip labels in all trees.", action="store_true");
+parser.add_argument("--cladecount", dest="count_clade", help="Given a file with many trees and a list of tips defined with -clade, count the number of trees in which those labels form a monophyletic clade.", action="store_true");
 parser.add_argument("--relabeltips", dest="relabel", help="Given a file with many trees and a set of labels defined by -labels, this will relabel tip nodes. Use -m to decide placement of new label, and -delim to enter delimiting character.", action="store_true");
 parser.add_argument("--rmlabels", dest="rmlabel", help="Given a file with many trees with the internal nodes labeled, this will write a file with the same trees but WITHOUT internal nodes labeled.", action="store_true");
 parser.add_argument("--scale", dest="scale", help="Scale the branch lengths of the input tree(s) by an operation and value given. For example, enter '/2' to divide all branch lengths by 2, or '*5' to multiply all branch lengths by 5.", default=False);
@@ -36,6 +37,7 @@ parser.add_argument("-labels", dest="labels", help="For --relabeltip, the old la
 parser.add_argument("-m", dest="run_mode", help="Run mode for --rmlabels. 1 (default): Remove only internal node labels; 2: remove only branch lengths; 3: remove internal node labels and branch lengths. For --relabeltips, 1 (default): Replace old label with new label; 2: Add new label to beginning of old label; 3: Add new label to end of old label.", type=int, default=1);
 parser.add_argument("-delim", dest="delim", help="For --relabeltips, with run modes 2 and 3 this is the character that will be placed between the old and new label. Underscore (_) is default. Enter 'space' for space character.", default="_");
 parser.add_argument("-raxpath", dest="raxpath", help="For --rf, the full path to your RAxML executable. By default, will simply try 'raxml'.", default="raxml");
+parser.add_argument("-clade", dest="clade", help="For --cladecount, a comma separated list of tip labels.", default=False);
 
 args = parser.parse_args();
 # Input option definitions.
@@ -198,11 +200,26 @@ if args.count_tips:
 	sys.exit();
 # --tipcount : counts all unique tips in an input file with many trees.
 
+if args.count_clade:
+	if not file_flag:
+		sys.exit(core.errorOut(15, "--cladecount takes an input (-i) FILE only."));
+	try:
+		clade = set(args.clade.split(","));
+	except:
+		sys.exit(core.errorOut(16, "--clade must be a comma separate list of tips."));
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Counting clades in:", pad), args.input;
+	print core.spacedOut("Clade tips:", pad), args.clade;
+	tree.countClade(filelist[0], clade);
+	sys.exit();
+# --tipcount : counts all unique tips in an input file with many trees.
+
 if args.relabel:
 	if not file_flag:
-		sys.exit(core.errorOut(14, "--relabeltips takes an input (-i) FILE only."));
+		sys.exit(core.errorOut(17, "--relabeltips takes an input (-i) FILE only."));
 	if not args.labels:
-		sys.exit(core.errorOut(15, "-labels must be entered with --relabeltips"));
+		sys.exit(core.errorOut(18, "-labels must be entered with --relabeltips"));
 	if args.run_mode not in [1,2,3]:
 		sys.exit(core.errorOut(16, "-m must take values of 1, 2, or 3."));
 	print "=======================================================================";
@@ -226,9 +243,9 @@ if args.relabel:
 
 if args.rmlabel:
 	if not file_flag:
-		sys.exit(core.errorOut(18, "--rmlabels takes an input (-i) FILE only."));
+		sys.exit(core.errorOut(19, "--rmlabels takes an input (-i) FILE only."));
 	if args.run_mode not in [1,2,3]:
-		sys.exit(core.errorOut(19, "-m must take values of 1, 2, or 3."));
+		sys.exit(core.errorOut(20, "-m must take values of 1, 2, or 3."));
 	print "=======================================================================";
 	print "\t\t\t" + core.getDateTime();
 	print core.spacedOut("Removing internal node labels from:", pad), args.input;
@@ -241,11 +258,11 @@ if args.rmlabel:
 if args.scale != False:
 	scale_op, scale_factor = args.scale[0], args.scale[1:];
 	if scale_op not in ["/","*","+","-"]:
-		sys.exit(core.errorOut(20, "The first charcater of --scale must be /, *, +, or -."));
+		sys.exit(core.errorOut(21, "The first charcater of --scale must be /, *, +, or -."));
 	try:
 		scale_factor = float(scale_factor);
 	except:
-		sys.exit(core.errorOut(21, "The scale factor must be an integer or a float."));
+		sys.exit(core.errorOut(22, "The scale factor must be an integer or a float."));
 	print "=======================================================================";
 	print "\t\t\t" + core.getDateTime();
 	print core.spacedOut("Scaling branch lengths on trees in:", pad), args.input;
