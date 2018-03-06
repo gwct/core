@@ -140,7 +140,7 @@ if args.trim:
 	sys.exit();
 ## --trim
 
-if args.relabel != None:
+if args.relabel:
 	if args.relabel not in [1,2,3]:
 		sys.exit(core.errorOut(8, "-relabel must take values of 1, 2, or 3"));
 	print "=======================================================================";
@@ -151,7 +151,7 @@ if args.relabel != None:
 	sys.exit();
 ## -relabel
 
-if args.label_rm != None:
+if args.label_rm:
 	print "=======================================================================";
 	print "\t\t\t" + core.getDateTime();
 	print core.spacedOut("Removing sequences from all .fa files in:", 60), args.input;
@@ -161,7 +161,7 @@ if args.label_rm != None:
 	sys.exit();
 ## -rmseq
 
-if args.start_rm != None:
+if args.start_rm:
 	if args.start_rm.lower() not in ['protein','prot','p','codon','c']:
 		sys.exit(core.errorOut(10, "Sequence types for removing starts (-rmstart) must be 'protein' or 'codon'"));
 	print "=======================================================================";
@@ -172,12 +172,12 @@ if args.start_rm != None:
 	sys.exit();	
 ## -rmstart
 
-if args.replace != None:
+if args.replace:
 	print "=======================================================================";
 	print "\t\t\t" + core.getDateTime();
 	print core.spacedOut("Doing replacements of bases in:", 50), args.input;
 	print core.spacedOut("Doing the following replacements:", 50), args.replace;
-	print core.spacedOut("Writing repalced (.repl) sequences to:", 50), output;
+	print core.spacedOut("Writing replaced (.repl) sequences to:", 50), output;
 	fa.replaceBase(filelist, args.replace, file_flag, output);
 	sys.exit();
 # replace

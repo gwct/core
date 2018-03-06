@@ -452,10 +452,14 @@ def replaceBase(fasta_files, replacements, file_flag, out_dest):
 			continue;
 
 		total_files += 1;
-		outfilename = core.getOutFile(fasta_file, file_flag, out_dest, "repl." + ".".join(replacements));
+		if any("*" in r for r in replacements) or any(" " in r for r in replacements):
+			outfilename = core.getOutFile(fasta_file, file_flag, out_dest, "repl");
+		else:
+			outfilename = core.getOutFile(fasta_file, file_flag, out_dest, "repl." + ".".join(replacements));
 		outfile = open(outfilename, "w");
 		for title in seqs:
 			seq = seqs[title].upper();
+			total_seq += 1;
 			total_pos += len(seq);
 			for replacement in replacements:
 				total_repl += seq.count(replacement[0]);
