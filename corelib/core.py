@@ -411,6 +411,7 @@ def fastaReader(i_name):
 #############################################################################
 
 def relabelHeader(title, new_label, header_delim, ropt):
+	#print title, new_label, header_delim, ropt;
 	if ropt == 1:
 		new_title = ">" + new_label + header_delim + title[1:];
 	elif ropt == 2:
