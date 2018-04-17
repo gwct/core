@@ -439,11 +439,7 @@ def fastaGetDict(i_name):
 #the key:value format as title:sequence.
 
 	seqdict = {};
-	i = 1;
 	for line in open(i_name, "r"):
-		if i == 1 or i % 1000 == 0:
-			print i;
-		i += 1;
 		line = line.replace("\n", "");
 		if line[:1] == '>':
 			curkey = line;
