@@ -264,10 +264,11 @@ def flightOfTheConcordance(infiles, tree_flag, genefilename, count_tops):
 		# If the input species tree was a file check to make sure it contains a valid Newick tree.	
 
 	stips = [node for node in sinfo if sinfo[node][1] == 'tip'];
-	sclades = { node : set(tp.getClade(node, sinfo)) for node in sinfo if sinfo[node][2] != 'tip'};
+	sclades = { node : set(tp.getClade(node, sinfo)) for node in sinfo if sinfo[node][2] != 'tip' };
 	# Get the tips and clades (tip nodes) for each internal node in the species tree.
 
-	node_counts = defaultdict(float);
+	#node_counts = defaultdict(float);
+	node_counts = { node : 0.0 for node in sinfo if sinfo[node][2] != 'tip' };
 	num_lines, tre_skip, sc_skip = 0, [], [];
 	total_trees = 0.0;
 	if count_tops:
