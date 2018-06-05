@@ -239,11 +239,14 @@ def logCheck(lopt, lfilename, outline):
 
 #############################################################################
 
-def errorOut(errnum, errmsg):
+def errorOut(errnum, errmsg, ropt=0):
 #Formatting for error messages.
-	fullmsg = "|** Error " + str(errnum) + ": " + errmsg + " |";
+	fullmsg = "| ** Error " + str(errnum) + ": " + errmsg + " |";
 	border = " " + "-" * (len(fullmsg)-2);
-	print "\n" + border + "\n" + fullmsg + "\n" + border + "\n";
+	if ropt:
+		return "\n" + border + "\n" + fullmsg + "\n" + border + "\n";
+	else:
+		print "\n" + border + "\n" + fullmsg + "\n" + border + "\n";
 
 #############################################################################
 
