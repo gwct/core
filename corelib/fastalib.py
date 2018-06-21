@@ -303,7 +303,7 @@ def trim(fasta_files, header_delim, file_flag, out_dest):
 def relabel(fasta_files, ropt, header_delim, new_labels, file_flag, out_dest):
 # This function either adds a label to the beginning or end of a FASTA header or 
 # completely replaces the FASTA header.
-	if header_delim == None:
+	if header_delim == False:
 		header_delim = "_";
 
 	new_labels = new_labels.split(",");
