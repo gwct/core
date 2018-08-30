@@ -22,6 +22,7 @@ parser.add_argument("-o", dest="output", help="Desired output location. If input
 parser.add_argument("--muscle", dest="muscle", help="To align the input FASTA files with MUSCLE.", action="store_true");
 parser.add_argument("--pasta", dest="pasta", help="To align the input FASTA files with PASTA.", action="store_true");
 parser.add_argument("--prank", dest="prank", help="To align the input FASTA files with PRANK. Used for codon alignments ONLY!", action="store_true");
+parser.add_argument("--macse", dest="macse", help="To align the input FASTA files with PRANK. Used for codon alignments ONLY!", action="store_true");
 parser.add_argument("--gblocks", dest="gblocks", help="To mask alignments with GBlocks.", action="store_true");
 parser.add_argument("--raxml", dest="raxml", help="To make gene trees from alignments with RAxML.", action="store_true");
 parser.add_argument("--codeml", dest="codeml", help="To make ancesntral reconstructions or run the branch-site test with PAML's codmel.", action="store_true");
@@ -116,7 +117,19 @@ if args.prank:
 	print "-------------------------";
 	wrap.runPrank(filelist, file_flag, path, args.verbosity, output, logfilename);
 	sys.exit();
-# --pasta
+# --prank
+
+if args.macse:
+	print "\n** Warning -- MACSE is only used for codon alignments.\n"
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "** For --prank, only options -i, -p, -v, and -o are used!";
+	path, output, logfilename = wrap.ioInfo(args.input, args.path, args.output, "MACSE", file_flag);
+	print core.spacedOut("Input sequence type:", pad), args.seqtype;
+	print "-------------------------";
+	wrap.runMacse(filelist, file_flag, path, args.verbosity, output, logfilename);
+	sys.exit();
+# --macse
 
 if args.gblocks:
 	if args.run_mode not in [0,1]:

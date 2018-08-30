@@ -246,6 +246,56 @@ def runPrank(infiles, file_flag, path, v, output, logfilename):
 
 #############################################################################
 
+def runMacse(infiles, file_flag, path, v, output, logfilename):
+# This module runs the MUSCLE alignment program on a list of FASTA files.
+	print "Running MACSE...\n";
+	if v == 0 and not file_flag:
+		stdoutlog = os.path.join(output, "macse.stdout");
+	# If the user specifies nothing to be printed to the screen, MUSCLE's output will instead be
+	# redirected to a file.
+
+	i, numbars, donepercent, numfiles = 0,0,[], len(infiles);
+	fa_skip = [];
+
+	for infile in infiles:
+		if v == 0 and not file_flag:
+			numbars, donepercent = core.loadingBar(i, numfiles, donepercent, numbars);
+		i += 1;
+		if not infile.endswith(".fa"):
+			fa_skip.append(infile);
+			continue;
+		# Read the file if it is a FASTA (.fa) file.
+
+		if file_flag:
+			outfilename = output;
+		else:
+			outfilename = os.path.splitext(os.path.basename(infile))
+			outfilename = os.path.join(output, outfilename[0] + "-macse" + outfilename[1]);
+			outfilename_aa = os.path.join(output, outfilename[0] + "-macse-AA" + outfilename[1]);
+		# Get the output file name for the current alignment.
+
+		macse_cmd = path + " -prog alignSequences -seq '" + infile + "' -out_NT '" + outfilename + "' -out_AA '" + outfilename_aa + "'";
+		if v == 0 and not file_flag:
+			macse_cmd += ">> " + stdoutlog + " 2>&1";
+		os.system(macse_cmd);
+		if not file_flag:
+			with open(logfilename, "a") as logfile:
+				logfile.write(macse_cmd + "\n");
+		# The MACSE call.
+
+		os.system("rm " + outfilename_aa);
+
+	if v == 0 and not file_flag:
+		pstring = "100.0% complete.";
+		sys.stderr.write('\b' * len(pstring) + pstring);
+	print "\n" + core.getTime() + " Done!";
+	core.printWrite(logfilename,"-----", file_flag);
+	if fa_skip != []:
+		core.printWrite(logfilename,"# The following " + str(len(fa_skip)) + " file(s) were skipped because they couldn't be read as fasta files: " + ",".join([os.path.basename(f) for f in fa_skip]), file_flag);
+	print "=======================================================================";
+
+#############################################################################
+
 def runGblocks(infiles, file_flag, path, seqtype, run_mode, v, output, logfilename):
 # This module runs the GBlocks alignment masking program on a list of aligned FASTA files.
 	print "Running GBlocks...\n";
