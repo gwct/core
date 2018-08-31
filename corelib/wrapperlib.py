@@ -817,7 +817,7 @@ def runSDM(infiles, file_flag, path, v, output, logfilename):
 	routfilename = os.path.join(output, "sdm-nj.tre");
 	# Some more file prep
 
-	sdm_cmd = "java -jar ~/bin/SDM/SDM.jar -i '" + infile + "' -d ACS97 -t T -f Phylip_square";
+	sdm_cmd = "java -Xmx6g -jar ~/bin/SDM/SDM.jar -i '" + infile + "' -d ACS97 -t T -f Phylip_square";
 	if v == 0:
 		sdm_cmd += " >> " + stdoutlog + " 2>&1";
 	with open(logfilename, "a") as logfile:
