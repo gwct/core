@@ -407,6 +407,8 @@ def fastaReader(i_name):
 			return None, i_name;
 	except:
 		return None, i_name;
+	if seqs == {}:
+		return None, i_name;
 	return seqs, False;
 	# If the reading of the file was successful, it returns the sequences. If not,
 	# it returns the file name to be recorded as being skipped.
