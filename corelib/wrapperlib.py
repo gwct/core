@@ -55,7 +55,10 @@ def defaultOut(input_name, file_flag, suffix, output_init=False):
 		else:
 			output = os.path.splitext(output_init);
 		# Otherwise, use the user specified option.
-		output = output[0] + "-" + suffix + "-1" + output[1];
+		if os.path.isdir(output[0]):
+			output = os.path.join(output[0], suffix + "-1" + output[1]);
+		else:
+			output = output[0] + "-" + suffix + "-1" + output[1];
 
 		while os.path.exists(output) or os.path.exists(os.path.splitext(output)[0]):
 			output = os.path.splitext(output);
