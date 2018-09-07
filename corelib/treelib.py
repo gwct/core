@@ -251,6 +251,69 @@ def rootTrees(infiles, tree_flag, outgroup, outfilename):
 
 #############################################################################
 
+def rootTreesBest(infiles, tree_flag, outgroup, outfilename):
+# This function relies on Newick Utilities (NU) to root trees at a specified outgroup.
+	import re
+	tmpfilename = "tmp9825xyz-t-m-p.tmp";
+	# NU can only read trees from a file, so I make a temporary one.
+	try:
+		outgroup = outgroup.split(",");
+	except:
+		sys.exit(core.errorOut(26, "-outgroup entered incorrectly! Should be comma delimited list of tip labels."));
+	# Check to make sure the outgroups were entered correctly.
+
+	tmpfilename_2 = "tmp25xzgz-t-m-p.tmp"
+	# To retrieve output from NU I use another temporary file.
+	infile = infiles[0];
+	num_lines, num_trees, non_mono, line_skip = 0,0,[],[];
+	with open(outfilename, "w") as treefile:
+		for line in open(infile):
+			alnfilename, line = line.strip().split("\t");
+			num_lines += 1;
+			try:
+				td, tree, r = tp.treeParse(line);
+			except:
+				line_skip.append(str(num_lines));
+				treefile.write("**Skipped - couldn't read as Newick string\n");
+				continue;
+			if not all(s in td for s in outgroup):
+				line_skip.append(str(num_lines));
+				treefile.write("**Skipped - not all outgroups in tree.\n");
+				continue;
+
+			lca, monophyletic = tp.LCA(outgroup, td);
+			if monophyletic == 0:
+				non_mono.append(str(num_lines));
+				continue;
+			num_trees += 1;
+			# Check to make sure each line is a Newick string and that the outgroups are monophyletic in that tree.
+
+			with open(tmpfilename, "w") as tmpfile:
+				tmpfile.write(line);
+			nw_cmd = "nw_reroot " + tmpfilename + " " + " ".join(outgroup) + " > " + tmpfilename_2;
+			os.system(nw_cmd);
+			# The NU call with nw_reroot.
+
+			rooted_tree = open(tmpfilename_2, "r").read().strip();
+			treefile.write(alnfilename + "\t" + rooted_tree + "\n");
+			# Getting the output from the tmp file.
+
+	os.system("rm " + tmpfilename);
+	os.system("rm " + tmpfilename_2);
+	# Remove the tmp files.
+
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print str(num_lines) + " total lines.";
+	if line_skip != []:
+		print "The following " + str(len(line_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(line_skip);
+	if non_mono != []:
+		print "The following " + str(len(non_mono)) + " lines did not contain monophyletic outgroups: " + ",".join(non_mono);
+	print str(num_trees) + " trees rooted.";
+	print "=======================================================================";
+
+#############################################################################
+
 def flightOfTheConcordance(infiles, tree_flag, genefilename, count_tops):
 # This function calculates concordance factors for each node in a species tree given a
 # set of singly-copy gene trees.

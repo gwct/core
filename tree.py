@@ -21,6 +21,7 @@ parser.add_argument("--join", dest="tree_join", help="Given an input directory w
 parser.add_argument("--label", dest="label_tree", help="Given an input file or tree string, this will add internal node labels to the tree(s).", action="store_true");
 parser.add_argument("--rootcheck", dest="root_check", help="Given an input file or tree string, this will check if the tree(s) are rooted or not.", action="store_true");
 parser.add_argument("--root", dest="root_tree", help="Given an input file or tree string, this will root the tree with the specified outgroup(s).", action="store_true");
+parser.add_argument("--rootbest", dest="root_tree_best", help="This option does the same thing as 'root' but on a 'best-trees.txt' file from wrappers.py --raxml. This file includes a column on each line with the source alignment file name.", action="store_true");
 parser.add_argument("--concordance", dest="fotc", help="Given an input ROOTED species tree and a file containing many single-copy ROOTED gene trees this module will calculate concordance factors for each node in the species tree. Use -genetrees for the input gene tree file and -i for the input species tree file or string.", action="store_true");
 parser.add_argument("--tipcount", dest="count_tips", help="Given a file with many trees, simply count the number of unique tip labels in all trees.", action="store_true");
 parser.add_argument("--cladecount", dest="count_clade", help="Given a file with many trees and a list of tips defined with -clade, count the number of trees in which those labels form a monophyletic clade.", action="store_true");
@@ -160,6 +161,22 @@ if args.root_tree:
 		print core.spacedOut("Re-rooting all trees in:", pad), args.input;
 		print core.spacedOut("Writing rooted trees to:", pad), output;
 	tree.rootTrees(filelist, tree_flag, args.outgroup, output);
+	sys.exit();
+# --root : takes an input Newick string or file and roots or re-roots the trees using Newick Utilities and the specified outgroups.
+
+if args.root_tree_best:
+	print "\n** Warning -- The rootbest option relies on the software Newick Utilities. If you don't have this installed and in your PATH variable, you will see an error!";
+	if file_flag == False:
+		sys.exit(core.errorOut(8.1, "--rootbest only works on the best-trees.txt FILE from wrappers.py --raxml containing many rows, each with the source alignment filename and the tree separated by a tab."));
+	if not args.outgroup:
+		sys.exit(core.errorOut(9.1, "With --root, a set of tip labels must be specified as the desired outgroup (-outgroup)."));
+
+	output, outnum = core.defaultOutFile(args.input, file_flag, "reroot", args.output);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Re-rooting all trees in:", pad), args.input;
+	print core.spacedOut("Writing rooted trees to:", pad), output;
+	tree.rootTreesBest(filelist, tree_flag, args.outgroup, output);
 	sys.exit();
 # --root : takes an input Newick string or file and roots or re-roots the trees using Newick Utilities and the specified outgroups.
 
