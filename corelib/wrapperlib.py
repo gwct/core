@@ -545,7 +545,7 @@ def runRaxml(infiles, file_flag, path, model, bs_reps, threads, constraint_tree,
 
 #############################################################################
 
-def runCodeml(infiles, file_flag, path, seqtype, treefile, prune, branch_site, anc, codonds, v, output, logfilename):
+def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch_site, test_spec, anc, codonds, v, output, logfilename):
 # This module runs codeml for several purposes including the null and alternate models of the branch-site test and for
 # ancestral reconstructions of input sequences.
 	import treeparse as tr
@@ -557,6 +557,10 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, prune, branch_site, a
 		logfilename = os.path.join(output, os.path.basename(logfilename));
 	# codeml creates many output files, so if the input type is a file, we actually want to
 	# create an output directory and move everything in there.
+
+	if test_spec:
+		test_spec = testspec.split(",");
+	# Gets the species that define the foreground branch for the branch-site test.
 
 	if v == 0:
 		stdoutlog = os.path.join(output, "codeml.stdout");
@@ -573,7 +577,10 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, prune, branch_site, a
 	# Create the codeml-out directory within the main output directory.
 
 	treefile = os.path.abspath(treefile);
-	if prune:
+	if gt_opt:
+		trees = { line.split("\t")[0] : line.strip().split("\t")[1] for line in treefile };
+	# Reads the gene tree file if the gene tree option is true.
+	elif prune:
 		td, tree, root = tr.treeParse(open(treefile, "r").read());
 		tips = [node for node in td if td[node][2] == 'tip'];
 	# Read the input species tree with treeParse if the --prune option is specified.
@@ -594,6 +601,10 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, prune, branch_site, a
 			continue;
 		# Read the file if it is a FASTA (.fa) file.
 
+		if gt_opt:
+			cur_tree = trees[os.path.splitext(infile)[0].replace("-gblocks","")];
+			# The gblocks part is a bad solution...
+			tinfo, t, r = tr.treeParse(cur_tree);
 		if prune:
 			seqs, skip = core.fastaReader(infile);
 			if not core.checkAlign(seqs):
@@ -624,8 +635,10 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, prune, branch_site, a
 			inline = "seqfile = " + infile + "\n";
 			ctlFile.write(inline);
 			if treefile != "":
-				if prune == 1:
+				if prune:
 					treeline = "treefile = pruned.tre\n";
+				elif gt_opt:
+					treeline = "treefile = " + cur_tree + "\n";
 				else:
 					treeline = "treefile = " + treefile + "\n";
 				ctlFile.write(treeline);

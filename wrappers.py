@@ -45,6 +45,8 @@ parser.add_argument("--bl", dest="estimate_bl", help="RAxML: Use with -c to set 
 # RAxML specific options
 
 parser.add_argument("-tree", dest="tree", help="codeml: The species tree file to use.", default=False);
+parser.add_argument("--genetrees", dest="gt_opt", help="Set this to indicate that the file given by -tree contains a gene tree for each alignment to be run through codeml (in the format of the --raxml best_trees.txt file).", action="store_true");
+parser.add_argument("-testbranch", dest="test_spec", help="The species you want to test with the branch-site test. Give species delimited by commas to indicate their ancestral branch.", default=False);
 parser.add_argument("--prune", dest="prune", help="codeml: If not all species present in the tree will be present in each alignment, set this to prune the tree for each file. NOTE: requires Newick Utilities to be installed.", action="store_true");
 parser.add_argument("--branchsite", dest="branch_site", help="codeml: By default, this program runs the null model of the branch-site test (model=2, NSsite=2, fix_omega=1, omega=1). Set this option to run the alternate model (model=2, NSsite=2, fix_omega=0, omega=1). A branch must be specified in your tree file.", action="store_true");
 parser.add_argument("--anc", dest="anc", help="codeml: Set this option to perform ancestral reconstructions.", action="store_true");
@@ -187,6 +189,8 @@ if args.codeml:
 		sys.exit(core.errorOut("11a", "The --codonds option requires -seqtype codon."))
 	if not args.tree or not os.path.isfile(args.tree):
 		sys.exit(core.errorOut(12, "Invalid tree file name!"));
+	if args.branchsite and not args.test_spec:
+		sys.ext(core.errorOut("12a", "A foreground branch must be specified to perform the branch site test. Be sure you do this for the null run as well (without --branchsite)."));
 	if args.prune:
 		"\n** Warning: The --prune option requires Newick Utilities to be installed and executable as 'nw_prune'!";
 	# The --codeml module has several options that need to be checked for input errors before it starts.
@@ -205,7 +209,7 @@ if args.codeml:
 	if args.prune:
 		print "Pruning species tree when necessary."
 	print "-------------------------";
-	wrap.runCodeml(filelist, file_flag, path, args.seqtype, args.tree, args.prune, args.branch_site, args.anc, args.codonds, args.verbosity, output, logfilename);
+	wrap.runCodeml(filelist, file_flag, path, args.seqtype, args.tree, args.gt_opt, args.prune, args.branch_site, args.test_spec, args.anc, args.codonds, args.verbosity, output, logfilename);
 	sys.exit()
 # --codeml
 
