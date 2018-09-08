@@ -48,7 +48,7 @@ parser.add_argument("-tree", dest="tree", help="codeml: The species tree file to
 parser.add_argument("--genetrees", dest="gt_opt", help="Set this to indicate that the file given by -tree contains a gene tree for each alignment to be run through codeml (in the format of the --raxml best_trees.txt file).", action="store_true");
 parser.add_argument("-testbranch", dest="test_spec", help="The species you want to test with the branch-site test. Give species delimited by commas to indicate their ancestral branch.", default=False);
 parser.add_argument("--prune", dest="prune", help="codeml: If not all species present in the tree will be present in each alignment, set this to prune the tree for each file. NOTE: requires Newick Utilities to be installed.", action="store_true");
-parser.add_argument("--branchsite", dest="branch_site", help="codeml: By default, this program runs the null model of the branch-site test (model=2, NSsite=2, fix_omega=1, omega=1). Set this option to run the alternate model (model=2, NSsite=2, fix_omega=0, omega=1). A branch must be specified in your tree file.", action="store_true");
+parser.add_argument("-branchsite", dest="branch_site", help="codeml: Enter 1 to run the alternate model for the branch-site test (model=2, NSsite=2, fix_omega=0, omega=1) and 2 to run the null model (model=2, NSsite=2, fix_omega=1, omega=1).", default=False);
 parser.add_argument("--anc", dest="anc", help="codeml: Set this option to perform ancestral reconstructions.", action="store_true");
 parser.add_argument("--codonds", dest="codonds", help="codeml: On codon alignments calculate pairwise dn and ds rates between lineages (runmode=-2)", action="store_true");
 # codeml specific options.
@@ -181,15 +181,17 @@ if args.raxml:
 # --raxml
 
 if args.codeml:
-	if not args.path:
-		sys.exit(core.errorOut(10, "A path (-p) must be specified for codeml!"));
+	#if not args.path:
+	#	sys.exit(core.errorOut(10, "A path (-p) must be specified for codeml!"));
+	if args.branch_site and args.branch_site not in ["1","2"]:
+		sys.exit(core.errorOut(10.9, "To run the alternate branch-site model set -branchsite to 1. To run the null model set -branchsite to 2"));
 	if args.seqtype not in ['codon','protein']:
 		sys.exit(core.errorOut(11, "codeml accepts sequence types (-seqtype) of codon and protein."));
 	if args.codonds and args.seqtype != 'codon':
 		sys.exit(core.errorOut("11a", "The --codonds option requires -seqtype codon."))
 	if not args.tree or not os.path.isfile(args.tree):
 		sys.exit(core.errorOut(12, "Invalid tree file name!"));
-	if args.branchsite and not args.test_spec:
+	if args.branch_site and not args.test_spec:
 		sys.ext(core.errorOut("12a", "A foreground branch must be specified to perform the branch site test. Be sure you do this for the null run as well (without --branchsite)."));
 	if args.prune:
 		"\n** Warning: The --prune option requires Newick Utilities to be installed and executable as 'nw_prune'!";
@@ -203,7 +205,7 @@ if args.codeml:
 	if not args.branch_site:
 		print "Running NULL model for branch-site test (model=2, NSsite=2, fix_omega=1, omega=1).";
 	else:
-		print "Running ALTERNATE model for branch-site test model=2, NSsite=2, fix_omega=1, omega=0).";
+		print "Running ALTERNATE model for branch-site test (model=2, NSsite=2, fix_omega=1, omega=0).";
 	if args.anc:
 		print "Performing ancestral reconstructions.";
 	if args.prune:

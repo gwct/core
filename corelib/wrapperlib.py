@@ -29,7 +29,7 @@ def ioInfo(input_init, path, output_init, program, file_flag):
 	print core.spacedOut("Writing output to:", pad), output;
 	if not file_flag:
 		print "* Making output directory...";
-		os.system("mkdir " + output);
+		os.system("mkdir \"" + output + "\"");
 		print "* Making logfile...";
 		logfilename = os.path.join(output, "run-" + program.lower() + "-" + str(file_num) + ".log");
 	else:
@@ -552,14 +552,17 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 	print "Running codeml...\n";
 	if file_flag:
 		output = os.path.splitext(output)[0];
-		os.system("mkdir '" + output + "'");
-		os.system("mv '" + logfilename + "' '" + output + "'");
+		os.system("mkdir \"" + output + "\"");
+		os.system("mv \"" + logfilename + "\" \"" + output + "\"");
 		logfilename = os.path.join(output, os.path.basename(logfilename));
 	# codeml creates many output files, so if the input type is a file, we actually want to
 	# create an output directory and move everything in there.
 
+	if branch_site in ["1","2"]:
+		branch_site = int(branch_site);
+
 	if test_spec:
-		test_spec = testspec.split(",");
+		test_spec = test_spec.split(",");
 	# Gets the species that define the foreground branch for the branch-site test.
 
 	if v == 0:
@@ -569,16 +572,16 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 
 	if anc:
 		ancdir = os.path.join(output, "anc-seqs-fa");
-		os.system("mkdir '" + ancdir + "'");
+		os.system("mkdir \"" + ancdir + "\"");
 	# Create the directory to store ancestral sequences.
 
 	codeml_outdir = os.path.join(output, "codeml-out");
-	os.system("mkdir '" + codeml_outdir + "'");
+	os.system("mkdir \"" + codeml_outdir + "\"");
 	# Create the codeml-out directory within the main output directory.
 
 	treefile = os.path.abspath(treefile);
 	if gt_opt:
-		trees = { line.split("\t")[0] : line.strip().split("\t")[1] for line in treefile };
+		trees = { line.split("\t")[0] : line.strip().split("\t")[1] for line in open(treefile) };
 	# Reads the gene tree file if the gene tree option is true.
 	elif prune:
 		td, tree, root = tr.treeParse(open(treefile, "r").read());
@@ -602,9 +605,15 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 		# Read the file if it is a FASTA (.fa) file.
 
 		if gt_opt:
-			cur_tree = trees[os.path.splitext(infile)[0].replace("-gblocks","")];
+			#print infile;
+			#print os.path.basename(os.path.splitext(infile)[0]);
+			cur_tree = trees[os.path.basename(os.path.splitext(infile)[0]).replace("-gblocks","")];
 			# The gblocks part is a bad solution...
 			tinfo, t, r = tr.treeParse(cur_tree);
+			test_node, monophyletic = tr.LCA(test_spec, tinfo);
+			#cur_tree = t.replace(test_node, test_node + " #1 ");
+			with open("cur-tree.tre", "w") as curtreefile:
+				curtreefile.write(cur_tree);
 		if prune:
 			seqs, skip = core.fastaReader(infile);
 			if not core.checkAlign(seqs):
@@ -628,7 +637,7 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 		if not file_flag:
 			cur_outdir = os.path.join(codeml_outdir, codeml_outfile + "-codemlout/");
 			if not os.path.exists(cur_outdir):
-				os.system("mkdir '" + cur_outdir + "'");
+				os.system("mkdir \"" + cur_outdir + "\"");
 		# Get the output info for the current alignment.
 
 		with open(ctlfilename, "w") as ctlFile:
@@ -638,7 +647,7 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 				if prune:
 					treeline = "treefile = pruned.tre\n";
 				elif gt_opt:
-					treeline = "treefile = " + cur_tree + "\n";
+					treeline = "treefile = cur-tree.tre\n";
 				else:
 					treeline = "treefile = " + treefile + "\n";
 				ctlFile.write(treeline);
@@ -691,13 +700,16 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 			if anc:
 				ctlFile.write("RateAncestor = 1\n");
 			ctlFile.write("Small_Diff = .5e-6\n");
+			#ctlFile.write("fix_blength = 1\n\n")
 		# Write the control file based on the input options.
 
-		codeml_cmd = os.path.join(path, "bin", "codeml " + ctlfilename);
+		#codeml_cmd = os.path.join(path, "bin", "codeml " + ctlfilename);
+		codeml_cmd = path + " " + ctlfilename;
 		if v == 0:
 			codeml_cmd += " >> " + stdoutlog + " 2>&1";
 		with open(logfilename, "a") as logfile:
 			logfile.write(codeml_cmd + "\n");
+		print codeml_cmd;
 		os.system(codeml_cmd);
 		# The codeml call
 
@@ -782,11 +794,11 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 
 		newfilelist = os.listdir(os.getcwd());
 		for each in newfilelist:
-			if each in ["2ML.dN","2ML.dS","2ML.t","2NG.dN","2NG.dS","2NG.t","codeml.ctl","lnf","rst","rst1","rub","pruned.tre"]:
+			if each in ["2ML.dN","2ML.dS","2ML.t","2NG.dN","2NG.dS","2NG.t","codeml.ctl","lnf","rst","rst1","rub","pruned.tre","cur-tree.tre"]:
 				if file_flag:
-					mv_cmd = "mv " + each + " " + output;
+					mv_cmd = "mv \"" + each + "\" \"" + output + "\"";
 				else:
-					mv_cmd = "mv " + each + " " + cur_outdir;
+					mv_cmd = "mv \"" + each + "\" \"" + cur_outdir + "\"";
 				os.system(mv_cmd);
 		# Move all of codeml's output files to the correct place.
 
