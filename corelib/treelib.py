@@ -571,10 +571,9 @@ def rmLabel(infile, mode, outfilename, best_flag=False):
 			# Check if each line in the genetrees file is a Newick string.
 
 			if mode == 1:
-				out_tree = tp.addBranchLength(out_tree, td);
-				out_tree = re.sub('<[\d]+>', '', out_tree);
+				out_tree = re.sub('\)[\d\w]+:', '):', line)
 			if mode == 2:
-				out_tree = re.sub(':[\d.eE-]+', '', line.strip());
+				out_tree = re.sub(':[\d.eE-]+', '', line);
 			if mode == 3:
 				out_tree = re.sub('<[\d]+>', '', out_tree);
 			# mode == 1 : remove internal node labels only
