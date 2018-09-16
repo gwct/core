@@ -27,6 +27,7 @@ parser.add_argument("--tipcount", dest="count_tips", help="Given a file with man
 parser.add_argument("--cladecount", dest="count_clade", help="Given a file with many trees and a list of tips defined with -clade, count the number of trees in which those labels form a monophyletic clade.", action="store_true");
 parser.add_argument("--relabeltips", dest="relabel", help="Given a file with many trees and a set of labels defined by -labels, this will relabel tip nodes. Use -m to decide placement of new label, and -delim to enter delimiting character.", action="store_true");
 parser.add_argument("--rmlabels", dest="rmlabel", help="Given a file with many trees with the internal nodes labeled, this will write a file with the same trees but WITHOUT internal nodes labeled.", action="store_true");
+parser.add_argument("--rmlabelsbset", dest="rmlabel_best", help="Given a best-trees.txt file from a --raxml run from wrappers, this will remove the bootstrap labels on the internal nodes.", action="store_true");
 parser.add_argument("--scale", dest="scale", help="Scale the branch lengths of the input tree(s) by an operation and value given. For example, enter '/2' to divide all branch lengths by 2, or '*5' to multiply all branch lengths by 5.", default=False);
 parser.add_argument("--rf", dest="rf", help="Given an input UNROOTED species tree and a file containing many single-copy UNROOTED gene trees this module will call RAxML to calculate Robinson-Foulds distance for each gene tree to the species tree. Use -genetrees for the input gene tree file and -i for the input species tree file or string.", action="store_true");
 
@@ -258,7 +259,7 @@ if args.relabel:
 	sys.exit();
 # --relabeltips : in a file containing many trees, relabels all tips containing an old label with a new label specified by user
 
-if args.rmlabel:
+if args.rmlabel or args.rmlabel_best:
 	if not file_flag:
 		sys.exit(core.errorOut(19, "--rmlabels takes an input (-i) FILE only."));
 	if args.run_mode not in [1,2,3]:
@@ -268,7 +269,10 @@ if args.rmlabel:
 	print core.spacedOut("Removing internal node labels from:", pad), args.input;
 	output, outnum = core.defaultOutFile(args.input, file_flag, "rmlabel", args.output);
 	print core.spacedOut("Writing output to:", pad), output;
-	tree.rmLabel(filelist[0], args.run_mode, output);
+	if args.rmlabel:
+		tree.rmLabel(filelist[0], args.run_mode, output);
+	elif args.rmlabel_best:
+		tree.rmLabel(filelist[0], args.run_mode, output, True);
 	sys.exit();
 # --rmlabel : in a file containing one or more tree, this removes any internal node labels in the tree(s)
 

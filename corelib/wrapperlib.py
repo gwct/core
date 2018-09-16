@@ -615,7 +615,7 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 			# The gblocks part is a bad solution...
 			tinfo, t, r = tr.treeParse(cur_tree);
 			test_node, monophyletic = tr.LCA(test_spec, tinfo);
-			#cur_tree = t.replace(test_node, test_node + " #1 ");
+			cur_tree = t.replace(test_node, test_node + " #1 ");
 			with open("cur-tree.tre", "w") as curtreefile:
 				curtreefile.write(cur_tree);
 		if prune:

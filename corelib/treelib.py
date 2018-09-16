@@ -552,13 +552,15 @@ def relabelTips(infile, labels, mode, delim, output):
 
 #############################################################################
 
-def rmLabel(infile, mode, outfilename):
+def rmLabel(infile, mode, outfilename, best_flag=False):
 # Takes a file with many trees and removes internal node labels and/or branch lengths (depending on mode).
 	num_lines, num_trees, tre_skip, parse_skip = 0,0,[],[];
 	with open(outfilename, "w") as treefile:
 		for line in open(infile):
 			num_lines +=1;
 			line = line.strip();
+			if best_flag:
+				title, line = line.split("\t");
 			try:
 				td, out_tree, r = tp.treeParse(line);
 			except:
@@ -579,7 +581,10 @@ def rmLabel(infile, mode, outfilename):
 			# mode == 2 : remove branch lengths only
 			# mode == 3 : remove both internal node labels and branch lengths
 
-			treefile.write(out_tree + "\n");
+			if best_flag:
+				treefile.write(title + "\t" + out_tree + "\n");
+			else:
+				treefile.write(out_tree + "\n");
 			# Write the edited tre to the output file.
 
 	print "\n-----";
