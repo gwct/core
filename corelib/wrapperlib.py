@@ -614,25 +614,30 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 				continue;
 			# The gblocks part is a bad solution...
 
+			print 1, cur_tree, "\n";
 			tinfo, t, r = tr.treeParse(cur_tree);
 			# Parse the tree with internal nodes.
 
 			test_node, monophyletic = tr.LCA(test_spec, tinfo);
 			# Get the test node.
 
+			print 2, t, "\n";
 			cur_tree = tr.addBranchLength(t, tinfo);
 			# Re-add the branch lengths to the tree.
 
+			print 3, cur_tree, "\n";
 			cur_tree = cur_tree.replace(test_node, test_node + " #1 ");
 			# Add the test label to the test node.
 
+			print 4, cur_tree, "\n";
 			cur_tree = re.sub('<[\d]+>', '', cur_tree);
 			# Remove the internal node labels.
 			
+			print 5, cur_tree, "\n";
 			with open("cur-tree.tre", "w") as curtreefile:
 				curtreefile.write(cur_tree);
 			# Write the current tree to the cur-tree file.
-			
+
 		if prune:
 			seqs, skip = core.fastaReader(infile);
 			if not core.checkAlign(seqs):
