@@ -54,6 +54,8 @@ def remBranchLength(treestring):
 def addBranchLength(tree, treedict):
 # Re-writes the branch lengths onto a topology parsed by treeParse.
 	for node in treedict:
+		if treedict[node][2] == 'root':
+			continue;
 		if treedict[node][0] != "NA":
 			tree = tree.replace(node, node + ":" + treedict[node][0]);
 			if treedict[node][3] != "NA":
