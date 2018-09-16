@@ -637,7 +637,7 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 			with open("cur-tree.tre", "w") as curtreefile:
 				curtreefile.write(cur_tree);
 			# Write the current tree to the cur-tree file.
-
+			sys.exit();
 		if prune:
 			seqs, skip = core.fastaReader(infile);
 			if not core.checkAlign(seqs):
