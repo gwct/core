@@ -4,7 +4,7 @@
 # August 2017
 #############################################################################
 
-import core, sys, os, subprocess, treeparse as tp
+import core, sys, re, os, subprocess, treeparse as tp
 
 #############################################################################
 
@@ -613,11 +613,26 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 				tree_skip.append(infile);
 				continue;
 			# The gblocks part is a bad solution...
+
 			tinfo, t, r = tr.treeParse(cur_tree);
+			# Parse the tree with internal nodes.
+
 			test_node, monophyletic = tr.LCA(test_spec, tinfo);
-			cur_tree = t.replace(test_node, test_node + " #1 ");
+			# Get the test node.
+
+			cur_tree = tr.addBranchLength(t, tinfo);
+			# Re-add the branch lengths to the tree.
+
+			cur_tree = cur_tree.replace(test_node, test_node + " #1 ");
+			# Add the test label to the test node.
+
+			cur_tree = re.sub('<[\d]+>', '', cur_tree);
+			# Remove the internal node labels.
+			
 			with open("cur-tree.tre", "w") as curtreefile:
 				curtreefile.write(cur_tree);
+			# Write the current tree to the cur-tree file.
+			
 		if prune:
 			seqs, skip = core.fastaReader(infile);
 			if not core.checkAlign(seqs):
