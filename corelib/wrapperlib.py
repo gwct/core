@@ -592,7 +592,7 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 	# codeml is executed with a control file.
 
 	i, numbars, donepercent, num_files = 0,0,[],len(infiles);
-	fa_skip, aln_skip, num_files_read, num_pruned, no_anc = [],[],0,0,[];
+	fa_skip, aln_skip, tree_skip, num_files_read, num_pruned, no_anc = [],[],[],0,0,[];
 
 	for infile in infiles:
 		#print os.path.splitext(infile);
@@ -607,7 +607,11 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 		if gt_opt:
 			#print infile;
 			#print os.path.basename(os.path.splitext(infile)[0]);
-			cur_tree = trees[os.path.basename(os.path.splitext(infile)[0]).replace("-gblocks","")];
+			try:
+				cur_tree = trees[os.path.basename(os.path.splitext(infile)[0]).replace("-gblocks","")];
+			except:
+				tree_skip.append(infile);
+				continue;
 			# The gblocks part is a bad solution...
 			tinfo, t, r = tr.treeParse(cur_tree);
 			test_node, monophyletic = tr.LCA(test_spec, tinfo);
@@ -812,6 +816,8 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 		core.printWrite(logfilename,"# The following " + str(len(fa_skip)) + " file(s) were skipped because they couldn't be read as fasta files: " + ",".join([os.path.basename(f) for f in fa_skip]), file_flag);
 	if aln_skip != []:
 		core.printWrite(logfilename,"# The following " + str(len(aln_skip)) + " file(s) were skipped because they might not have been alignments: " + ",".join([os.path.basename(f) for f in aln_skip]), file_flag);
+	if tree_skip != []:
+		core.printWrite(logfilename,"# The following " + str(len(tree_skip)) + " file(s) were skipped because there was no corresponding tree in the genetrees file: " + ",".join([os.path.basename(f) for f in tree_skip]), file_flag);
 	core.printWrite(logfilename,"# of files that used a pruned species tree:\t" + str(num_pruned), file_flag);
 	if anc and no_anc != []:
 		core.printWrite(logfilename,"# The following " + str(len(no_anc)) + " file(s) failed to write ancestral sequences: " + ",".join([os.path.basename(f) for f in no_anc]), file_flag);
