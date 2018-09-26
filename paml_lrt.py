@@ -44,6 +44,13 @@ def optParse(errorflag):
 		parser.print_help();
 		sys.exit();
 
+def getFailedFiles(logfile):
+	fails = [];
+	for line in open(logfile):
+		if "skipped" in line:
+			fails += line.split(": ")[1].split(",");
+	return fails;
+
 ############################################
 #Main Block
 ############################################
@@ -81,6 +88,11 @@ core.filePrep(outfilename, header);
 outfile = open(outfilename, "a");
 #This prepares the proper output file depending on the run mode.
 
+altlogfile = os.path.join(altdir, [ f for f in os.listdir(altdir) if "run-codeml-" in f ][0] );
+altfails = getFailedFiles(altlogfile);
+nulllogfile = os.path.join(nulldir, [ f for f in os.listdir(nulldir) if "run-codeml-" in f ][0] );
+nullfails = getFailedFiles(nulllogfile);
+
 filelist = os.listdir(indir);
 
 fcritcount = 0;
@@ -94,7 +106,7 @@ numbars = 0;
 donepercent = [];
 print "Performing LRT on PAML output to test for positive selection...";
 for each in filelist:
-	if each.find(".fa") == -1:
+	if each.find(".fa") == -1 or each in altfails or each in nullfails:
 		continue;
 	cur_file = each.replace(".fa","")
 	numbars, donepercent = core.loadingBar(i, numfiles, donepercent, numbars);
