@@ -96,14 +96,14 @@ print "Performing LRT on PAML output to test for positive selection...";
 for each in filelist:
 	if each.find(".fa") == -1:
 		continue;
-
+	cur_file = each.replace(".fa","")
 	numbars, donepercent = core.loadingBar(i, numfiles, donepercent, numbars);
 	i = i + 1;
 
 	# gid = each[:each.index(".fa")];
 
-	altfilename = os.path.join(altdir + "codeml_out", each, each + ".out");
-	nullfilename = os.path.join(nulldir + "codeml_out", each, each + ".out");
+	altfilename = os.path.join(altdir, curfile + "-codemlout", curfile + ".out");
+	nullfilename = os.path.join(nulldir, curfile + "-codemlout", curfile + ".out");
 
 	#Reading the alt file...
 	altfile = open(altfilename, "r");
