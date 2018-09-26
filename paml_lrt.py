@@ -102,8 +102,8 @@ for each in filelist:
 
 	# gid = each[:each.index(".fa")];
 
-	altfilename = os.path.join(altdir, cur_file + "-codemlout", cur_file + ".out");
-	nullfilename = os.path.join(nulldir, cur_file + "-codemlout", cur_file + ".out");
+	altfilename = os.path.join(altdir, "codeml-out", cur_file + "-codemlout", cur_file + ".out");
+	nullfilename = os.path.join(nulldir, "codeml-out", cur_file + "-codemlout", cur_file + ".out");
 
 	#Reading the alt file...
 	altfile = open(altfilename, "r");
