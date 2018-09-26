@@ -15,35 +15,22 @@ import core
 ############################################
 #Function Definitions
 ############################################
-
-def optParse(errorflag):
-
+def optParse():
 	parser = argparse.ArgumentParser()
-
 	parser.add_argument("-i", dest="input_dir", help="The directory containing your input genes.");
 	parser.add_argument("-a", dest="alt_dir", help="The directory containing the PAML output from the alternate hypothesis.");
 	parser.add_argument("-n", dest="null_dir", help="The directory containing the PAML output from the null hypothesis.");
 	parser.add_argument("-m", dest="run_mode", help="This specifies which genes should be written to the output file: 0 = all genes, 1 = only the genes at the 1 percent significance level, 2 = only the genes at the 5 percent significance level, 3 = only the non-significant genes.", type=int, default=0);
 	parser.add_argument("-o", dest="output_file", help="The prefix name of the output file. The suffix and extension (.txt) will be added based on -m.");
-
 	args = parser.parse_args();
 
-	if errorflag == 0:
+	if args.input_dir == None or args.alt_dir == None or args.null_dir == None or args.output_file == None:
+		sys.exit(core.errorOut(1, "-i, -a, -n, and -o must all be defined"));
+	if args.run_mode not in [0,1,2,3]:
+		sys.exit(core.errorOut(2, "-m must take values of 1, 2, 3 or 4"));
 
-		if args.input_dir == None or args.alt_dir == None or args.null_dir == None or args.output_file == None:
-			core.errorOut(1, "-i, -a, -n, and -o must all be defined");
-			optParse(1);
-
-		if args.run_mode not in [0,1,2,3]:
-			core.errorOut(2, "-m must take values of 1, 2, 3 or 4");
-			optParse(1);
-
-		return args.input_dir, args.alt_dir, args.null_dir, args.run_mode, args.output_file;
-
-	elif errorflag == 1:
-		parser.print_help();
-		sys.exit();
-
+	return args.input_dir, args.alt_dir, args.null_dir, args.run_mode, args.output_file;
+#################
 def getFailedFiles(logfile):
 	fails = [];
 	for line in open(logfile):
@@ -54,17 +41,16 @@ def getFailedFiles(logfile):
 ############################################
 #Main Block
 ############################################
-
 #critical values: 5% = 2.71, 1% = 5.41
 #conservative critical values: 5% = 3.84, 1% = 5.99
 #clade test critical values: 5% = 7.82, 1% = 11.35
 crit5 = 3.84;
 crit1 = 5.99;
-indir, altdir, nulldir, mode, outfilename = optParse(0);
+indir, altdir, nulldir, mode, outfilename = optParse();
 starttime = core.getLogTime();
 print "======================================================================="
 print "\tPerforming likelihood ratio test (branch-site model)";
-print "\t\t" +core.getDateTime();
+print "\t\t" + core.getDateTime();
 print "INPUT    | Input directory:\t\t" + indir;
 print "INPUT    | Null hypothesis directory:\t" + nulldir;
 print "INPUT    | Alt hypothesis directory:\t" + altdir;
@@ -92,6 +78,7 @@ altlogfile = os.path.join(altdir, [ f for f in os.listdir(altdir) if "run-codeml
 altfails = getFailedFiles(altlogfile);
 nulllogfile = os.path.join(nulldir, [ f for f in os.listdir(nulldir) if "run-codeml-" in f ][0] );
 nullfails = getFailedFiles(nulllogfile);
+# Gets the files that failed to finish in the PAML runs so we can skip them.
 
 filelist = os.listdir(indir);
 
@@ -157,6 +144,8 @@ for each in filelist:
 	negnulllnL = math.fabs(float(nulllnL));
 	lr = 2 * (negnulllnL - negaltlnL);
 	#The actual LRT
+
+	#print each, negaltlnL, negnulllnL, lr
 
 	if lr == 0:
 		zcount = zcount + 1;
