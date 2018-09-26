@@ -47,6 +47,8 @@ def getFailedFiles(logfile):
 crit5 = 3.84;
 crit1 = 5.99;
 indir, altdir, nulldir, mode, outfilename = optParse();
+if outfilename.endswith(".txt"):
+	outfilename = outfilename.replace(".txt","");
 starttime = core.getLogTime();
 print "======================================================================="
 print "\tPerforming likelihood ratio test (branch-site model)";
@@ -55,24 +57,19 @@ print "INPUT    | Input directory:\t\t" + indir;
 print "INPUT    | Null hypothesis directory:\t" + nulldir;
 print "INPUT    | Alt hypothesis directory:\t" + altdir;
 if mode == 0:
-	outfilename = outfilename + "_all.txt";
+	outfilename = outfilename + "-all.txt";
 	print "INFO     | Reporting results for all genes. (5% critical value = 3.84, 1% critical value = 5.99)";
 elif mode == 1:
-	outfilename = outfilename + "_sig1.txt";
+	outfilename = outfilename + "-sig1.txt";
 	print "INFO     | Reporting results for only genes at the 1% critical value threshold. (5.99)";
 elif mode == 2:
-	outfilename = outfilename + "_sig5.txt";
+	outfilename = outfilename + "-sig5.txt";
 	print "INFO     | Reporting results for only genes at the 5% critical value threshold. (3.84)";
 elif mode == 3:
-	outfilename = outfilename + "_nonsig.txt";
+	outfilename = outfilename + "-nonsig.txt";
 	print "INFO     | Reporting results for the non-significant genes.";
 print "OUTPUT   | Output file:\t\t\t" + outfilename;
 print "-------------------------------------"
-print "Preparing output file...";
-header = "Gene ID\tnull -lnL\talt -lnL\tLR\tabove 5% critical value? (3.84)\tabove 1% critical value? (5.99)\n"
-core.filePrep(outfilename, header);
-outfile = open(outfilename, "a");
-#This prepares the proper output file depending on the run mode.
 
 altlogfile = os.path.join(altdir, [ f for f in os.listdir(altdir) if "run-codeml-" in f ][0] );
 altfails = getFailedFiles(altlogfile);
@@ -81,121 +78,102 @@ nullfails = getFailedFiles(nulllogfile);
 # Gets the files that failed to finish in the PAML runs so we can skip them.
 
 filelist = os.listdir(indir);
+# Get the list of alignment files from the input directory.
 
-fcritcount = 0;
-ocritcount = 0;
-zcount = 0;
-noln_genes = [];
+fcritcount, ocritcount, zcount, noln_genes = 0,0,0,[];
+# 5 crit count, 1 crit count, zero count, genes with no likelihood score.
 
-i = 0;
-numfiles = len(filelist);
-numbars = 0;
-donepercent = [];
+i, numfiles, numbars, donepercent = 0, len(filelist), 0, [];
+# Variables for the progress bar.
+
 print "Performing LRT on PAML output to test for positive selection...";
-for each in filelist:
-	if each.find(".fa") == -1 or each in altfails or each in nullfails:
-		continue;
-	cur_file = each.replace(".fa","")
-	numbars, donepercent = core.loadingBar(i, numfiles, donepercent, numbars);
-	i = i + 1;
+with open(outfilename, "w") as outfile:
+	outfile.write("Gene ID\tnull -lnL\talt -lnL\tLR\tabove 5% critical value? (3.84)\tabove 1% critical value? (5.99)\n");
+	for each in filelist:
+		if each.find(".fa") == -1 or each in altfails or each in nullfails:
+			continue;
+		cur_file = each.replace(".fa","")
+		numbars, donepercent = core.loadingBar(i, numfiles, donepercent, numbars);
+		i = i + 1;
 
-	# gid = each[:each.index(".fa")];
+		altfilename = os.path.join(altdir, "codeml-out", cur_file + "-codemlout", cur_file + ".out");
+		nullfilename = os.path.join(nulldir, "codeml-out", cur_file + "-codemlout", cur_file + ".out");
 
-	altfilename = os.path.join(altdir, "codeml-out", cur_file + "-codemlout", cur_file + ".out");
-	nullfilename = os.path.join(nulldir, "codeml-out", cur_file + "-codemlout", cur_file + ".out");
-
-	#Reading the alt file...
-	altfile = open(altfilename, "r");
-	altlines = altfile.readlines();
-	altfile.close();
-	altlnflag = 0;
-	for alt in altlines:
-		if alt[:3] == "lnL":
-			if alt.find("nan") != -1:
-				altlnflag = 0;
-			else:
-				altlnL = alt[alt.index("-"):];
-				altlnL = altlnL[:altlnL.index(" ")];
-				altlnflag = 1;
-	if altlnflag == 0:
-		noln_genes.append(each);
-
-	#Reading the null file...
-	nullfile = open(nullfilename, "r");
-	nulllines = nullfile.readlines();
-	nullfile.close();
-	nulllnflag = 0;
-	for null in nulllines:
-		if null[:3] == "lnL" and null.find("nan") == -1:
-			if null.find("nan") != -1:
-				nulllnflag = 0;
-			else:
-				nulllnL = null[null.index("-"):];
-				nulllnL = nulllnL[:nulllnL.index(" ")];
-				nulllnflag = 1;
-	if nulllnflag == 0:
-		if each not in noln_genes:
+		#Reading the alt file...
+		altfile = open(altfilename, "r");
+		altlines = altfile.readlines();
+		altfile.close();
+		altlnflag = 0;
+		for alt in altlines:
+			if alt[:3] == "lnL":
+				if alt.find("nan") != -1:
+					altlnflag = 0;
+				else:
+					altlnL = alt[alt.index("-"):];
+					altlnL = altlnL[:altlnL.index(" ")];
+					altlnflag = 1;
+		if altlnflag == 0:
 			noln_genes.append(each);
 
-	if nulllnflag == 0 or altlnflag == 0:
-		continue;
+		#Reading the null file...
+		nullfile = open(nullfilename, "r");
+		nulllines = nullfile.readlines();
+		nullfile.close();
+		nulllnflag = 0;
+		for null in nulllines:
+			if null[:3] == "lnL" and null.find("nan") == -1:
+				if null.find("nan") != -1:
+					nulllnflag = 0;
+				else:
+					nulllnL = null[null.index("-"):];
+					nulllnL = nulllnL[:nulllnL.index(" ")];
+					nulllnflag = 1;
+		if nulllnflag == 0:
+			if each not in noln_genes:
+				noln_genes.append(each);
 
-	negaltlnL = math.fabs(float(altlnL));
-	negnulllnL = math.fabs(float(nulllnL));
-	lr = 2 * (negnulllnL - negaltlnL);
-	#The actual LRT
+		if nulllnflag == 0 or altlnflag == 0:
+			continue;
 
-	#print each, negaltlnL, negnulllnL, lr
+		negaltlnL = math.fabs(float(altlnL));
+		negnulllnL = math.fabs(float(nulllnL));
+		lr = 2 * (negnulllnL - negaltlnL);
+		#The actual LRT
 
-	if lr == 0:
-		zcount = zcount + 1;
+		if lr == 0:
+			zcount = zcount + 1;
 
-	if mode == 0:
+		fflag = False;
+		oflag = False;
 		outline = each + "\t" + str(negnulllnL) + "\t" + str(negaltlnL) + "\t" + str(lr);
-		outfile.write(outline);
+		# Prepare the output line.
 
-	if mode == 3:
-		if lr < crit1:
-			outline = each + "\t" + str(negnulllnL) + "\t" + str(negaltlnL) + "\t" + str(lr) + "\n";
+		if lr >= crit5:
+			outline += "\t*";
+			fcritcount += 1;
+			fflag = True;
+		else:
+			outline += "\t";
+		# Check if the LR is above the 5% critical value.
+
+		if lr >= crit1:
+			outline += "\t*";
+			ocritcount += 1;
+			oflag = True;
+		else:
+			outline += "\t";
+		outline += "\n";
+		# Check if the LR is above the 1% critical value.
+
+		if mode == 0:
 			outfile.write(outline);
-
-	flag = 0;
-
-	if lr >= crit5:		#the 5% crit value
-		flag = 1;
-
-		if mode == 2:
-			outline = each + "\t" + str(negnulllnL) + "\t" + str(negaltlnL) + "\t" + str(lr);
+		if mode == 1 and oflag:
 			outfile.write(outline);
-
-		fcritcount = fcritcount + 1;
-
-		if mode == 0 or mode == 2:
-			outfile.write("\t*");
-
-	if lr >= crit1:		#the 1% crit value
-		flag = 2;
-		ocritcount = ocritcount + 1;
-
-		if mode == 1:
-			outline = each + "\t" + str(negnulllnL) + "\t" + str(negaltlnL) + "\t" + str(lr) + "\t*";
+		if mode == 2 and fflag:
 			outfile.write(outline);
-
-		if mode == 0 or mode == 1:
-			outfile.write("\t*")
-
-		if mode == 1 or mode == 2:
-			outfile.write("\n")
-
-	if mode == 2:
-		if flag == 1:
-			outfile.write("\n");
-
-	if mode == 0:
-		outfile.write("\n");
-
-
-outfile.close();
+		if mode == 3 and not oflag and not fflag:
+			outfile.write(outline);
+		# Write the line based on the results of the LRT and the current run mode.
 
 pstring = "100.0% complete.";
 sys.stderr.write('\b' * len(pstring) + pstring);
