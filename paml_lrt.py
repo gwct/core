@@ -48,7 +48,7 @@ def getFailedFiles(logfile):
 	fails = [];
 	for line in open(logfile):
 		if "skipped" in line:
-			fails += line.split(": ")[1].split(",");
+			fails += line.strip().split(": ")[1].split(",");
 	return fails;
 
 ############################################
