@@ -706,7 +706,7 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 			ctlFile.write("kappa = 3\n");
 			if branch_site == 1:
 				ctlFile.write("fix_omega = 0\n");
-			else if branch_site == 2:
+			elif branch_site == 2:
 				ctlFile.write("fix_omega = 1\n");
 			else:
 				ctlFile.write("fix_omega = 0\n");
