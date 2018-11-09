@@ -20,13 +20,14 @@ parser.add_argument("--concat", dest="concat", help="Set this option to concaten
 parser.add_argument("--combine", dest="combine", help="Set this option to combine all fasta sequences in a directory. A single file may contain one or more sequences.", default=False, action="store_true");
 parser.add_argument("--split", dest="split", help="Given an input FASTA file, this option will split all sequences into individual files. Be sure to define -delim otherwise the entire header will be used as the output file name!", default=False, action="store_true");
 parser.add_argument("--trim", dest="trim", help="Use this to trim the FASTA headers at the first occurrence of a character defined by -delim", default=False, action="store_true");
+parser.add_argument("-extract", dest="extract", help="Given a file of FASTA titles, this will extract those titles and sequences from the FASTA file specified with -i.", default=False);
 parser.add_argument("-relabel", dest="relabel", help="Use this option to place a new label in the FASTA headers. New labels are specified with -newlabel. 1 (default): place at beginning of old header, 2: completely replace old header, 3: place at end of old header. If -delim is specified, that will be used as the seperator. The default delimiter is _", type=int, default=False);
 parser.add_argument("-delim", dest="header_delim", help="A character at which the FASTA headers will be trimmed. For a delimter of ' ' (space), please enter 'space'", default=False);
 parser.add_argument("-newlabel", dest="new_label", help="The new label(s) to be added to the FASTA headers when -relabel is specified. If a single label is specified, this will be used for all sequences. If a dict like list of labels is specified (ie 'oldlabel1:newlabel1,oldlabel2:newlabel2') then the old headers will be searched for the old labels and new labels will be placed appropriately.", default=False);
 parser.add_argument("-rmseq", dest="label_rm", help="A comma delimited list of labels. Any sequence with any of those labels in their header will be removed.", default=False);
 parser.add_argument("-rmstart", dest="start_rm", help="This will remove the start M or ATG from input sequences. Enter sequence type: 'protein' or 'codon'", default=False);
 parser.add_argument("-replace", dest="replace", help="This option will replace all characters in each sequence with another character. For example, AB will replace all As with Bs. If the input is an alignment and A: is entered, all As will be replaced with another base/aa that is not present in the column. For multiple replacements, enter as: AB,CD,EF", default=False);
-parser.add_argument("-outfile", dest="outfile", help="The output file for commands: --concat, --combine");
+parser.add_argument("-outfile", dest="outfile", help="The output file for commands: --concat, --combine, -extract");
 parser.add_argument("-outdir", dest="outdir", help="The output directory for commands:");
 args = parser.parse_args();
 # Input option definitions.
@@ -70,8 +71,9 @@ if args.count_aln:
 if args.concat or args.combine:
 	if file_flag:
 		sys.exit(core.errorOut(2, "-i must be a directory with multiple FASTA files when used with --concat or --combine."));
+if args.concat or args.combine or args.extract:
 	if args.outfile == None:
-		sys.exit(core.errorOut(3, "-outfile must be set when using the --concat or --combine options."));
+		sys.exit(core.errorOut(3, "-outfile must be set when using the --concat or --combine or -extract options."));
 # This check makes sure the proper input and output have been specified for the --concat and --combine options:
 # input must be a directory with multiple .fa files, output must be a single file (-outfile).
 
@@ -180,8 +182,21 @@ if args.replace:
 	print core.spacedOut("Writing replaced (.repl) sequences to:", 50), output;
 	fa.replaceBase(filelist, args.replace, file_flag, output);
 	sys.exit();
-# replace
+# -replace
 
+if args.extract:
+	if os.path.isfile(args.extract):
+		titles = open(args.extract, "r").read().split("\n");
+	else:
+		titles = args.extract.split(",");
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Extracting sequences in:", 50), args.input;
+	print core.spacedOut("Extracting the following titles:", 50), ",".join(titles);
+	print core.spacedOut("Writing replaced (.repl) sequences to:", 50), output;
+	fa.extractSeqs(filelist, titles, args.header_delim, file_flag, output);
+	sys.exit();
+# -extract
 
 
 

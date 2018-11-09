@@ -477,3 +477,41 @@ def replaceBase(fasta_files, replacements, file_flag, out_dest):
 	if fa_skip != []:
 		print "The following", len(fa_skip), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]);
 	print "=======================================================================";
+
+#############################################################################
+
+def extractSeqs(fasta_files, titles, delim, file_flag, out_dest):
+# This sequence cycles through all input files and extracts sequences if
+# they are in the input title list.
+
+	with open(out_dest, "w") as outfile:
+		total_files, total_seq = 0,0;
+		fa_skip, ext = [], [];
+		for fasta_file in fasta_files:
+			seqs, skip = core.fastaReader(fasta_file);
+			if skip:
+				fa_skip.append(fasta_file);
+				continue;
+
+			total_files += 1;
+			for title in seqs:
+				if delim:
+					t = title[1:title.index(delim)];
+				else:
+					t = title[1:];
+
+				if t in titles:
+					ext.append(t);
+					outfile.write(">" + t + "\n");
+					outfile.write(seqs[title] + "\n");
+
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print "Total files read:\t", total_files;
+	print "Total sequences read:\t", total_seq;
+	print "Total sequences extracted:\t", len(ext);
+	if fa_skip != []:
+		print "The following", len(fa_skip), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]);
+	if set(titles) != set(ext):
+		print "The following sequences were not extracted:\t" + ",".join([t for t in titles if t not in ext]);
+	print "=======================================================================";					
