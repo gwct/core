@@ -192,7 +192,7 @@ if args.extract:
 	print "=======================================================================";
 	print "\t\t\t" + core.getDateTime();
 	print core.spacedOut("Extracting sequences in:", 50), args.input;
-	print core.spacedOut("Extracting the following titles:", 50), ",".join(titles);
+	print core.spacedOut("Extracting the following titles: ", 50) + ",".join(titles);
 	print core.spacedOut("Writing replaced (.repl) sequences to:", 50), output;
 	fa.extractSeqs(filelist, titles, args.header_delim, file_flag, output);
 	sys.exit();
