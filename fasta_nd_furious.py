@@ -185,15 +185,18 @@ if args.replace:
 # -replace
 
 if args.extract:
+	print args.extract;
+	print os.path.isfile(args.extract);
 	if os.path.isfile(args.extract):
 		titles = open(args.extract, "r").read().split("\n");
 	else:
 		titles = args.extract.split(",");
+	print titles;
 	print "=======================================================================";
 	print "\t\t\t" + core.getDateTime();
 	print core.spacedOut("Extracting sequences in:", 50), args.input;
 	print core.spacedOut("Extracting the following titles: ", 50) + ",".join(titles);
-	print core.spacedOut("Writing replaced (.repl) sequences to:", 50), output;
+	print core.spacedOut("Writing extracted sequences to:", 50), output;
 	fa.extractSeqs(filelist, titles, args.header_delim, file_flag, output);
 	sys.exit();
 # -extract
