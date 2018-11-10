@@ -504,7 +504,7 @@ def extractSeqs(fasta_files, titles, delim, file_flag, out_dest):
 					seq = core.fastaGetInd(fasta_file, seqs[title])[1];
 					ext.append(t);
 					outfile.write(">" + t + "\n");
-					outfile.write(seqs[title] + "\n");
+					outfile.write(seq + "\n");
 
 	print "\n" + core.getTime() + " Done!";
 	print "-----";
