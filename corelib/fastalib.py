@@ -488,7 +488,7 @@ def extractSeqs(fasta_files, titles, delim, file_flag, out_dest):
 		total_files, total_seq = 0,0;
 		fa_skip, ext = [], [];
 		for fasta_file in fasta_files:
-			seqs, skip = core.fastaReader(fasta_file);
+			seqs, skip = core.fastaReader(fasta_file, "ind");
 			if skip:
 				fa_skip.append(fasta_file);
 				continue;
@@ -501,6 +501,7 @@ def extractSeqs(fasta_files, titles, delim, file_flag, out_dest):
 					t = title[1:];
 
 				if t in titles:
+					seq = core.fastaGetInd(fasta_file, seqs[title])[1];
 					ext.append(t);
 					outfile.write(">" + t + "\n");
 					outfile.write(seqs[title] + "\n");

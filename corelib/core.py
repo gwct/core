@@ -394,15 +394,21 @@ def fastaGetLists(i_name):
 
 #############################################################################
 
-def fastaReader(i_name):
+def fastaReader(i_name, meth="dict"):
 # This function takes an input file and determines if it is a compressed or
 # uncompressed FASTA file (.fa). If it doesn't end with .fa it returns it to
 # be skipped.
 	try:
 		if i_name.endswith(".fa.gz") or i_name.endswith(".fas.gz") or i_name.endswith(".faa.gz") or i_name.endswith(".fna.gz") or i_name.endswith(".fasta.gz"):
-			seqs = fastaGetDictCompressed(i_name);
+			if meth == "dict":
+				seqs = fastaGetDictCompressed(i_name);
+			elif meth == "ind":
+				seqs = fastaReadInd(i_name);
 		elif i_name.endswith(".fa") or i_name.endswith(".fas") or i_name.endswith(".faa") or i_name.endswith(".fna") or i_name.endswith(".fasta"):
-			seqs = fastaGetDict(i_name);
+			if meth == "dict":
+				seqs = fastaGetDict(i_name);
+			elif meth == "ind":
+				seqs = fastaReadInd(i_name);
 		else:
 			return None, i_name;
 	except:
@@ -527,6 +533,69 @@ def getFastafromInd(i_name, titlestart, titleend, seqstart, seqend):
 	seq = infile.read(seqend - seqstart);
 
 	infile.close();
+
+	title = title.replace("\n", "");
+	seq = seq.replace("\n", "");
+
+	return title, seq;
+
+#############################################################################
+
+def fastaReadInd(i_name):
+# fastaGetFileInd reads a FASTA file and returns a dictionary containing file indexes for each title
+# and sequence with the key:value format as [title start index]:[sequence start index]
+
+	try:
+		gzip_check = gzip.open(i_name).read(1);
+		reader = gzip.open;
+	except:
+		reader = open;
+	# Check if the genotype likelihood file is gzipped, and if so set gzip as the file reader. Otherwise, read as a normal text file.
+	# MAKE SURE THIS WORKS WITH GZIPPED FILES!!
+
+	with reader(i_name, "rb") as infile:
+		fasta, first, curlist = {}, False, [];
+		line = "derp";
+		while line != '':
+			line = infile.readline();
+			if line[:1] == '>':
+				if first:
+					curseqend = infile.tell() - len(line) - 1;
+					curlist.append(curseqend);
+					fasta[cur_title] = curlist;
+					curlist = [];
+
+				cur_title = line[1:].strip().split(" ")[0];
+				curtitlestart = infile.tell() - len(line);
+				curtitleend = infile.tell() - 1;
+				curseqstart = infile.tell();
+
+				curlist.append(curtitlestart);
+				curlist.append(curtitleend);
+				curlist.append(curseqstart);
+
+				first = True;
+
+		curseqend = infile.tell() - len(line);
+		curlist.append(curseqend);
+		fasta[cur_title] = curlist;
+
+	return fasta;
+		
+#############################################################################
+
+def fastaGetInd(i_name, inds):
+# This takes the file index for a corresponding FASTA title and sequence (as retrieved by
+# fastaGetFileInd and returns the actual text of the title and the sequence.
+
+	titlestart, titleend, seqstart, seqend = inds;
+
+	with open(i_name, "rb") as infile:
+		infile.seek(titlestart);
+		title = infile.read(titleend - titlestart);
+
+		infile.seek(seqstart);
+		seq = infile.read(seqend - seqstart);
 
 	title = title.replace("\n", "");
 	seq = seq.replace("\n", "");
