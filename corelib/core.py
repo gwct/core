@@ -565,7 +565,8 @@ def fastaReadInd(i_name):
 					fasta[cur_title] = curlist;
 					curlist = [];
 
-				cur_title = line[1:].strip().split(" ")[0];
+				#cur_title = line[1:].strip().split(" ")[0];
+				cur_title = line.strip();
 				curtitlestart = infile.tell() - len(line);
 				curtitleend = infile.tell() - 1;
 				curseqstart = infile.tell();
