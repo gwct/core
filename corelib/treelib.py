@@ -207,6 +207,9 @@ def rootTrees(infiles, tree_flag, outgroup, outfilename):
 	with open(outfilename, "w") as treefile:
 		for line in open(infile):
 			num_lines += 1;
+			tid = False;
+			if len(line.split("\t")) > 1:
+				tid, line = line.strip().split("\t");
 			try:
 				td, tree, r = tp.treeParse(line);
 			except:
@@ -232,6 +235,8 @@ def rootTrees(infiles, tree_flag, outgroup, outfilename):
 			# The NU call with nw_reroot.
 
 			rooted_tree = open(tmpfilename_2, "r").read().strip();
+			if tid:
+				rooted_tree = tid + "\t" + rooted_tree;
 			treefile.write(rooted_tree + "\n");
 			# Getting the output from the tmp file.
 

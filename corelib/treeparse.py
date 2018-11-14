@@ -51,6 +51,13 @@ def remBranchLength(treestring):
 
 #############################################################################
 
+def remNodeLabel(treestring):
+# Removes branch lengths from a tree.
+	treestring = re.sub('[)][\d\w<>.eE_-]+', ')', treestring);
+	return treestring;
+
+#############################################################################
+
 def addBranchLength(tree, treedict):
 # Re-writes the branch lengths onto a topology parsed by treeParse.
 	for node in treedict:

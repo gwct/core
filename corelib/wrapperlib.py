@@ -607,12 +607,13 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 		if gt_opt:
 			#print infile;
 			#print os.path.basename(os.path.splitext(infile)[0]);
-			try:
-				cur_tree = trees[os.path.basename(os.path.splitext(infile)[0]).replace("-gblocks","")];
-			except:
-				tree_skip.append(infile);
-				continue;
-			# The gblocks part is a bad solution...
+			if "gblocks" in infile:
+				try:
+					cur_tree = trees[os.path.basename(os.path.splitext(infile)[0]).replace("-gblocks","")];
+				except:
+					tree_skip.append(infile);
+					continue;
+				# The gblocks part is a bad solution...
 
 			tinfo, t, r = tr.treeParse(cur_tree);
 			# Parse the tree with internal nodes.
@@ -630,6 +631,7 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 			# Remove the internal node labels.
 			
 			with open("cur-tree.tre", "w") as curtreefile:
+				cur_tree = tr.remNodeLabel(cur_tree);
 				curtreefile.write(cur_tree + ";");
 			# Write the current tree to the cur-tree file.
 
