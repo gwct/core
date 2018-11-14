@@ -614,6 +614,8 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 					tree_skip.append(infile);
 					continue;
 				# The gblocks part is a bad solution...
+			else:
+				cur_tree = trees[os.path.basename(os.path.splitext(infile)[0])];
 
 			tinfo, t, r = tr.treeParse(cur_tree);
 			# Parse the tree with internal nodes.
