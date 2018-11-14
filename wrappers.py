@@ -192,7 +192,7 @@ if args.codeml:
 	if not args.tree or not os.path.isfile(args.tree):
 		sys.exit(core.errorOut(12, "Invalid tree file name!"));
 	if args.branch_site and not args.test_spec:
-		sys.ext(core.errorOut("12a", "A foreground branch must be specified to perform the branch site test. Be sure you do this for the null run as well (without --branchsite)."));
+		sys.exit(core.errorOut("12a", "A foreground branch must be specified to perform the branch site test. Be sure you do this for the null run as well (without --branchsite)."));
 	if args.prune:
 		"\n** Warning: The --prune option requires Newick Utilities to be installed and executable as 'nw_prune'!";
 	# The --codeml module has several options that need to be checked for input errors before it starts.
