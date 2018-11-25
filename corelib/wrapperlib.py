@@ -518,7 +518,7 @@ def runRaxml(infiles, file_flag, path, model, bs_reps, threads, constraint_tree,
 			astralfile.write(trees[tree]);
 			sdmfile.write(trees[tree]);
 			if bs_reps > 0:
-				cur_bsfile = os.path.join(rax_outdir, tree + "_raxout", "RAxML_bootstrap." + tree);
+				cur_bsfile = os.path.join(rax_outdir, tree + "-raxout", "RAxML_bootstrap." + tree);
 				astralbsfile.write(cur_bsfile + "\n");
 
 		gtfile.close();
