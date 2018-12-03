@@ -251,7 +251,7 @@ def split(fasta_files, header_delim, outdir):
 
 	for title in seqs:
 		total_seq += 1;
-		if header_delim == None:
+		if not header_delim:
 			outfilename = os.path.join(outdir, title[1:] + ".fa");
 		else:
 			outfilename = os.path.join(outdir, title[1:title.index(header_delim)] + ".fa");
