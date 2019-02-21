@@ -1,3 +1,4 @@
+#!/usr/bin/python
 ########################################################################################
 #Part of my Ensembl tree making pipeline. This takes a list of orthologous sequence IDs
 #(ie the output from orth_combine.py) and combines the actual sequences into individual
@@ -11,6 +12,7 @@
 #"ENSPFO:Poecilia_formosa.PoeFor_5.1.2.pep.all.fa,ENSAMX:Astyanax_mexicanus.AstMex102.pep.all.fa,ENSDAR:Danio_rerio.Zv9.pep.all.fa,ENSTNI:Tetraodon_nigroviridis.TETRAODON8.pep.all.fa,ENSGAC:Gasterosteus_aculeatus.BROADS1.pep.all.fa,ENSONI:Oreochromis_niloticus.Orenil1.0.pep.all.fa,ENSORL:Oryzias_latipes.MEDAKA1.pep.all.fa,ENSXMA:Xiphophorus_maculatus.Xipmac4.4.2.pep.all.fa"
 #"ENSBTA:cow_peptides_filtered.fa,ENSCJA:marmoset_peptides_filtered.fa,ENSCAF:dog_peptides_filtered.fa,ENSECA:horse_peptides_filtered.fa,ENSP00:human_peptides_filtered.fa,ENSMMU:macaque_peptides_filtered.fa,ENSMUS:mouse_peptides_filtered.fa,ENSNLE:gibbon_peptides_filtered.fa,ENSPTR:chimp_peptides_filtered.fa,ENSPAN:baboon_peptides_filtered.fa,ENSPPY:orang_peptides_filtered.fa,ENSRNO:rat_peptides_filtered.fa,ENSMOD:opossum_peptides_filtered.fa"
 #"ENSBTA:cow_peptides_filtered.fa,ENSCJA:marmoset_peptides_filtered.fa,ENSP00:human_peptides_filtered.fa,ENSMMU:macaque_peptides_filtered.fa,ENSMUS:mouse_peptides_filtered.fa,ENSPTR:chimp_peptides_filtered.fa,ENSPAN:baboon_peptides_filtered.fa,ENSPPY:orang_peptides_filtered.fa"
+#"chimp:chimp-cds.fa,cow:cow-cds.fa,gibbon:gibbon-cds.fa,gorilla:gorilla-cds.fa,human:human-cds.fa,macaque:macaque-cds.fa,mlemur:mlemur-cds.fa,mouse:mouse-cds.fa,orang:orang-cds.fa,owlmonkey:owlmonkey-cds.fa,vervet:vervet-cds.fa"
 
 import sys, argparse, os
 import core
@@ -54,6 +56,11 @@ def optParse(errorflag):
 
 infilename, seqdir, speclist, remstart, outdir = optParse(0);
 
+#idmap = { 'chimp':'ENSPTR', 'cow':'ENSBTA', 'gibbon':'ENSNLE', 'gorilla':'ENSGGO', 'human':'ENSG00', 'macaque':'ENSMMU', 'mlemur':'ENSMIC', 'mouse':'ENSMUS', 'orang':'ENSPPY', 'owlmonkey':'ENSANA', 'vervet':'ENSCSA' }
+idmap = { 'ENSPTR':'chimp', 'ENSBTA':'cow', 'ENSNLE':'gibbon', 'ENSGGO':'gorilla', 'ENSG00':'human', 'ENSMMU':'macaque', 'ENSMIC':'mlemur', 'ENSMUS':'mouse', 'ENSPPY':'orang', 'ENSANA':'owlmonkey', 'ENSCSA':'vervet' }
+
+
+
 print "# =======================================================================";
 print "# \t\t\tRetrieving sequences in FASTA format";
 print "# \t\t\t" + core.getDateTime();
@@ -77,18 +84,19 @@ for each in speclist:
 #print specdict;
 print "# -------------------------------------";
 print "# " + core.getTime() + " Reading peptide source files and extracting protein IDs...";
-tmp_seq_dict = {};
-for spec in specdict:
-	tmp_seq_dict[spec] = core.fastaGetDict(os.path.join(seqdir,specdict[spec]));
-
+#tmp_seq_dict = {};
 main_seq_dict = {};
-for spec in tmp_seq_dict:
-	main_seq_dict[spec] = {};
-	for title in tmp_seq_dict[spec]:
-		new_title = title[1:title.index(" ")];
-		main_seq_dict[spec][new_title] = tmp_seq_dict[spec][title];
+for spec in specdict:
+	main_seq_dict[spec] = core.fastaGetDict(os.path.join(seqdir,specdict[spec]));
 
-del tmp_seq_dict;
+#main_seq_dict = {};
+#for spec in tmp_seq_dict:
+#	main_seq_dict[spec] = {};
+#	for title in tmp_seq_dict[spec]:
+#		#new_title = title[1:title.index(" ")];
+#		main_seq_dict[spec][new_title] = tmp_seq_dict[spec][title];
+
+#del tmp_seq_dict;
 
 print "# -------------------------------------";
 count = core.getFileLen(infilename);
@@ -116,16 +124,23 @@ for line in open(infilename):
 	sn = 0;
 	finalseqs = {};
 	for gid in tmpline:
-		if sn == 0:
-			outfilename = outdir + gid + ".fa";
-
 		specid = gid[:6];
-		if gid in main_seq_dict[specid]:
-			curseq = main_seq_dict[specid][gid];
-			if remstart == 1 and curseq[0] == "M":
-				curseq = curseq[1:];
+		specid = idmap[specid]
 
-			finalseqs[gid] = curseq;
+		for title in main_seq_dict[specid]:
+
+			if gid in title:
+				curseq = main_seq_dict[specid][title];
+				if remstart == 1 and curseq[0] == "M":
+					curseq = curseq[1:];
+
+				new_title = title.replace("_", " ", 1);
+				finalseqs[new_title] = curseq;
+
+				if sn == 0:
+					tid = title[title.index("_")+1:title.index(" ")];
+					outfilename = outdir + tid + ".fa";
+					#print outfilename;
 
 		sn = sn + 1;
 

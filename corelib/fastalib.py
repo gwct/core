@@ -36,9 +36,13 @@ def countPos(fasta_files, disp_file=0):
 
 #############################################################################
 
-def countAln(fasta_files):
+def countAln(fasta_files, spec_opt):
 # This function counts a bunch of stats in a given set of alignments.
 	total_aln, total_seq, total_pos, total_col, invariant_sites, variant_sites, sites_with_gaps, sites_all_gaps, total_gaps  = 0,0,0,0,0,0,0,0,0;
+
+	if spec_opt:
+		spec_aln = {};
+
 	fa_skip = [];
 	aln_skip = [];
 	for fasta_file in fasta_files:
@@ -70,6 +74,18 @@ def countAln(fasta_files):
 				if base == "-":
 					total_gaps += 1;
 				# Converts N to - to be counted as a gap.
+
+				if spec_opt:
+				## WILL NEED TO ADD TITLE DELIMITER STUFF.
+					if title not in spec_aln:
+						spec_aln[title] = [0,0];
+						# [total non-gap sites, total gap sites]
+					else:
+						if base == "-":
+							spec_aln[title][1] += 1;
+						else:
+							spec_aln[title][0] += 1;
+
 				site.append(seqs[title][i]);
 
 			if "-" in site:
@@ -97,6 +113,11 @@ def countAln(fasta_files):
 	print "Total # Gaps\t", total_gaps;
 	print "# Sites with Gaps\t", sites_with_gaps;
 	print "# of Sites that are all Gap\t", sites_all_gaps;
+	print "-----";
+	if spec_opt:
+		print "Species counts:";
+		for spec in spec_aln:
+			print "\t".join([spec, str(spec_aln[spec][0]), str(spec_aln[spec][1])]);
 	if fa_skip != []:
 		print "The following", str(len(fa_skip)), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]);
 	if aln_skip != []:

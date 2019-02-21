@@ -16,6 +16,7 @@ parser = argparse.ArgumentParser(description="A general purpose FASTA editing sc
 parser.add_argument("-i", dest="input", help="A directory containing FASTA formatted files or a single FASTA file.");
 parser.add_argument("--countpos", dest="count_pos", help="With this flag, the total number of positions in all files will be counted.", default=False, action="store_true");
 parser.add_argument("--countaln", dest="count_aln", help="With this flag, the total number of columns in an alignment will be counted, along with other alignment stats.", default=False, action="store_true");
+parser.add_argument("--specsites", dest="spec_opt", help="Set with --countpos or --countaln to output site counts for each species.", default=False, action="store_true");
 parser.add_argument("--concat", dest="concat", help="Set this option to concatenate all alignments in the input directory.", default=False, action="store_true");
 parser.add_argument("--combine", dest="combine", help="Set this option to combine all fasta sequences in a directory. A single file may contain one or more sequences.", default=False, action="store_true");
 parser.add_argument("--split", dest="split", help="Given an input FASTA file, this option will split all sequences into individual files. Be sure to define -delim otherwise the entire header will be used as the output file name!", default=False, action="store_true");
@@ -64,7 +65,9 @@ if args.count_aln:
 	print "=======================================================================";
 	print "\t\t\t" + core.getDateTime();
 	print "Counting stats from all alignments in:\t", args.input;
-	fa.countAln(filelist);
+	if args.spec_opt:
+		print "--specsites set: counting species sites.";
+	fa.countAln(filelist, args.spec_opt);
 	sys.exit();
 # --countaln
 

@@ -302,9 +302,9 @@ def rootedOrNot(treedict):
 	num_tips = len([n for n in treedict if treedict[n][2] == 'tip']);
 	num_internal = len([n for n in treedict if treedict[n][2] != 'tip']);
 	if num_internal != (num_tips - 1):
-		return 0;
+		return False;
 	elif num_internal == (num_tips - 1):
-		return 1;
+		return True;
 	else:
 		return -1;
 

@@ -1,3 +1,4 @@
+#!/usr/bin/python
 ########################################################################################
 # Part of my ENSEMBL CAFE pipeline. This takes two (or more?) files containing 
 # lists of orthologous genes and their confidences (either 1 or 0), selects the
@@ -11,45 +12,35 @@
 #
 # Gregg Thomas, Spring 2015
 ########################################################################################
-import sys, argparse, itertools
-import core
 
-############################################
-#Function Definitions
-############################################
+import sys, os, argparse, itertools, core
 
-def optParse(errorflag):
-# This function handles the command line options.
+####################
 
-	parser = argparse.ArgumentParser();
+print "\n###### Hello ######"
+print "orth_combine call: " + " ".join(sys.argv) + "\n"
 
-	parser.add_argument("-i", dest="input_list", help="A comma delimited LIST of Ensembl ortholog lists to combine. The first column of each file must be the same species.");
-	parser.add_argument("-o", dest="output_file", help="Output file name for combined ortholog list.");
+parser = argparse.ArgumentParser();
+parser.add_argument("-i", dest="input", help="A comma delimited LIST of Ensembl ortholog lists to combine. The first column of each file must be the same species.", default=False);
+parser.add_argument("-o", dest="output", help="Output file name for combined ortholog list.", default=False);
+args = parser.parse_args();
 
-	args = parser.parse_args();
+if args.input:
+	infiles = args.input.split(",");
+	for infile in infiles:
+		if not os.path.isfile(infile):
+			sys.exit(" ** ERROR 1: input file not found: ", infile);
+else:
+	sys.exit(" ** ERROR 2: at least one input file must be given (-1)");
+# Check the input files
 
-	if errorflag == 0:
-		if args.input_list == None or args.output_file == None:
-			core.errorOut(1, "Both -i and -o must be defined");
-			optParse(1);
-
-		return args.input_list.split(","), args.output_file;
-
-	elif errorflag == 1:
-		parser.print_help();
-		sys.exit();
-
-############################################
-#Main Block
-############################################
-
-infiles, outfilename = optParse(0);
-
-#print infiles, outfilename;
+if not args.output:
+	sys.exit(" ** ERROR 3: output file not speciefied (-o)");
+## I/O parsing
 
 print "# =======================================================================";
 print "# Combining files:\t\t\t", infiles;
-print "# Writing output to:\t\t\t" + outfilename;
+print "# Writing output to:\t\t\t" + args.output;
 print "# Writing only possible one-to-one orthologs to output file.";
 print "# -------------------------------------";
 print "# " + core.getTime() + " Reading files...";
@@ -57,25 +48,20 @@ print "# " + core.getTime() + " Reading files...";
 file_lines = {};
 key_ids = {};
 
-for each in infiles:
-	infile = open(each, "r");
-	inlines = infile.readlines();
-	infile.close();
-
-	file_lines[each] = [];
-	key_ids[each] = [];
+for infile in infiles:
+	file_lines[infile] = [];
+	key_ids[infile] = [];
 
 	i = 0;
-	for line in inlines:
+	for line in open(infile):
 		if i == 0:
 			line = line.split("\t");
 			numcols = len(line);
 			numspec = (numcols - 1) / 2;
-
 			i = i + 1;
 			continue;
 
-		line = line.replace("\n","").split("\t");
+		line = line.strip().split("\t");
 		key_id = line[0];
 		if key_id == '' or len(line) != numcols:
 			continue;
@@ -89,8 +75,10 @@ for each in infiles:
 				cur_specs.append(line[j]);
 
 		if cur_specs.count('') == 0 and cur_conf.count('1') == len(cur_conf):
-			file_lines[each].append(cur_specs);
-			key_ids[each].append(key_id);
+			file_lines[infile].append(cur_specs);
+			key_ids[infile].append(key_id);
+
+
 
 print "# -------------------------------------";
 print "# " + core.getTime() + " Retrieving key IDs in both files...";
@@ -104,26 +92,38 @@ print "# " + core.getTime() + " Retrieving lines with shared key IDs (all combin
 i = 0;
 numbars = 0;
 donepercent = [];
+written = [];
+with open(args.output, "w") as outfile:
+	for cid in comb_ids:
+		numbars, donepercent = core.loadingBar(i, num_ids, donepercent, numbars);
+		i += 1;
+		cur_id = {};
+		for infile in infiles:
+			cur_id[infile] = [];
+			for line in file_lines[infile]:
+				if line[0] == cid:
+					cur_id[infile].append(line);
 
-outfile = open(outfilename, "w");
-for cid in comb_ids:
-	numbars, donepercent = core.loadingBar(i, num_ids, donepercent, numbars);
-	i += 1;
-	cur_id = {};
-	for each in infiles:
-		cur_id[each] = [];
-		for line in file_lines[each]:
-			if line[0] == cid:
-				cur_id[each].append(line);
+		skip = False;
+		for infile in infiles:
+			if len(cur_id[infile]) > 1 and cur_id[infile].count(cur_id[infile][0]) != len(cur_id[infile]):
+					skip = True; 
+		if skip:
+			#print cur_id;
+			continue;
+		# This skips if the query ID has multiple lines in a file that do not match, meaning one or more species has
+		# two orthologs with this query.
 
-	id_vals = [];
-	for each in cur_id:
-		id_vals.append(cur_id[each]);
+		id_vals = [];
+		for each in cur_id:
+			id_vals.append(cur_id[each]);
 
-	for b in itertools.product(*id_vals):
-		outline = b[0] + b[1][1:];
-		outline = "\t".join(outline) + "\n";
-		outfile.write(outline);
+		for b in itertools.product(*id_vals):
+			outline = b[0] + b[1][1:];
+			outline = "\t".join(outline) + "\n";
+			if outline not in written:
+				outfile.write(outline);
+				written.append(outline);
 
 pstring = "100.0% complete.";
 sys.stderr.write('\b' * len(pstring) + pstring);
