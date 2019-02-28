@@ -272,9 +272,9 @@ def runMacse(infiles, file_flag, path, v, output, logfilename):
 		if file_flag:
 			outfilename = output;
 		else:
-			outfilename = os.path.splitext(os.path.basename(infile))
-			outfilename = os.path.join(output, outfilename[0] + "-macse" + outfilename[1]);
-			outfilename_aa = os.path.join(output, outfilename[0] + "-macse-AA" + outfilename[1]);
+			outfilename_base = os.path.splitext(os.path.basename(infile))
+			outfilename = os.path.join(output, outfilename_base[0] + "-macse" + outfilename_base[1]);
+			outfilename_aa = os.path.join(output, outfilename_base[0] + "-macse-AA" + outfilename_base[1]);
 		# Get the output file name for the current alignment.
 
 		macse_cmd = path + " -prog alignSequences -seq '" + infile + "' -out_NT '" + outfilename + "' -out_AA '" + outfilename_aa + "'";
