@@ -115,10 +115,11 @@ for line in open(infilename):
 	if i == 0:
 		numspec = len(tmpline);
 		i = i + 1;
+		continue;
 
 	if len(tmpline) != numspec:
 		print line;
-		nonorth = nonroth + 1;
+		nonorth = nonorth + 1;
 		continue;
 
 	sn = 0;
