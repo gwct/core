@@ -57,7 +57,7 @@ def optParse(errorflag):
 infilename, seqdir, speclist, remstart, outdir = optParse(0);
 
 #idmap = { 'chimp':'ENSPTR', 'cow':'ENSBTA', 'gibbon':'ENSNLE', 'gorilla':'ENSGGO', 'human':'ENSG00', 'macaque':'ENSMMU', 'mlemur':'ENSMIC', 'mouse':'ENSMUS', 'orang':'ENSPPY', 'owlmonkey':'ENSANA', 'vervet':'ENSCSA' }
-idmap = { 'ENSPTR':'chimp', 'ENSBTA':'cow', 'ENSNLE':'gibbon', 'ENSGGO':'gorilla', 'ENSG00':'human', 'ENSMMU':'macaque', 'ENSMIC':'mlemur', 'ENSMUS':'mouse', 'ENSPPY':'orang', 'ENSANA':'owlmonkey', 'ENSCSA':'vervet' }
+#idmap = { 'ENSPTR':'chimp', 'ENSBTA':'cow', 'ENSNLE':'gibbon', 'ENSGGO':'gorilla', 'ENSG00':'human', 'ENSMMU':'macaque', 'ENSMIC':'mlemur', 'ENSMUS':'mouse', 'ENSPPY':'orang', 'ENSANA':'owlmonkey', 'ENSCSA':'vervet' }
 
 
 
@@ -126,7 +126,7 @@ for line in open(infilename):
 	finalseqs = {};
 	for gid in tmpline:
 		specid = gid[:6];
-		specid = idmap[specid]
+		#specid = idmap[specid]
 
 		for title in main_seq_dict[specid]:
 
