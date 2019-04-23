@@ -21,7 +21,7 @@ import core
 #Function Definitions
 ############################################
 
-def optParse(errorflag):
+def optParse():
 #This function handles the command line options.
 
 	parser = argparse.ArgumentParser();
@@ -29,43 +29,41 @@ def optParse(errorflag):
 	parser.add_argument("-i", dest="input_file", help="A file with tab delimited lists of orthologs (The output from orth_combine.py).");
 	parser.add_argument("-s", dest="seq_dir", help="A directory with full fasta sequences from all the species found in the ortholog list.");
 	parser.add_argument("-d", dest="spec_dict", help="A necessary option to associate filename with species identifier... format exactly as follows for ALL species: \"spec1ID:spec1.fa,spec2ID:spec2.fa\"");
+	parser.add_argument("-delim", dest="title_delim", help="A character to trim the fasta titles at. To trim at the first space, enter 'space'. Default: take whole title. ", default=False)
 	parser.add_argument("-m", dest="rem_start", help="A boolean option to either remove the start Methionine (1) or not (0). Default: 0", type=int, default=0);
 	parser.add_argument("-o", dest="output_dir", help="Output directory where all combined sequences will be written.");
 
 	args = parser.parse_args();
 
-	if errorflag == 0:
+	if args.input_file == None or args.output_dir == None or args.seq_dir == None or args.spec_dict == None:
+		sys.exit(core.errorOut(1, "-i, -o, -s, and -d must all be defined"));
 
-		if args.input_file == None or args.output_dir == None or args.seq_dir == None or args.spec_dict == None:
-			core.errorOut(1, "-i, -o, -s, and -d must all be defined");
-			optParse(1);
+	if args.rem_start not in [0,1]:
+		sys.exit(core.errorOut(2, "-m must take values of either 0 or 1"));
 
-		if args.rem_start not in [0,1]:
-			core.errorOut(2, "-m must take values of either 0 or 1");
+	if args.title_delim == 'space':
+		args.title_delim = ' ';
 
-		return args.input_file, args.seq_dir, args.spec_dict.split(","), args.rem_start, args.output_dir;
-
-	elif errorflag == 1:
-		parser.print_help();
-		sys.exit();
-
+	return args.input_file, args.seq_dir, args.spec_dict.split(","), args.title_delim, args.rem_start, args.output_dir;
 
 ############################################
 #Main Block
 ############################################
 
-infilename, seqdir, speclist, remstart, outdir = optParse(0);
+infilename, seqdir, speclist, delim, remstart, outdir = optParse();
 
 #idmap = { 'chimp':'ENSPTR', 'cow':'ENSBTA', 'gibbon':'ENSNLE', 'gorilla':'ENSGGO', 'human':'ENSG00', 'macaque':'ENSMMU', 'mlemur':'ENSMIC', 'mouse':'ENSMUS', 'orang':'ENSPPY', 'owlmonkey':'ENSANA', 'vervet':'ENSCSA' }
 #idmap = { 'ENSPTR':'chimp', 'ENSBTA':'cow', 'ENSNLE':'gibbon', 'ENSGGO':'gorilla', 'ENSG00':'human', 'ENSMMU':'macaque', 'ENSMIC':'mlemur', 'ENSMUS':'mouse', 'ENSPPY':'orang', 'ENSANA':'owlmonkey', 'ENSCSA':'vervet' }
-
-
 
 print "# =======================================================================";
 print "# \t\t\tRetrieving sequences in FASTA format";
 print "# \t\t\t" + core.getDateTime();
 print "# Retrieving ortholog sequences from:\t", infilename;
 print "# Sequence directory\t\t\t" + seqdir;
+if delim:
+	print "# Trimming FASTA headers at:\t", delim;
+else:
+	print "# Retaining full FASTA headers."
 print "# Writing combined sequence files to:\t", outdir;
 if remstart == 1:
 	print "# Removing start Methionines (-m 1)";
@@ -83,7 +81,7 @@ for each in speclist:
 
 #print specdict;
 print "# -------------------------------------";
-print "# " + core.getTime() + " Reading peptide source files and extracting protein IDs...";
+print "# " + core.getTime() + " Reading source files and extracting sequence IDs...";
 #tmp_seq_dict = {};
 main_seq_dict = {};
 for spec in specdict:
@@ -140,7 +138,8 @@ for line in open(infilename):
 
 				if sn == 0:
 					tid = title[title.index("_")+1:title.index(" ")];
-					outfilename = outdir + tid + ".fa";
+					outfilename = os.path.join(outdir, tid + ".fa");
+					#outfilename = outdir + tid + ".fa";
 					#print outfilename;
 
 		sn = sn + 1;
@@ -148,11 +147,13 @@ for line in open(infilename):
 	if len(finalseqs) == numspec:
 		core.filePrep(outfilename, "");
 		for title in finalseqs:
-			core.writeSeqOL(outfilename,finalseqs[title],">" + title);
+			if delim:
+				outtitle = title[:title.index(delim)];
+			else:
+				outtitle = title;
+			core.writeSeqOL(outfilename,finalseqs[title],outtitle);
 
 	i = i + 1;
-
-
 
 pstring = "100.0% complete.";
 sys.stderr.write('\b' * len(pstring) + pstring);

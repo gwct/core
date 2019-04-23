@@ -44,7 +44,7 @@ parser.add_argument("-c", dest="constraint_tree", help="RAxML: A file containing
 parser.add_argument("--bl", dest="estimate_bl", help="RAxML: Use with -c to set RAxML to '-f e' to estimate branch lengths only on the constraint tree", action="store_true");
 # RAxML specific options
 
-parser.add_argument("-tree", dest="tree", help="codeml: The species tree file to use.", default=False);
+parser.add_argument("-tree", dest="tree", help="codeml and PRANK: The species tree file to use.", default=False);
 parser.add_argument("--genetrees", dest="gt_opt", help="Set this to indicate that the file given by -tree contains a gene tree for each alignment to be run through codeml (in the format of the --raxml best_trees.txt file).", action="store_true");
 parser.add_argument("-testbranch", dest="test_spec", help="The species you want to test with the branch-site test. Give species delimited by commas to indicate their ancestral branch.", default=False);
 parser.add_argument("--prune", dest="prune", help="codeml: If not all species present in the tree will be present in each alignment, set this to prune the tree for each file. NOTE: requires Newick Utilities to be installed.", action="store_true");
@@ -113,11 +113,11 @@ if args.prank:
 	print "\n** Warning -- PRANK is only used for codon alignments.\n"
 	print "=======================================================================";
 	print "\t\t\t" + core.getDateTime();
-	print "** For --prank, only options -i, -p, -v, and -o are used!";
+	print "** For --prank, only options -i, -p, -v, -tree, and -o are used!";
 	path, output, logfilename = wrap.ioInfo(args.input, args.path, args.output, "PRANK", file_flag);
 	print core.spacedOut("Input sequence type:", pad), args.seqtype;
 	print "-------------------------";
-	wrap.runPrank(filelist, file_flag, path, args.verbosity, output, logfilename);
+	wrap.runPrank(filelist, tree, file_flag, path, args.verbosity, output, logfilename);
 	sys.exit();
 # --prank
 

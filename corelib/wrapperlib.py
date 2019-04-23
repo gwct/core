@@ -202,7 +202,7 @@ def runPasta(infiles, file_flag, path, seqtype, v, output, logfilename):
 
 #############################################################################
 
-def runPrank(infiles, file_flag, path, v, output, logfilename):
+def runPrank(infiles, tree, file_flag, path, v, output, logfilename):
 # This module runs the MUSCLE alignment program on a list of FASTA files.
 	print "Running PRANK...\n";
 	if v == 0 and not file_flag:
@@ -229,7 +229,10 @@ def runPrank(infiles, file_flag, path, v, output, logfilename):
 			outfilename = os.path.join(output, outfilename[0] + "-prank" + outfilename[1]);
 		# Get the output file name for the current alignment.
 
-		prank_cmd = path + " -d='" + infile + "' -o='" + outfilename + "' -codon -F -once";
+		if not tree:
+			prank_cmd = path + " -d='" + infile + "' -o='" + outfilename + "' -codon -F -once";
+		else:
+			prank_cmd = path + " -d='" + infile + "' -t='" + tree + "' -prunetree -o='" + outfilename + "' -codon -F -once";
 		if v == 0 and not file_flag:
 			prank_cmd += ">> " + stdoutlog + " 2>&1";
 		os.system(prank_cmd);
