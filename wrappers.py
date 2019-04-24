@@ -117,7 +117,7 @@ if args.prank:
 	path, output, logfilename = wrap.ioInfo(args.input, args.path, args.output, "PRANK", file_flag);
 	print core.spacedOut("Input sequence type:", pad), args.seqtype;
 	print "-------------------------";
-	wrap.runPrank(filelist, tree, file_flag, path, args.verbosity, output, logfilename);
+	wrap.runPrank(filelist, args.tree, file_flag, path, args.verbosity, output, logfilename);
 	sys.exit();
 # --prank
 
