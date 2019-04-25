@@ -312,7 +312,7 @@ def runGblocks(infiles, file_flag, path, seqtype, run_mode, v, output, logfilena
 
 	i, numbars, donepercent, numfiles = 0,0,[], len(infiles);
 	fa_skip, aln_skip = [],[];
-	acc_mask, rej_mask = 0,0;
+	acc_mask, rej_mask, no_seq = 0,0,0;
 
 	for infile in infiles:
 		if v == 0 and not file_flag:
@@ -356,6 +356,11 @@ def runGblocks(infiles, file_flag, path, seqtype, run_mode, v, output, logfilena
 		logline += "\t" + str(difflen) + " of " + str(seqlen) + " masked (" + str(round(percdiff,2)) + "%)";
 		# Calculate the amount of sequence masked relative to the original alignment.
 
+		if percdiff == 100:
+			logline += "\tNo sequence retained. Removing output file.";
+			no_seq += 1;
+			os.system("rm '" + gblocks_outfile + "'");
+
 		if percdiff <= 20 or run_mode == 0:
 			logline += "\tAccepting masked alignment";
 			acc_mask += 1;
@@ -393,6 +398,7 @@ def runGblocks(infiles, file_flag, path, seqtype, run_mode, v, output, logfilena
 		sys.stderr.write('\b' * len(pstring) + pstring);
 	print "\n" + core.getTime() + " Done!";
 	core.printWrite(logfilename,"-----", file_flag);
+	core.printWrite(logfilename,"# masks with no seq retained:\t" + str(no_seq), file_flag);
 	core.printWrite(logfilename,"# masks accepted:\t" + str(acc_mask), file_flag);
 	core.printWrite(logfilename,"# masks rejected:\t" + str(rej_mask), file_flag);
 	if fa_skip != []:
