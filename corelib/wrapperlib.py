@@ -584,8 +584,9 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 		os.system("mkdir \"" + ancdir + "\"");
 	# Create the directory to store ancestral sequences.
 
-	codeml_outdir = os.path.join(output, "codeml-out");
-	os.system("mkdir \"" + codeml_outdir + "\"");
+	if not file_flag:
+		codeml_outdir = os.path.join(output, "codeml-out");
+		os.system("mkdir \"" + codeml_outdir + "\"");
 	# Create the codeml-out directory within the main output directory.
 
 	treefile = os.path.abspath(treefile);
