@@ -45,6 +45,7 @@ def countAln(fasta_files, spec_opt):
 
 	fa_skip = [];
 	aln_skip = [];
+	# seqlens = [];
 	for fasta_file in fasta_files:
 		seqs, skip = core.fastaReader(fasta_file);
 		if skip:
@@ -60,6 +61,13 @@ def countAln(fasta_files, spec_opt):
 		seqlen = len(seqs[seqs.keys()[0]]);
 		total_aln += 1;
 		total_seq += len(seqs);
+		# seqlens.append(str(seqlen));
+
+		# if seqlen < 31:
+		# 	print fasta_file, seqlen/3;
+		# 	f = os.path.basename(fasta_file);
+		# 	cmd = "cp " + fasta_file + " C:/Users/Gregg/Desktop/shortalns/" + f;
+		# 	os.system(cmd);
 
 		for i in range(seqlen):
 		# For each column in the alignment...
@@ -124,6 +132,8 @@ def countAln(fasta_files, spec_opt):
 		print "The following", str(len(aln_skip)), "file(s) were skipped because they might not have been alignments: ", ",".join([os.path.basename(f) for f in aln_skip]);
 	print "=======================================================================";
 
+	# with open("alnlens.txt", "w") as outfile:
+	# 	outfile.write(",".join(seqlens));
 #############################################################################
 
 def concat(fasta_files, header_delim, outfilename):
