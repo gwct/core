@@ -10,10 +10,10 @@
 import sys, os
 
 if len(sys.argv) != 4 or "-h" in sys.argv:
-	print("\nUsage:\t$ python fotc.py [tree file] [outgroup] [output file name]");
-	print("---->\t[tree file]: A file containing one or more unrooted, newick formatted trees, one per line.");
-	print("---->\t[outgroup]: A tip label in all present in all trees at which they will be rooted.");
-	print("---->\t[output filename]: The name of a file to which the rooted trees will be written.");
+	print "\nUsage:\t$ python fotc.py [tree file] [outgroup] [output file name]";
+	print "---->\t[tree file]: A file containing one or more unrooted, newick formatted trees, one per line.";
+	print "---->\t[outgroup]: A tip label in all present in all trees at which they will be rooted.";
+	print "---->\t[output filename]: The name of a file to which the rooted trees will be written.";
 	sys.exit();
 
 treefilename = sys.argv[1];

@@ -110,8 +110,8 @@ else:
 	indir = os.getcwd() + "/";
 
 indir, script_outdir = core.getOutdir(indir, "supertreemaker", starttime);
-print(script_outdir);
-print(os.path.basename(os.path.normpath(script_outdir)));
+print script_outdir;
+print os.path.basename(os.path.normpath(script_outdir));
 if script_outdir_initial != None:
 	if not os.path.isdir(script_outdir_initial):
 		core.errorOut(8, "-z must be a valid directory");
@@ -124,7 +124,7 @@ if outdir_suffix != None:
 	else:
 		script_outdir = script_outdir + "-" + outdir_suffix + "/";
 
-print(core.getTime() + " | Creating main output directory:\t" + script_outdir);
+print core.getTime() + " | Creating main output directory:\t" + script_outdir;
 os.system("mkdir '" + script_outdir + "'");
 
 logfilename = script_outdir + "supertreemaker.log";
@@ -152,7 +152,7 @@ else:
 	core.logCheck(l, logfilename, "INFO     | Number of sites from alignments:\t\t" + numsites);
 	core.logCheck(l, logfilename, "INFO     | Calibrating with the following nodes and ages:\n---------");
 	core.logCheck(l, logfilename, core.spacedOut("NODE 1", 40) + core.spacedOut("NODE 2", 40) + "AGE");
-	for n in range(len(calspec)):
+	for n in xrange(len(calspec)):
 		calspec[n] = calspec[n].split(",");
 		core.logCheck(l, logfilename, core.spacedOut(calspec[n][0], 40) + core.spacedOut(calspec[n][1], 40) + calage[n]);
 	core.logCheck(l, logfilename, "---------");
@@ -172,7 +172,7 @@ if njopt == 1:
 
 	core.logCheck(l, logfilename, core.getTime() + " | Running Average Consensus within SDM...");
 	sdm_cmd = "java -jar ~/bin/SDM/SDM.jar -i " + indir + infilename + " -d ACS97 -t T -f Phylip_square";
-	print(sdm_cmd);
+	print sdm_cmd;
 	os.system(sdm_cmd);
 	##Runs SDM with ACS97
 
@@ -187,7 +187,7 @@ if njopt == 1:
 
 	specs = [];
 
-	for x in range(len(inlines)):
+	for x in xrange(len(inlines)):
 		if x == 0 or inlines[x] == "\n":
 			continue;
 		while inlines[x].find("  ") != -1:
@@ -199,7 +199,7 @@ if njopt == 1:
 	tmpfile = open(tmpfilename,"w");
 	tmpfile.write(specs);
 	tmpfile.write("\n");
-	for x in range(len(inlines)):
+	for x in xrange(len(inlines)):
 		if x == 0 or inlines[x] == "\n":
 			continue;
 		tmpfile.write(inlines[x]);
@@ -257,10 +257,10 @@ if d == 1:
 	outline = "blformat nsites=" + numsites + " lengths=persite ultrametric=no;\n";
 	r8sfile.write(outline);
 	r8sfile.write("collapse;\n");
-	for n in range(len(calnodes)):
+	for n in xrange(len(calnodes)):
 		outline = "mrca " + calnodes[n] + " " + calspec[n][0] + " " + calspec[n][1] + ";\n";
 		r8sfile.write(outline);
-	for n in range(len(calnodes)):
+	for n in xrange(len(calnodes)):
 		if calage[n].find("min") != -1 and calage[n].find("max") != -1:
 			curcal = calage[n].split("-");
 			outline = "constrain taxon=" + calnodes[n] + " minage=" + curcal[1] + " maxage=" + curcal[3] +";\n";

@@ -15,33 +15,33 @@ sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/
 import core
 
 if len(sys.argv) not in [3,4] or sys.argv[1] == '-h':
-	print("Usage:\t$ fa_conact.py [input directory] [output file name] [species delimiter (optional)]");
-	print("For a delimiter of ' ', enter the word 'space' for that option.");
+	print "Usage:\t$ fa_conact.py [input directory] [output file name] [species delimiter (optional)]";
+	print "For a delimiter of ' ', enter the word 'space' for that option.";
 	sys.exit();
 
 ins = sys.argv[1];
 if not os.path.isdir(ins):
-	print("*** Error: Input directory not found.");
+	print "*** Error: Input directory not found.";
 outs = sys.argv[2];
 
-print("=======================================================================");
-print("Concatenating alignments in:\t\t" + ins);
-print("Writing concatenated alignments to:\t" + outs);
+print "=======================================================================";
+print "Concatenating alignments in:\t\t" + ins;
+print "Writing concatenated alignments to:\t" + outs;
 if len(sys.argv) == 4:
 	delim = sys.argv[3];
-	print("Species labels should be at beginning of sequence title.")
-	print("Species delimiter:\t\t\t" + delim);
-	print("Pre-reading all files to fill in missing data.");
+	print "Species labels should be at beginning of sequence title."
+	print "Species delimiter:\t\t\t" + delim;
+	print "Pre-reading all files to fill in missing data.";
 	if delim.lower() == 'space':
 		delim = ' ';
-print("-------------------------------------");
+print "-------------------------------------";
 
 filelist = os.listdir(ins);
 if outs.find("/") != -1:
 	pos = outs.rfind('/');
 	outdir = outs[:pos] + '/';
 	if not os.path.exists(outdir):
-		print("+Creating output directory.");
+		print "+Creating output directory.";
 		os.system("mkdir " + outdir);
 	partfile = os.path.join(outdir, "partitions.txt");
 else:
@@ -77,7 +77,7 @@ for seqfile in filelist:
 		continue;
 	infilename = os.path.join(ins, seqfile);
 	inseqs = core.fastaGetDict(infilename);
-	seqlen = len(inseqs[list(inseqs.keys())[0]]);
+	seqlen = len(inseqs[inseqs.keys()[0]]);
 
 	pfile.write(seqfile[:seqfile.index("_")] + " = " + str(numpos+1) + "-" + str(numpos+seqlen) + "\n");
 	numpos = numpos + seqlen;
@@ -113,6 +113,6 @@ outfile.close();
 
 pstring = "100.0% complete.";
 sys.stderr.write('\b' * len(pstring) + pstring);
-print("\nDone!");
-print("=======================================================================");
-print(numpos);
+print "\nDone!";
+print "=======================================================================";
+print numpos;

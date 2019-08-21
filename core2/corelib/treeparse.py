@@ -25,7 +25,7 @@ def getBranchLength(bltree, spec_label):
 
 				indcheck = [opind,cpind,coind];
 
-				for a in range(len(indcheck)):
+				for a in xrange(len(indcheck)):
 					if indcheck[a] == -1:
 						indcheck[a] = 10000;
 
@@ -169,8 +169,8 @@ def LCA(spec_list, treedict):
 			ancs[spec].append(curanc);
 	#print ancs;
 
-	intersect_anc = set.intersection(*list(map(set, list(ancs.values()))))
-	lcp = [t for t in list(ancs.values())[0] if t in intersect_anc]
+	intersect_anc = set.intersection(*map(set, ancs.values()))
+	lcp = [t for t in ancs.values()[0] if t in intersect_anc]
 
 	#lcp = sorted(set.intersection(*map(set, ancs.values())), key=lambda x: ancs.values()[0].index(x))
 	monophyletic = 0;
@@ -229,7 +229,7 @@ def comAnc(spec_list, treedict):
 
 	new_list = [];
 	for b in ancdict:
-		if list(ancdict.values()).count(ancdict[b]) > 1 and ancdict[b] not in new_list:
+		if ancdict.values().count(ancdict[b]) > 1 and ancdict[b] not in new_list:
 			new_list.append(ancdict[b]);
 		elif treedict[b][1] not in new_list:
 			new_list.append(b);
@@ -327,7 +327,7 @@ def treeParse(tree, debug=0):
 	topology = remBranchLength(tree);
 
 	if debug == 1:
-		print("TOPOLOGY:", topology);
+		print "TOPOLOGY:", topology;
 
 	nodes = {};
 	for n in topology.replace("(","").replace(")","").replace(";","").split(","):
@@ -336,7 +336,7 @@ def treeParse(tree, debug=0):
 	# Retrieval of the tip labels
 
 	if debug == 1:
-		print("NODES:", nodes);
+		print "NODES:", nodes;
 
 	new_tree = "";
 	z = 0;
@@ -354,10 +354,10 @@ def treeParse(tree, debug=0):
 	# This labels the original tree as new_tree and stores the nodes and their types in the nodes dict
 
 	if debug == 1:
-		print("NEW TREE:", new_tree);
-		print("TREE:", tree);
-		print("NODES:", nodes);
-		print("ROOTNODE:", rootnode);
+		print "NEW TREE:", new_tree;
+		print "TREE:", tree;
+		print "NODES:", nodes;
+		print "ROOTNODE:", rootnode;
 		#sys.exit();
 	topo = "";
 	z = 0;
@@ -372,9 +372,9 @@ def treeParse(tree, debug=0):
 	# This labels the topology with the same internal labels
 
 	if debug == 1:
-		print("TOPO:", topo);
-		print("----------");
-		print("TOPOLOGY:", topo);
+		print "TOPO:", topo;
+		print "----------";
+		print "TOPOLOGY:", topo;
 
 	for node in nodes:
 		if node + node in new_tree:
@@ -387,7 +387,7 @@ def treeParse(tree, debug=0):
 	for node in nodes:
 	# One loop through the nodes to retrieve all other info
 		if debug == 1:
-			print("NODE:", node);
+			print "NODE:", node;
 
 		if nodes[node] == 'tip':
 			supports[node] = "NA";
@@ -395,7 +395,7 @@ def treeParse(tree, debug=0):
 				cur_bl = re.findall(node + ":[\d.Ee-]+", new_tree);
 				cur_bl = cur_bl[0].replace(node + ":", "");
 				if debug == 1:
-					print("FOUND BL:", cur_bl);
+					print "FOUND BL:", cur_bl;
 				bl[node] = cur_bl;				
 			else:
 				bl[node] = "NA";
@@ -406,7 +406,7 @@ def treeParse(tree, debug=0):
 
 			if node + "(" in new_tree or node + "," in new_tree or node + ")" in new_tree:
 				if debug == 1:
-					print("NO BL OR LABEL");
+					print "NO BL OR LABEL";
 				supports[node] = "NA";
 				bl[node] = "NA";
 
@@ -415,7 +415,7 @@ def treeParse(tree, debug=0):
 				cur_bl = re.findall(node + ":[\d.Ee-]+", new_tree);
 				cur_bl = cur_bl[0].replace(node + ":", "");
 				if debug == 1:
-					print("FOUND BL:", cur_bl);
+					print "FOUND BL:", cur_bl;
 				bl[node] = cur_bl;								
 
 			else:
@@ -426,7 +426,7 @@ def treeParse(tree, debug=0):
 					cur_bs = cur_bs[:cur_bs.index(":")];
 					cur_bl = cur_bsl[0].replace(node, "").replace(cur_bs, "").replace(":", "");
 					if debug == 1:
-						print("FOUND BL AND LABEL:", cur_bl, cur_bs);
+						print "FOUND BL AND LABEL:", cur_bl, cur_bs;
 					supports[node] = cur_bs;
 					bl[node] = cur_bl;
 					#new_tree = new_tree.replace(cur_bs, "");
@@ -435,7 +435,7 @@ def treeParse(tree, debug=0):
 					cur_bs = re.findall(node + "[\w*+.<> -]+", new_tree);
 					cur_bs = cur_bs[0].replace(node, "");
 					if debug == 1:
-						print("FOUND LABEL:", cur_bs);
+						print "FOUND LABEL:", cur_bs;
 					supports[node] = cur_bs;
 					bl[node] = "NA";
 					#new_tree = new_tree.replace(cur_bs, "");
@@ -454,15 +454,15 @@ def treeParse(tree, debug=0):
 		# anc_match = re.findall(node + '[\d:(),]+', new_tree);
 		anc_match = re.findall(node, topo);
 		if debug == 1:
-			print("ANC MATCH:", anc_match);
+			print "ANC MATCH:", anc_match;
 
 		anc_tree = new_tree[new_tree.index(anc_match[0]):][1:];
 		# Ancestral labels are always to the right of the node label in the text of the tree, so we start our scan from the node label
 
 		if debug == 1:
-			print("NODE:", node);
-			print("ANC_MATCH:", anc_match);
-			print("ANC_TREE:", anc_tree);
+			print "NODE:", node;
+			print "ANC_MATCH:", anc_match;
+			print "ANC_TREE:", anc_tree;
 			
 		cpar_count = 0;
 		cpar_need = 1;
@@ -479,8 +479,8 @@ def treeParse(tree, debug=0):
 				break;
 
 		if debug == 1:
-			print("FOUND ANC:", ancs[node]);
-			print("---");
+			print "FOUND ANC:", ancs[node];
+			print "---";
 	nofo = {};
 	for node in nodes:
 		nofo[node] = [bl[node], ancs[node], nodes[node], supports[node]];
@@ -488,26 +488,26 @@ def treeParse(tree, debug=0):
 
 	if debug == 1:
 	# Debugging options to print things out
-		print(("\ntree:\n" + tree + "\n"));
-		print(("new_tree:\n" + new_tree + "\n"));
-		print(("topology:\n" + topo + "\n"));
+		print("\ntree:\n" + tree + "\n");
+		print("new_tree:\n" + new_tree + "\n");
+		print("topology:\n" + topo + "\n");
 		print("nodes:");
 		print(nodes);
-		print()
+		print
 		print("bl:");
 		print(bl);
-		print()
+		print
 		print("supports:");
 		print(supports);
-		print()
+		print
 		print("ancs:");
 		print(ancs);
-		print()
+		print
 		print("-----------------------------------");
-		print()
+		print
 		print("nofo:");
 		print(nofo);
-		print()
+		print
 
 	return nofo, topo, rootnode;
 

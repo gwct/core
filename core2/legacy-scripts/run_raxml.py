@@ -43,9 +43,9 @@ def optParse(errorflag):
 			optParse(1);
 
 		if args.bootstrap_reps > 100:
-			print(" ---------------------------------------------------------------------------------------------------");
-			print("|*Warning: You have specified more than 100 bootstrap replicates. This could take a very long time. |");
-			print(" ---------------------------------------------------------------------------------------------------");
+			print " ---------------------------------------------------------------------------------------------------";
+			print "|*Warning: You have specified more than 100 bootstrap replicates. This could take a very long time. |";
+			print " ---------------------------------------------------------------------------------------------------";
 
 		if args.num_threads <= 0:
 			core.errorOut(2, "-t can take only positive, non-zero values");
@@ -113,7 +113,7 @@ script_outdir = os.path.abspath(script_outdir);
 bestdir = os.path.join(script_outdir, "raxml-best");
 outdir = os.path.join(script_outdir, "raxml-out");
 
-print(core.getTime() + " | Creating main output directory:\t" + script_outdir);
+print core.getTime() + " | Creating main output directory:\t" + script_outdir;
 os.system("mkdir '" + script_outdir +"'");
 
 logfilename = os.path.join(script_outdir, "run_raxml.log");

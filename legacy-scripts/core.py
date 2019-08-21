@@ -23,11 +23,11 @@ def dnaCheck(seq, i_name):
 	seq = seq.replace('U', 'T');
 	#The function then converts any U's to T's, changing RNA to DNA.
 
-	for n in xrange(len(seq)):
+	for n in range(len(seq)):
 	#This loop then reads through every letter of the sequence and makes sure they are all nucleotide symbols.
 	#If they are not, an error is printed and the program exits.
 		if seq[n] not in dna_symbols:		
-			print "\nError! Input sequence from the file", i_name, "is not a nucleotide sequence. Please input only DNA sequences.\n"
+			print("\nError! Input sequence from the file", i_name, "is not a nucleotide sequence. Please input only DNA sequences.\n")
 			sys.exit();
 	return seq;
 	#If the input sequence checks out, it is returned to the call.
@@ -228,7 +228,7 @@ def getLogTime():
 
 def printWrite(o_name, o_line):
 #Function to print a string AND write it to the file.
-	print o_line;
+	print(o_line);
 	f = open(o_name, "a");
 	f.write(o_line + "\n");
 	f.close();
@@ -240,7 +240,7 @@ def logCheck(lopt, lfilename, outline):
 	if lopt == 1:
 		printWrite(lfilename, outline);
 	else:
-		print outline;
+		print(outline);
 
 #############################################################################
 
@@ -248,7 +248,7 @@ def errorOut(errnum, errmsg):
 #Formatting for error messages.
 	fullmsg = "|**Error " + str(errnum) + ": " + errmsg + " |";
 	border = " " + "-" * (len(fullmsg)-2);
-	print border + "\n" + fullmsg + "\n" + border;
+	print(border + "\n" + fullmsg + "\n" + border);
 
 #############################################################################
 
@@ -481,7 +481,7 @@ def nexusGetDict(i_name):
 		if seqflag == 1:
 			if line[0] != "\t":
 				tmpline = line.replace("\n","").split(" ");
-				tmpline = filter(None, tmpline);
+				tmpline = [_f for _f in tmpline if _f];
 				seqs[tmpline[0]] = tmpline[1];
 
 	return seqs;
@@ -495,7 +495,7 @@ def writeNexus(seqdict, o_name):
 	outfile.write("#NEXUS\n\nBegin data;\n");
 
 	ntaxa = len(seqdict);
-	nsites = len(seqdict[seqdict.keys()[0]]);
+	nsites = len(seqdict[list(seqdict.keys())[0]]);
 
 	outline = "\tDimensions ntax=" + str(ntaxa) + " nchar=" + str(nsites) + ";\n";
 	outfile.write(outline);
@@ -504,7 +504,7 @@ def writeNexus(seqdict, o_name):
 	outline = "\tMatrix\n";
 	outfile.write(outline);
 
-	interval = len(max(seqdict.keys(), key=len)) + 3;
+	interval = len(max(list(seqdict.keys()), key=len)) + 3;
 
 	for title in seqdict:
 		newtitle = title.replace(" ",":");
@@ -594,10 +594,10 @@ def writePhylip(seqs, o_name):
 #This function takes a sequence dictionary and writes it in Phylip format to
 #the output file name.
 	outfile = open(o_name, "w");
-	outline = " " + str(len(seqs)) + " " + str(len(seqs[seqs.keys()[0]])) + "\n";
+	outline = " " + str(len(seqs)) + " " + str(len(seqs[list(seqs.keys())[0]])) + "\n";
 	outfile.write(outline);
 
-	interval = len(max(seqs.keys(), key=len)) + 3;
+	interval = len(max(list(seqs.keys()), key=len)) + 3;
 
 	for title in seqs:
 		newtitle = title.replace(" ", ":");

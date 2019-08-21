@@ -80,18 +80,18 @@ else:
 # This checks if the input (-i) entered is valid. If so, it parses it as either a directory or a single file.
 
 if not args.output:
-	print("\n** Warning -- No output location specified. Will be determined automatically.");
+	print "\n** Warning -- No output location specified. Will be determined automatically.";
 if file_flag and args.verbosity == 0:
-	print("\n* Message: When input type is a file, -v 0 is ignored.");
+	print "\n* Message: When input type is a file, -v 0 is ignored.";
 # Some messages based on the input options.
 
 pad = 40;
 if args.muscle:
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("** For --muscle, only options -i, -p, -v, and -o are used!");
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "** For --muscle, only options -i, -p, -v, and -o are used!";
 	path, output, logfilename = wrap.ioInfo(args.input, args.path, args.output, "MUSCLE", file_flag);
-	print("-------------------------");
+	print "-------------------------";
 	wrap.runMuscle(filelist, file_flag, path, args.verbosity, output, logfilename);
 	sys.exit();
 # --muscle
@@ -99,36 +99,36 @@ if args.muscle:
 if args.pasta:
 	if args.seqtype not in ['dna','rna','protein']:
 		sys.exit(core.errorOut(3, "PASTA accepts sequence types (-seqtype) of protein, dna, and rna"));
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("** For --pasta, only options -i, -p, -v, -seqtype, and -o are used!");
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "** For --pasta, only options -i, -p, -v, -seqtype, and -o are used!";
 	path, output, logfilename = wrap.ioInfo(args.input, args.path, args.output, "PASTA", file_flag);
-	print(core.spacedOut("Input sequence type:", pad), args.seqtype);
-	print("-------------------------");
+	print core.spacedOut("Input sequence type:", pad), args.seqtype;
+	print "-------------------------";
 	wrap.runPasta(filelist, file_flag, path, args.seqtype, args.verbosity, output, logfilename);
 	sys.exit();
 # --pasta
 
 if args.prank:
-	print("\n** Warning -- PRANK is only used for codon alignments.\n")
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("** For --prank, only options -i, -p, -v, -tree, and -o are used!");
+	print "\n** Warning -- PRANK is only used for codon alignments.\n"
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "** For --prank, only options -i, -p, -v, -tree, and -o are used!";
 	path, output, logfilename = wrap.ioInfo(args.input, args.path, args.output, "PRANK", file_flag);
-	print(core.spacedOut("Input sequence type:", pad), args.seqtype);
-	print("-------------------------");
+	print core.spacedOut("Input sequence type:", pad), args.seqtype;
+	print "-------------------------";
 	wrap.runPrank(filelist, args.tree, file_flag, path, args.verbosity, output, logfilename);
 	sys.exit();
 # --prank
 
 if args.macse:
-	print("\n** Warning -- MACSE is only used for codon alignments.\n")
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("** For --prank, only options -i, -p, -v, and -o are used!");
+	print "\n** Warning -- MACSE is only used for codon alignments.\n"
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "** For --prank, only options -i, -p, -v, and -o are used!";
 	path, output, logfilename = wrap.ioInfo(args.input, args.path, args.output, "MACSE", file_flag);
-	print(core.spacedOut("Input sequence type:", pad), args.seqtype);
-	print("-------------------------");
+	print core.spacedOut("Input sequence type:", pad), args.seqtype;
+	print "-------------------------";
 	wrap.runMacse(filelist, file_flag, path, args.verbosity, output, logfilename);
 	sys.exit();
 # --macse
@@ -138,16 +138,16 @@ if args.gblocks:
 		sys.exit(core.errorOut(4, "When running GBlocks (--gblocks) a run mode (-mode) of 0 or 1 must be specified!"));
 	if args.seqtype not in ['dna','codon','protein']:
 		sys.exit(core.errorOut(5, "GBlocks accepts sequence types (-seqtype) of dna, codon, and protein."));
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("** For --gblocks, only options -i, -p, -v, -seqtype, and -o are used!");
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "** For --gblocks, only options -i, -p, -v, -seqtype, and -o are used!";
 	path, output, logfilename = wrap.ioInfo(args.input, args.path, args.output, "GBLOCKS", file_flag);
-	print(core.spacedOut("Input sequence type:", pad), args.seqtype);
+	print core.spacedOut("Input sequence type:", pad), args.seqtype;
 	if args.run_mode == 0:
-		print(core.spacedOut("Run mode set to " + str(args.run_mode) + ":", pad), "Using default GBlocks settings (stringent).");
+		print core.spacedOut("Run mode set to " + str(args.run_mode) + ":", pad), "Using default GBlocks settings (stringent).";
 	elif args.run_mode == 1:
-		print(core.spacedOut("Run mode set to " + str(args.run_mode) + ":", pad), "Only accepting alignments with < 20% of sequence masked (for phylogenetic reconstruction).");
-	print("-------------------------");
+		print core.spacedOut("Run mode set to " + str(args.run_mode) + ":", pad), "Only accepting alignments with < 20% of sequence masked (for phylogenetic reconstruction).";
+	print "-------------------------";
 	wrap.runGblocks(filelist, file_flag, path, args.seqtype, args.run_mode, args.verbosity, output, logfilename);
 	sys.exit();
 # --gblocks
@@ -162,20 +162,20 @@ if args.raxml:
 	if not args.constraint_tree and args.estimate_bl:
 		sys.exit(core.errorOut(9, "A constraint tree (-c) must be specified with --bl"));
 	# The --raxml module has several options that need to be checked for input errors before it starts.
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("** For --raxml, only options -i, -p, -v, -model, -b, -t, -c, --bl, and -o are used!");
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "** For --raxml, only options -i, -p, -v, -model, -b, -t, -c, --bl, and -o are used!";
 	path, output, logfilename = wrap.ioInfo(args.input, args.path, args.output, "RAxML", file_flag);
-	print(core.spacedOut("Using DNA or protein model:", pad), args.model);
-	print(core.spacedOut("Number of threads:", pad), args.threads);
+	print core.spacedOut("Using DNA or protein model:", pad), args.model;
+	print core.spacedOut("Number of threads:", pad), args.threads;
 	if args.constraint_tree:
 		args.constraint_tree = os.path.abspath(args.constraint_tree);
-		print(core.spacedOut("Using constraint tree:", pad), args.constraint_tree);
+		print core.spacedOut("Using constraint tree:", pad), args.constraint_tree;
 		if args.estimate_bl:
-			print("Only estimating branch lengths on constraint tree.");
+			print "Only estimating branch lengths on constraint tree.";
 	if args.bootstrap_reps > 0:
-		print("Running", args.bootstrap_reps, "bootstrap replicates on each alignment.");
-	print("-------------------------");
+		print "Running", args.bootstrap_reps, "bootstrap replicates on each alignment.";
+	print "-------------------------";
 	wrap.runRaxml(filelist, file_flag, path, args.model, args.bootstrap_reps, args.threads, args.constraint_tree, args.estimate_bl, args.verbosity, output, logfilename);
 	sys.exit();
 # --raxml
@@ -196,21 +196,21 @@ if args.codeml:
 	if args.prune:
 		"\n** Warning: The --prune option requires Newick Utilities to be installed and executable as 'nw_prune'!";
 	# The --codeml module has several options that need to be checked for input errors before it starts.
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("** For --codeml, only options -i, -p, -v, -seqtype, -tree, --prune, --branchsite, --anc, and -o are used!");
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "** For --codeml, only options -i, -p, -v, -seqtype, -tree, --prune, --branchsite, --anc, and -o are used!";
 	path, output, logfilename = wrap.ioInfo(args.input, args.path, args.output, "codeml", file_flag);
-	print(core.spacedOut("Specified sequence type:", pad), args.seqtype);
-	print(core.spacedOut("Using tree from file:", pad), args.tree);
+	print core.spacedOut("Specified sequence type:", pad), args.seqtype;
+	print core.spacedOut("Using tree from file:", pad), args.tree;
 	if not args.branch_site:
-		print("Running NULL model for branch-site test (model=2, NSsite=2, fix_omega=1, omega=1).");
+		print "Running NULL model for branch-site test (model=2, NSsite=2, fix_omega=1, omega=1).";
 	else:
-		print("Running ALTERNATE model for branch-site test (model=2, NSsite=2, fix_omega=1, omega=0).");
+		print "Running ALTERNATE model for branch-site test (model=2, NSsite=2, fix_omega=1, omega=0).";
 	if args.anc:
-		print("Performing ancestral reconstructions.");
+		print "Performing ancestral reconstructions.";
 	if args.prune:
-		print("Pruning species tree when necessary.")
-	print("-------------------------");
+		print "Pruning species tree when necessary."
+	print "-------------------------";
 	wrap.runCodeml(filelist, file_flag, path, args.seqtype, args.tree, args.gt_opt, args.prune, args.branch_site, args.test_spec, args.anc, args.codonds, args.verbosity, output, logfilename);
 	sys.exit()
 # --codeml
@@ -218,13 +218,13 @@ if args.codeml:
 if args.sdm:
 	if not file_flag:
 		sys.exit(core.errorOut(13, "The input (-i) for --sdm must be a FILE that contains many gene trees with branch lengths (one per line, with the first line being simply the total number of trees)."));
-	print("\n** Warning -- The --sdm option assumes R is callable as Rscript!\n");
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("** For --sdm, only options -i, -p, -v, and -o are used!");
-	print(core.spacedOut("Using gene trees in file:", pad), args.input);
+	print "\n** Warning -- The --sdm option assumes R is callable as Rscript!\n";
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "** For --sdm, only options -i, -p, -v, and -o are used!";
+	print core.spacedOut("Using gene trees in file:", pad), args.input;
 	path, output, logfilename = wrap.ioInfo(args.input, args.path, args.output, "SDM", file_flag);
-	print("-------------------------");
+	print "-------------------------";
 	wrap.runSDM(filelist, file_flag, path, args.verbosity, output, logfilename);
 	sys.exit();
 # --sdm
@@ -234,10 +234,10 @@ if args.r8s:
 		sys.exit(core.errorOut(14, "The input (-i) for --r8s must be a FILE that contains a single species tree with branch lengths."));
 	if False in [args.numsites, args.calspecs, args.calage]:
 		sys.exit(core.errorOut(15, "All of -numsites, -calspec, and -calage must be defined to run --r8s!"));
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("** For --r8s, only options -i, -p, -numsite, -calspec, -calage, and -o are used!");
-	print(core.spacedOut("Using species tree in file:", pad), args.input);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "** For --r8s, only options -i, -p, -numsite, -calspec, -calage, and -o are used!";
+	print core.spacedOut("Using species tree in file:", pad), args.input;
 	path, output, logfilename = wrap.ioInfo(args.input, args.path, args.output, "r8s", file_flag);
 	wrap.runReights(filelist, file_flag, path, args.numsites, args.calspecs, args.calage, output, logfilename);
 	sys.exit();
@@ -254,10 +254,10 @@ if args.notung:
 		args.spectree = os.path.abspath(args.spectree);
 	if args.bsthresh < 0 or args.bsthresh > 100:
 		sys.exit(core.errorOut(18, "The bootstrap threshold (-bsthresh) for rearrangments (--rearrange) must be between 0 and 100."));
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("** For --notung, only options -i, -p, -s, --rearrange, --bsroot, -v, and -o are used!");
-	print(core.spacedOut("Using species tree in file:", pad), args.spectree);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "** For --notung, only options -i, -p, -s, --rearrange, --bsroot, -v, and -o are used!";
+	print core.spacedOut("Using species tree in file:", pad), args.spectree;
 	path, output, logfilename = wrap.ioInfo(args.input, args.path, args.output, "notung", file_flag);
 	wrap.runNotung(filelist, file_flag, path, args.spectree, args.rearrange, args.bsthresh, args.bsroot, args.verbosity, output, logfilename);
 	sys.exit();

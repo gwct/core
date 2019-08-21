@@ -57,12 +57,12 @@ if indir[-1] != "/":
 if outdir[len(outdir)-1] != "/":
 	outdir = outdir + "/";
 
-print("=======================================================================");
-print("\t\t\tAligning with MUSCLE");
-print("\t\t\t" + core.getDateTime());
-print("Aligning all files in:\t\t" + indir);
-print("Writing alignments to:\t\t" + outdir);
-print("-------------------------------------");
+print "=======================================================================";
+print "\t\t\tAligning with MUSCLE";
+print "\t\t\t" + core.getDateTime();
+print "Aligning all files in:\t\t" + indir;
+print "Writing alignments to:\t\t" + outdir;
+print "-------------------------------------";
 
 filelist = os.listdir(indir);
 
@@ -93,8 +93,8 @@ for each in filelist:
 if v == 0:
 	pstring = "100.0% complete.";
 	sys.stderr.write('\b' * len(pstring) + pstring);
-print("\n" + core.getTime() + " Done!");
-print("=======================================================================");
+print "\n" + core.getTime() + " Done!";
+print "=======================================================================";
 
 
 

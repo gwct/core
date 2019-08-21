@@ -50,23 +50,23 @@ else:
 # This checks if the input (-i) entered is valid. If so, it parses it as either a directory or a single file.
 
 if all(opt == False for opt in [args.count_pos, args.count_aln, args.concat, args.combine, args.split, args.trim, args.relabel, args.label_rm, args.start_rm, args.replace, args.extract]):
-	print("\n** Warning: No options specified! Just running --countpos.");
+	print "\n** Warning: No options specified! Just running --countpos.";
 	args.count_pos = True;
 
 if args.count_pos:
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("Counting the total number of positions (AAs or NTs) in:\t", args.input);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "Counting the total number of positions (AAs or NTs) in:\t", args.input;
 	fa.countPos(filelist);
 	sys.exit();
 # --countpos
 
 if args.count_aln:
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("Counting stats from all alignments in:\t", args.input);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "Counting stats from all alignments in:\t", args.input;
 	if args.spec_opt:
-		print("--specsites set: counting species sites.");
+		print "--specsites set: counting species sites.";
 	fa.countAln(filelist, args.spec_opt);
 	sys.exit();
 # --countaln
@@ -81,21 +81,21 @@ if args.concat or args.combine or args.extract:
 # input must be a directory with multiple .fa files, output must be a single file (-outfile).
 
 if args.concat:
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Concatenating alignments in:", 40), args.input);
-	print(core.spacedOut("Writing concatenated alignments to:", 40), args.outfile);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Concatenating alignments in:", 40), args.input;
+	print core.spacedOut("Writing concatenated alignments to:", 40), args.outfile;
 	if args.header_delim == False:
-		print("\n** Warning: No FASTA header delimiter set (-delim). Full FASTA headers will be used for concatenation.");
+		print "\n** Warning: No FASTA header delimiter set (-delim). Full FASTA headers will be used for concatenation.";
 	fa.concat(filelist, args.header_delim, args.outfile);
 	sys.exit();
 # --concat
 
 if args.combine:
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Combining all .fa files in:", 40), args.input);
-	print(core.spacedOut("Writing combined sequences to:", 40), args.outfile + "\n");
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Combining all .fa files in:", 40), args.input;
+	print core.spacedOut("Writing combined sequences to:", 40), args.outfile + "\n";
 	fa.combine(filelist, args.outfile);
 	sys.exit();
 # --combine
@@ -106,12 +106,12 @@ if args.split:
 	if not args.outdir:
 		sys.exit(core.errorOut(5, "-outdir must be set when using the --split option"));
 	if not args.header_delim:
-		print("\n** Warning: You have not specified a FASTA header delimiter to determine output file names. File names will be as long as your headers!\n");
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Splitting all sequences in:", 40), args.input);
-	print(core.spacedOut("Delimiting headers for file names at:", 40), args.header_delim);
-	print(core.spacedOut("Writing individual files to:", 40), args.outdir);
+		print "\n** Warning: You have not specified a FASTA header delimiter to determine output file names. File names will be as long as your headers!\n";
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Splitting all sequences in:", 40), args.input;
+	print core.spacedOut("Delimiting headers for file names at:", 40), args.header_delim;
+	print core.spacedOut("Writing individual files to:", 40), args.outdir;
 	fa.split(filelist, args.header_delim, args.outdir);
 	sys.exit();
 ## --split
@@ -126,21 +126,21 @@ else:
 	else:
 		output = args.outdir;
 		if output != None and not os.path.isdir(output):
-			print("\n++ Creating output directory...");
+			print "\n++ Creating output directory...";
 			os.system("mkdir " + output);
 	if output == None:
 		output = args.input;
-		print("\n** Warning: You have not specified an output destination! Your input location/name will be used (with an added label) for all output files!\n")
+		print "\n** Warning: You have not specified an output destination! Your input location/name will be used (with an added label) for all output files!\n"
 # For the rest of the options, users can input either a file or a directory. The output option must match (-outfile or -outdir). This ensures
 # that it does. If no output option is entered, the output destination is determined based on the input file name.
 
 if args.trim:
 	if args.header_delim == None:
 		sys.exit(core.errorOut(7, "-delim must be set with --trim"));
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Trimming all .fa files in:", 45), args.input);
-	print(core.spacedOut("Writing trimmed (.trim.fa) sequences to:", 45), output);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Trimming all .fa files in:", 45), args.input;
+	print core.spacedOut("Writing trimmed (.trim.fa) sequences to:", 45), output;
 	fa.trim(filelist, args.header_delim, file_flag, output);
 	sys.exit();
 ## --trim
@@ -148,20 +148,20 @@ if args.trim:
 if args.relabel:
 	if args.relabel not in [1,2,3]:
 		sys.exit(core.errorOut(8, "-relabel must take values of 1, 2, or 3"));
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Relabeling all .fa files in:", 50), args.input);
-	print(core.spacedOut("Writing relabeled (.relabel.fa) sequences to:", 50), output);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Relabeling all .fa files in:", 50), args.input;
+	print core.spacedOut("Writing relabeled (.relabel.fa) sequences to:", 50), output;
 	fa.relabel(filelist, args.relabel, args.header_delim, args.new_label, file_flag, output);
 	sys.exit();
 ## -relabel
 
 if args.label_rm:
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Removing sequences from all .fa files in:", 60), args.input);
-	print(core.spacedOut("Removing all sequences with the following labels:", 60), args.label_rm);
-	print(core.spacedOut("Writing filtered (.rmlab.fa) sequences to:", 60), output);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Removing sequences from all .fa files in:", 60), args.input;
+	print core.spacedOut("Removing all sequences with the following labels:", 60), args.label_rm;
+	print core.spacedOut("Writing filtered (.rmlab.fa) sequences to:", 60), output;
 	fa.removeSeq(filelist, args.label_rm, file_flag, output);
 	sys.exit();
 ## -rmseq
@@ -169,20 +169,20 @@ if args.label_rm:
 if args.start_rm:
 	if args.start_rm.lower() not in ['protein','prot','p','codon','c']:
 		sys.exit(core.errorOut(10, "Sequence types for removing starts (-rmstart) must be 'protein' or 'codon'"));
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Removing all starts from:", 50), args.input);
-	print(core.spacedOut("Writing all sequences (.rmstart) to:", 50), output);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Removing all starts from:", 50), args.input;
+	print core.spacedOut("Writing all sequences (.rmstart) to:", 50), output;
 	fa.removeStarts(filelist, args.start_rm.lower(), file_flag, output);
 	sys.exit();	
 ## -rmstart
 
 if args.replace:
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Doing replacements of bases in:", 50), args.input);
-	print(core.spacedOut("Doing the following replacements:", 50), args.replace);
-	print(core.spacedOut("Writing replaced (.repl) sequences to:", 50), output);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Doing replacements of bases in:", 50), args.input;
+	print core.spacedOut("Doing the following replacements:", 50), args.replace;
+	print core.spacedOut("Writing replaced (.repl) sequences to:", 50), output;
 	fa.replaceBase(filelist, args.replace, file_flag, output);
 	sys.exit();
 # -replace
@@ -192,11 +192,11 @@ if args.extract:
 		titles = open(args.extract, "r").read().split("\n");
 	else:
 		titles = args.extract.split(",");
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Extracting sequences in:", 50), args.input);
-	print(core.spacedOut("Extracting the following titles: ", 50) + ",".join(titles));
-	print(core.spacedOut("Writing extracted sequences to:", 50), output);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Extracting sequences in:", 50), args.input;
+	print core.spacedOut("Extracting the following titles: ", 50) + ",".join(titles);
+	print core.spacedOut("Writing extracted sequences to:", 50), output;
 	fa.extractSeqs(filelist, titles, args.header_delim, file_flag, output);
 	sys.exit();
 # -extract

@@ -77,7 +77,7 @@ else:
 	indir, outdir = core.getOutdir(ins, "run_gblocks", starttime);
 	filelist = os.listdir(indir);
 
-print(core.getTime() + " | Creating main output directory...");
+print core.getTime() + " | Creating main output directory...";
 os.system("mkdir " + outdir);
 
 logfilename = outdir + "run_gblocks.log";
@@ -142,7 +142,7 @@ for each in filelist:
 
 	if m == 1:
 		inseqs = core.fastaGetDict(infilename);
-		seqlen = len(inseqs[list(inseqs.keys())[0]]);
+		seqlen = len(inseqs[inseqs.keys()[0]]);
 		b1 = int(round(0.5 * len(inseqs))) + 1;
 
 		gb_cmd = gb_cmd + " -b1=" + str(b1) + " -b2=" + str(b1) + " -b3=" + str(seqlen) + " -b4=2 -b5=a";		
@@ -160,7 +160,7 @@ for each in filelist:
 
 	if m == 1:
 		gbseqs = core.fastaGetDict(infilename+"-gb");
-		gblen = len(gbseqs[list(gbseqs.keys())[0]]);
+		gblen = len(gbseqs[gbseqs.keys()[0]]);
 		difflen = seqlen - gblen;
 		percdiff = float(difflen) / float(seqlen) * 100.0;
 		percgb = float(gblen) / float(seqlen) * 100.0;

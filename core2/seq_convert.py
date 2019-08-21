@@ -70,23 +70,23 @@ else:
 		outs = outs + "/";
 	filelist = os.listdir(ins);
 
-print("==============================================================================================");
-print("\t\t\tSequence format conversion");
-print("\t\t\t" + core.getDateTime());
+print "==============================================================================================";
+print "\t\t\tSequence format conversion";
+print "\t\t\t" + core.getDateTime();
 if fileflag == 1:
-	print("INPUT    | Converting file: " + ins);
+	print "INPUT    | Converting file: " + ins;
 else:
-	print("INPUT    | Converting all files from directory: " + ins);
-print("INFO     | Input format:  " + fr);
-print("INFO     | Output format: " + to);
+	print "INPUT    | Converting all files from directory: " + ins;
+print "INFO     | Input format:  " + fr;
+print "INFO     | Output format: " + to;
 if fileflag == 1:
-	print("OUTPUT   | Writing output to file: " + outs);
+	print "OUTPUT   | Writing output to file: " + outs;
 else:
-	print("OUTPUT   | Writing output files to directory:   " + outs);
-print("-------------------------------------");
+	print "OUTPUT   | Writing output files to directory:   " + outs;
+print "-------------------------------------";
 
 if fileflag == 0:
-	print(core.getTime() + " | Creating output directory...");
+	print core.getTime() + " | Creating output directory...";
 	if not os.path.exists(outs):
 		os.system("mkdir " + outs);
 
@@ -165,7 +165,7 @@ for each in filelist:
 if fileflag == 0:
 	pstring = "100.0% complete.";
 	sys.stderr.write('\b' * len(pstring) + pstring);
-	print("\n");
+	print "\n";
 
-print(core.getTime() + " | Done!");
-print("==============================================================================================");
+print core.getTime() + " | Done!";
+print "==============================================================================================";

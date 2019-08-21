@@ -19,7 +19,7 @@ sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/
 import core
 
 if len(sys.argv) not in [1,2,3]:
-	print("Usage:\t$ count_pos.py [input directory or filename] [1,0 to display individual file counts or not]");
+	print "Usage:\t$ count_pos.py [input directory or filename] [1,0 to display individual file counts or not]";
 	sys.exit();
 
 ins = sys.argv[1];
@@ -27,29 +27,29 @@ disp_file = 0;
 if len(sys.argv) > 2:
 	disp_file = sys.argv[2];
 if disp_file not in ["0","1"]:
-	print("Not printing file counts.");
+	print "Not printing file counts.";
 	disp_file = 0;
 
 disp_file = int(disp_file);
 
-print("=======================================================================");
-print("\t\t\t" + core.getDateTime());
-print("Counting the total number of positions (AAs or NTs) in:\t" + ins);
+print "=======================================================================";
+print "\t\t\t" + core.getDateTime();
+print "Counting the total number of positions (AAs or NTs) in:\t" + ins;
 
 if os.path.isfile(ins):
 	if disp_file == 1:
-		print("----------");
-		print("Sequence\tLength");
+		print "----------";
+		print "Sequence\tLength";
 	inseqs = core.fastaGetDict(ins);
 	tot_pos = 0;
 	for seq in inseqs:
 		if disp_file == 1:
-			print(seq + "\t" + str(len(inseqs[seq])));
+			print seq + "\t" + str(len(inseqs[seq]));
 		tot_pos = tot_pos + len(inseqs[seq]);
-	print("----------");
-	print("Total sequences:\t" + str(len(inseqs)));
-	print("Total positions:\t" + str(tot_pos));
-	print("=======================================================================");
+	print "----------";
+	print "Total sequences:\t" + str(len(inseqs));
+	print "Total positions:\t" + str(tot_pos);
+	print "=======================================================================";
 
 else:
 	if not ins.endswith("/"):
@@ -68,9 +68,9 @@ else:
 		if disp_file == 0:
 			numbars, donepercent = core.loadingBar(i, numlines, donepercent, numbars);
 		elif disp_file == 1:
-			print("----------");
-			print(each);
-			print("Sequence\tLength");
+			print "----------";
+			print each;
+			print "Sequence\tLength";
 		i = i + 1;
 
 		if each.find(".fa") == -1:
@@ -86,18 +86,18 @@ else:
 			tot_pos = tot_pos + len(inseqs[seq]);
 			if disp_file == 1:
 				specpos = specpos + len(inseqs[seq]);
-				print(seq + "\t" + str(len(inseqs[seq])));
+				print seq + "\t" + str(len(inseqs[seq]));
 
 		if disp_file == 1:
-			print("Total\t" + str(specpos));
+			print "Total\t" + str(specpos);
 
 	if disp_file == 0:
 		pstring = "100.0% complete.";
 		sys.stderr.write('\b' * len(pstring) + pstring);
 	elif disp_file == 1:
-		print("----------");
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print("Total residues:\t", tot_pos);
-	print("=======================================================================");
+		print "----------";
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print "Total residues:\t", tot_pos;
+	print "=======================================================================";
 

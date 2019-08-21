@@ -37,13 +37,13 @@ def treeSep(infile, out_prefix, outdir):
 		# Write the valid Newick string to its own output file.
 	pathfile.close();
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print(str(num_lines) + " lines in file.");
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print str(num_lines) + " lines in file.";
 	if line_skip != []:
-		print("The following " + str(len(line_skip)) + " line(s) were skipped because they couldn't be read as Newick formatted trees: " + ",".join(line_skip));
-	print(str(num_trees) + " trees separated!");
-	print("=======================================================================");
+		print "The following " + str(len(line_skip)) + " line(s) were skipped because they couldn't be read as Newick formatted trees: " + ",".join(line_skip);
+	print str(num_trees) + " trees separated!";
+	print "=======================================================================";
 
 #############################################################################
 
@@ -67,15 +67,15 @@ def treeJoin(infiles, outfilename):
 				# Check if each line in the current file is a Newick string and, if so, write it to 
 				# the output file.
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print(str(num_files) + " total files.");
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print str(num_files) + " total files.";
 	if tre_skip != []:
-		print("The following " + str(len(tre_skip)) + " file(s) were skipped because they couldn't be read as tree files: " + ",".join([os.path.basename(f) for f in tre_skip]));
-	print(str(num_trees) + " trees joined.");
+		print "The following " + str(len(tre_skip)) + " file(s) were skipped because they couldn't be read as tree files: " + ",".join([os.path.basename(f) for f in tre_skip]);
+	print str(num_trees) + " trees joined.";
 	if parse_skip != []:
-		print("The following " + str(len(parse_skip)) + " file(s) had lines that couldn't be read as trees and were skipped: " + ",".join([os.path.basename(f) for f in parse_skip]));
-	print("=======================================================================");
+		print "The following " + str(len(parse_skip)) + " file(s) had lines that couldn't be read as trees and were skipped: " + ",".join([os.path.basename(f) for f in parse_skip]);
+	print "=======================================================================";
 
 #############################################################################
 
@@ -85,7 +85,7 @@ def labelTree(infiles, tree_flag, outfilename):
 	if tree_flag:
 		td, tree, r = infiles;
 		labeled_tree = tp.addBranchLength(tree, td);
-		print("\n" + labeled_tree + "\n");
+		print "\n" + labeled_tree + "\n";
 		sys.exit();
 	# For a tree string, just print the labeled tree to the screen
 
@@ -106,13 +106,13 @@ def labelTree(infiles, tree_flag, outfilename):
 			treefile.write(labeled_tree + "\n");
 			# Label the tree and write to the output file.
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print(str(num_lines) + " total lines.");
-	print(str(num_trees) + " trees labeled.");
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print str(num_lines) + " total lines.";
+	print str(num_trees) + " trees labeled.";
 	if line_skip != []:
-		print("The following " + str(len(line_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join([os.path.basename(f) for f in line_skip]));
-	print("=======================================================================");	
+		print "The following " + str(len(line_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join([os.path.basename(f) for f in line_skip]);
+	print "=======================================================================";	
 
 #############################################################################
 
@@ -122,11 +122,11 @@ def rootCheck(infiles, tree_flag, outfilename):
 		td, tree, r = infiles;
 		rooted = tp.rootedOrNot(td);
 		if rooted == 0:
-			print("\nUnrooted!\n")
+			print "\nUnrooted!\n"
 		elif rooted == 1:
-			print("\nRooted!\n");
+			print "\nRooted!\n";
 		else:
-			print("\n???\n");
+			print "\n???\n";
 		sys.exit();
 	# If the input is a Newick string, simply print the result to the screen.
 
@@ -159,16 +159,16 @@ def rootCheck(infiles, tree_flag, outfilename):
 				num_undet += 1;
 				treefile.write("???\n");
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print(str(num_lines) + " total lines.");
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print str(num_lines) + " total lines.";
 	if line_skip != []:
-		print("The following " + str(len(line_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(line_skip));
-	print(str(num_trees) + " trees checked.");
-	print(str(num_rooted) + " rooted trees.");
-	print(str(num_unroot) + " unrooted trees.");
-	print(str(num_undet) + " undetermined trees.");
-	print("=======================================================================");	
+		print "The following " + str(len(line_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(line_skip);
+	print str(num_trees) + " trees checked.";
+	print str(num_rooted) + " rooted trees.";
+	print str(num_unroot) + " unrooted trees.";
+	print str(num_undet) + " undetermined trees.";
+	print "=======================================================================";	
 
 #############################################################################
 
@@ -193,9 +193,9 @@ def rootTrees(infiles, tree_flag, outgroup, outfilename):
 		with open(tmpfilename, "w") as tmpfile:
 			tmpfile.write(tree_string);
 		nw_cmd = "nw_reroot " + tmpfilename + " " + " ".join(outgroup);
-		print("\n----Rooted tree----");
+		print "\n----Rooted tree----";
 		os.system(nw_cmd);
-		print()
+		print
 		# The NU call with nw_reroot.
 		sys.exit();
 	# If the input is a Newick string, just print the output to the screen.
@@ -244,15 +244,15 @@ def rootTrees(infiles, tree_flag, outgroup, outfilename):
 	os.system("rm " + tmpfilename_2);
 	# Remove the tmp files.
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print(str(num_lines) + " total lines.");
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print str(num_lines) + " total lines.";
 	if line_skip != []:
-		print("The following " + str(len(line_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(line_skip));
+		print "The following " + str(len(line_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(line_skip);
 	if non_mono != []:
-		print("The following " + str(len(non_mono)) + " lines did not contain monophyletic outgroups: " + ",".join(non_mono));
-	print(str(num_trees) + " trees rooted.");
-	print("=======================================================================");
+		print "The following " + str(len(non_mono)) + " lines did not contain monophyletic outgroups: " + ",".join(non_mono);
+	print str(num_trees) + " trees rooted.";
+	print "=======================================================================";
 
 #############################################################################
 
@@ -307,15 +307,15 @@ def rootTreesBest(infiles, tree_flag, outgroup, outfilename):
 	os.system("rm " + tmpfilename_2);
 	# Remove the tmp files.
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print(str(num_lines) + " total lines.");
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print str(num_lines) + " total lines.";
 	if line_skip != []:
-		print("The following " + str(len(line_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(line_skip));
+		print "The following " + str(len(line_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(line_skip);
 	if non_mono != []:
-		print("The following " + str(len(non_mono)) + " lines did not contain monophyletic outgroups: " + ",".join(non_mono));
-	print(str(num_trees) + " trees rooted.");
-	print("=======================================================================");
+		print "The following " + str(len(non_mono)) + " lines did not contain monophyletic outgroups: " + ",".join(non_mono);
+	print str(num_trees) + " trees rooted.";
+	print "=======================================================================";
 
 #############################################################################
 
@@ -374,28 +374,28 @@ def flightOfTheConcordance(infiles, tree_flag, genefilename, count_tops):
 			if sclades[node] in gclades:
 				node_counts[node] += 1.0;
 			if node == sroot and sclades[node] not in gclades:
-				print(len(ginfo));
-				print(gtree);
+				print len(ginfo);
+				print gtree;
 		# Check if each species tree clade is in the gene tree.
 		total_trees += 1.0;
 
 
-	print("\n" + core.getTime() + " Done!");
+	print "\n" + core.getTime() + " Done!";
 
 	if count_tops:
-		print("\n----Topology counts----");
+		print "\n----Topology counts----";
 		tops_dict = {};
 		for x in range(len(tops)):
 			tops_dict[top_trees[x]] = top_counts[x];
-		for item in sorted(list(tops_dict.items()), key=lambda x: x[1], reverse=True):
-			print(item[0], item[1]);
-		print(len(tops_dict), "total topologies found");
+		for item in sorted(tops_dict.items(), key=lambda x: x[1], reverse=True):
+			print item[0], item[1];
+		print len(tops_dict), "total topologies found";
 
-	print("\n----Concordance factor nodes----");
+	print "\n----Concordance factor nodes----";
 	stree = tp.addBranchLength(stree, sinfo);
 	for node in node_counts:
 		cf = round(node_counts[node]/total_trees,2)
-		print(node, cf);
+		print node, cf;
 		if sinfo[node][3] not in  ["NA",'']:
 			stree = stree.replace(node, node + "_" + str(cf));
 		else:
@@ -404,18 +404,18 @@ def flightOfTheConcordance(infiles, tree_flag, genefilename, count_tops):
 	if stree[-1] == "_":
 		stree = stree[:-1];
 
-	print("\n----Concordance factor tree----");
-	print(stree);
-	print()
+	print "\n----Concordance factor tree----";
+	print stree;
+	print
 
-	print("-----");
-	print(str(num_lines) + " total lines in gene tree file.");
+	print "-----";
+	print str(num_lines) + " total lines in gene tree file.";
 	if tre_skip != []:
-		print("The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip));
+		print "The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip);
 	if sc_skip != []:
-		print("The following " + str(len(sc_skip)) + " lines were skipped because they didn't have the same number of nodes as the species tree: " + ",".join(sc_skip));
-	print(str(total_trees) + " trees read.");
-	print("=======================================================================");
+		print "The following " + str(len(sc_skip)) + " lines were skipped because they didn't have the same number of nodes as the species tree: " + ",".join(sc_skip);
+	print str(total_trees) + " trees read.";
+	print "=======================================================================";
 
 #############################################################################
 
@@ -447,18 +447,18 @@ def countTips(infile):
 			maxlen = len(tip);
 	# Get the length of the tip labels for some nicer printing.
 
-	print("\n" + core.getTime() + " Done!");
-	print("\n----Tip counts----");
+	print "\n" + core.getTime() + " Done!";
+	print "\n----Tip counts----";
 	pad = maxlen + 2;
 	for tip in tips:
-		print(core.spacedOut(tip, pad), tips[tip]);
+		print core.spacedOut(tip, pad), tips[tip];
 	# Print the tip labels and counts.
-	print("\n-----");
-	print(str(num_lines) + " total lines in input file.");
+	print "\n-----";
+	print str(num_lines) + " total lines in input file.";
 	if tre_skip != []:
-		print("The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip));
-	print(str(num_trees) + " trees read.");
-	print("=======================================================================");
+		print "The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip);
+	print str(num_trees) + " trees read.";
+	print "=======================================================================";
 
 #############################################################################
 
@@ -484,16 +484,16 @@ def countClade(infile, clade):
 					clade_count += 1;
 		# Iterate the dictionary for the clade in the current tree.
 
-	print("\n" + core.getTime() + " Done!");
-	print("\n----Clade counts----");
-	print("# of trees with clade:\t", clade_count);
+	print "\n" + core.getTime() + " Done!";
+	print "\n----Clade counts----";
+	print "# of trees with clade:\t", clade_count;
 	# Print the # of trees containing the clade.
-	print("\n-----");
-	print(str(num_lines) + " total lines in input file.");
+	print "\n-----";
+	print str(num_lines) + " total lines in input file.";
 	if tre_skip != []:
-		print("The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip));
-	print(str(num_trees) + " trees read.");
-	print("=======================================================================");
+		print "The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip);
+	print str(num_trees) + " trees read.";
+	print "=======================================================================";
 
 #############################################################################
 def relabelTips(infile, labels, mode, delim, output):
@@ -509,11 +509,11 @@ def relabelTips(infile, labels, mode, delim, output):
 		delim = ' ';
 
 	pad = 20;
-	print("\n---------Relabeling tips---------");
-	print(core.spacedOut("Old label contains", pad), "| New label");
-	print("---------------------------------");
+	print "\n---------Relabeling tips---------";
+	print core.spacedOut("Old label contains", pad), "| New label";
+	print "---------------------------------";
 	for old in labels:
-		print(core.spacedOut(old, pad), "| " + labels[old]);
+		print core.spacedOut(old, pad), "| " + labels[old];
 	# Some nice printing of the labels.
 
 	num_lines, num_trees, tre_skip = 0, 0, [];
@@ -547,13 +547,13 @@ def relabelTips(infile, labels, mode, delim, output):
 			# For each node in the tree, check if it contains the text of one of the labels to replace.
 			# If so, replace it.
 
-	print("---------------------------------");
-	print("\n" + core.getTime() + " Done!");
-	print(str(num_lines) + " total lines in input file.");
+	print "---------------------------------";
+	print "\n" + core.getTime() + " Done!";
+	print str(num_lines) + " total lines in input file.";
 	if tre_skip != []:
-		print("The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip));
-	print(str(num_trees) + " trees read.");
-	print("=======================================================================");
+		print "The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip);
+	print str(num_trees) + " trees read.";
+	print "=======================================================================";
 
 #############################################################################
 
@@ -591,13 +591,13 @@ def rmLabel(infile, mode, outfilename, best_flag=False):
 				treefile.write(out_tree + "\n");
 			# Write the edited tre to the output file.
 
-	print("\n-----");
-	print("\n" + core.getTime() + " Done!");
-	print(str(num_lines) + " total lines in input file.");
+	print "\n-----";
+	print "\n" + core.getTime() + " Done!";
+	print str(num_lines) + " total lines in input file.";
 	if tre_skip != []:
-		print("The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip));
-	print(str(num_trees) + " trees read.");
-	print("=======================================================================");
+		print "The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip);
+	print str(num_trees) + " trees read.";
+	print "=======================================================================";
 
 #############################################################################
 
@@ -635,13 +635,13 @@ def scaleBL(infile, op, factor, outfilename):
 			treefile.write(out_tree + "\n");
 			# Write the edited tre to the output file.
 
-	print("\n-----");
-	print("\n" + core.getTime() + " Done!");
-	print(str(num_lines) + " total lines in input file.");
+	print "\n-----";
+	print "\n" + core.getTime() + " Done!";
+	print str(num_lines) + " total lines in input file.";
 	if tre_skip != []:
-		print("The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip));
-	print(str(num_trees) + " trees read.");
-	print("=======================================================================");
+		print "The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip);
+	print str(num_trees) + " trees read.";
+	print "=======================================================================";
 
 #############################################################################
 
@@ -714,17 +714,17 @@ def robF(infiles, tree_flag, genefilename, raxpath, outfile):
 			os.system("rm RAxML_info.RFtmp7f");
 			total_trees += 1.0;
 
-	print("-----");
-	print("Average RF distance for all gene trees:", float(sum(rfs)) / float(len(rfs)));
-	print("Average weighted RF distance for all gene trees:", round(float(sum(wrfs)) / float(len(wrfs)),3));
+	print "-----";
+	print "Average RF distance for all gene trees:", float(sum(rfs)) / float(len(rfs));
+	print "Average weighted RF distance for all gene trees:", round(float(sum(wrfs)) / float(len(wrfs)),3);
 	os.system("rm " + tmpfile);
-	print("-----");
-	print(str(num_lines) + " total lines in gene tree file.");
+	print "-----";
+	print str(num_lines) + " total lines in gene tree file.";
 	if tre_skip != []:
-		print("The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip));
+		print "The following " + str(len(tre_skip)) + " lines couldn't be read as trees and were skipped: " + ",".join(tre_skip);
 	if sc_skip != []:
-		print("The following " + str(len(sc_skip)) + " lines were skipped because they didn't have the same number of nodes as the species tree: " + ",".join(sc_skip));
+		print "The following " + str(len(sc_skip)) + " lines were skipped because they didn't have the same number of nodes as the species tree: " + ",".join(sc_skip);
 	if sc_skip != []:
-		print("The following " + str(len(sc_skip)) + " lines were skipped because they didn't have the same number of nodes as the species tree: " + ",".join(sc_skip));
-	print(str(total_trees) + " trees successfully read and calculated RF distances.");
-	print("=======================================================================");
+		print "The following " + str(len(sc_skip)) + " lines were skipped because they didn't have the same number of nodes as the species tree: " + ",".join(sc_skip);
+	print str(total_trees) + " trees successfully read and calculated RF distances.";
+	print "=======================================================================";

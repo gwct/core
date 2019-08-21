@@ -12,7 +12,7 @@ import sys, os
 # proc = sys.argv[5];
 
 if len(sys.argv) != 10 or "-h" in sys.argv:
-	print("Usage: $ python job_maker.py [order] [indir] [outdir] [# jobs] [time] [memory] [# ppn] [# bootstrap] [raxml model]");
+	print "Usage: $ python job_maker.py [order] [indir] [outdir] [# jobs] [time] [memory] [# ppn] [# bootstrap] [raxml model]";
 	sys.exit();
 
 curorder = sys.argv[1];
@@ -26,15 +26,15 @@ bs = sys.argv[8];
 model = sys.argv[9];
 
 if not os.path.isdir(indir):
-	print("* ERROR: Specified input directory does not exist.");
+	print "* ERROR: Specified input directory does not exist.";
 	sys.exit();
 if not os.path.isdir(outdir):
-	print("* MESSAGE: Specified output directory does not exist. Creating it for you.");
+	print "* MESSAGE: Specified output directory does not exist. Creating it for you.";
 	cmd = "mkdir " + outdir;
-	print(cmd);
+	print cmd;
 	os.system(cmd);
 
-print("Splitting files and writing job scripts...");
+print "Splitting files and writing job scripts...";
 filelist = os.listdir(indir);
 chunksize = float(len(filelist))/jobs
 chunks = [ filelist [i:i + int(chunksize)] for i in range(0, (jobs-1)*int(chunksize), int(chunksize))]
@@ -47,7 +47,7 @@ if not os.path.isdir(jobdir):
 jobfiles = [];
 chunk_num = 1;
 for chunk in chunks:
-	print("Chunk", chunk_num);
+	print "Chunk", chunk_num;
 	chunkdir = os.path.join(outdir, str(chunk_num));
 	if not os.path.isdir(chunkdir):
 		os.system("mkdir " + chunkdir);

@@ -122,7 +122,7 @@ else:
 	if aopt == 1:
 		ancdir = os.path.join(script_outdir, "anc_seqs_fa");
 
-print(core.getTime() + " | Creating main output directory:\t" + script_outdir);
+print core.getTime() + " | Creating main output directory:\t" + script_outdir;
 mk_cmd = "mkdir " + script_outdir;
 os.system(mk_cmd);
 
@@ -307,7 +307,7 @@ for each in filelist:
 		rstfile.close();
 
 		node_list = [];
-		for k in range(len(rstlines)):
+		for k in xrange(len(rstlines)):
 			if rstlines[k] == "tree with node labels for Rod Page's TreeView\n":
 				anctree = rstlines[k+1].replace(" ","");
 				atfile = open(anc_treefile, "w");
@@ -322,7 +322,7 @@ for each in filelist:
 					if rstlines[k+j] != "\n":
 						tmpline = rstlines[k+j].replace("\n", "");
 						tmpline = tmpline.split("  ");
-						tmpline = [_f for _f in tmpline if _f];
+						tmpline = filter(None, tmpline);
 						node_list.append(tmpline[0]);
 
 						title = ">" + tmpline[0] + "\n";
@@ -338,17 +338,17 @@ for each in filelist:
 		for n in node_list:
 			curseqs[n] = "";
 
-		for k in range(len(rstlines)):
+		for k in xrange(len(rstlines)):
 			if rstlines[k] == "Prob of best state at each node, listed by site\n":
 				j = 4;
 				while rstlines[k+j] != "\n":
-					tmpline = [_f for _f in rstlines[k+j].replace("\n","").split("  ") if _f];
+					tmpline = filter(None, rstlines[k+j].replace("\n","").split("  "));
 					cur_states = tmpline[2].split(": ");
 					extant = list(cur_states[0].replace(" ",""));
-					ancs = [_f for _f in cur_states[1].split(" ") if _f];
+					ancs = filter(None, cur_states[1].split(" "));
 					all_states = extant + ancs;
 
-					for n in range(len(node_list)):
+					for n in xrange(len(node_list)):
 						cur_spec = node_list[n];
 						cur_aa = all_states[n];
 						if cur_aa.find("(") != -1 and cur_aa.find(")") != -1:

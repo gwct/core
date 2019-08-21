@@ -14,9 +14,9 @@ import core, treeparse as tr
 from collections import defaultdict
 
 if len(sys.argv) != 3 or "-h" in sys.argv:
-	print("\nUsage:\t$ python fotc.py [species tree file] [gene tree file]");
-	print("---->\t[species tree file]: A file containing a single rooted, newick species tree.");
-	print("---->\t[gene tree file]: A file containing many rooted, newick formatted gene trees, one per line. The tip labels for each gene tree must exactly match those in the species tree.\n");
+	print "\nUsage:\t$ python fotc.py [species tree file] [gene tree file]";
+	print "---->\t[species tree file]: A file containing a single rooted, newick species tree.";
+	print "---->\t[gene tree file]: A file containing many rooted, newick formatted gene trees, one per line. The tip labels for each gene tree must exactly match those in the species tree.\n";
 	sys.exit();
 
 specfilename = sys.argv[1];
@@ -48,19 +48,19 @@ for line in open(genefilename):
 		if sclades[node] in gclades:
 			node_counts[node] += 1.0;
 		if node == sroot and sclades[node] not in gclades:
-			print(len(ginfo));
-			print(gtree);
+			print len(ginfo);
+			print gtree;
 	total_trees += 1.0;
 
 for node in node_counts:
 	cf = round(node_counts[node]/total_trees,2)
-	print(node, cf);
+	print node, cf;
 	stree = stree.replace(node, node+ "_" + str(cf));
 
-print("-----");
-print(stree);
-print(total_trees);
-print(lines_skipped);
+print "-----";
+print stree;
+print total_trees;
+print lines_skipped;
 
 
 

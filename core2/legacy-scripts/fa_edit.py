@@ -134,67 +134,67 @@ seqkeep = seqkeep.split(",");
 
 suffix = "";
 
-print("==============================================================================================");
-print("\t\t\tFASTA editing");
-print("\t\t\t" + core.getDateTime());
+print "==============================================================================================";
+print "\t\t\tFASTA editing";
+print "\t\t\t" + core.getDateTime();
 if os.path.isfile(ins):
-	print("INPUT    | Editing single file:\t\t" + ins);
+	print "INPUT    | Editing single file:\t\t" + ins;
 	filelist = [ins];
 else:
-	print("INPUT    | Editing files in directory:\t\t\t\t" + ins);
+	print "INPUT    | Editing files in directory:\t\t\t\t" + ins;
 	filelist = os.listdir(ins);
 if r == 0 and t == 0 and ss == 0 and repl == "" and seqkeep == "":
-	print("INFO     | NOT trimming OR relabeling FASTA headers OR removing start/stop positions.\nSimply re-writing the sequences.");
+	print "INFO     | NOT trimming OR relabeling FASTA headers OR removing start/stop positions.\nSimply re-writing the sequences.";
 	suffix = ".cp";
 else:
 	if r >= 1:
-		print("---");
-		print("INFO     | Relabeling FASTA header(s).");
-		print("INFO		| New label:\t" + label);
+		print "---";
+		print "INFO     | Relabeling FASTA header(s).";
+		print "INFO		| New label:\t" + label;
 		# print "EXISTING LABEL\t\tADDED LABEL";
 		# for sid in specdict:
 		# 	print sid + "\t\t\t" + specdict[sid];
 		# print "---";
 		suffix = suffix + ".l";
 	else:
-		print("INFO     | NOT relabeling FASTA header(s).");
+		print "INFO     | NOT relabeling FASTA header(s).";
 	if seqkeep != [""]:
-		print("INFO     | Only keeping sequences:\t\t\t\t\t" + ",".join(seqkeep));
+		print "INFO     | Only keeping sequences:\t\t\t\t\t" + ",".join(seqkeep);
 	else:
-		print("INFO     | Keeping all sequences");
+		print "INFO     | Keeping all sequences";
 	if t == 1:
 		if td == " ":
-			print("INFO     | Trimming FASTA header(s) at first occurrence of:\t\" \"");
+			print "INFO     | Trimming FASTA header(s) at first occurrence of:\t\" \"";
 		else:
-			print("INFO     | Trimming FASTA header(s) at first occurrence of:\t" + td);
+			print "INFO     | Trimming FASTA header(s) at first occurrence of:\t" + td;
 		suffix = suffix + ".t";
 	else:
-		print("INFO     | NOT trimming FASTA header(s).");
+		print "INFO     | NOT trimming FASTA header(s).";
 	if ss == 1:
-		print("INFO     | Removing start and stop positions.");
+		print "INFO     | Removing start and stop positions.";
 		suffix = suffix + ".ss";
 	else:
-		print("INFO     | NOT removing start and stop positions.");
+		print "INFO     | NOT removing start and stop positions.";
 	if repl != None:
 		for rep in repl:
 			if rep != "" and rep[1] != ":":
-				print("INFO     | Replacing all " + rep[0] + " symbols in input sequences with " + rep[1] + ".");
+				print "INFO     | Replacing all " + rep[0] + " symbols in input sequences with " + rep[1] + ".";
 			elif rep != "" and rep[1] == ":":
-				print("INFO     | Replacing all " + rep[0] + " symbols in input sequences with a random AA symbol not present in that column.");
+				print "INFO     | Replacing all " + rep[0] + " symbols in input sequences with a random AA symbol not present in that column.";
 		suffix = suffix + ".r";
 if os.path.isfile(ins):
-	print("OUTPUT   | Writing output to the following file:\t\t" + outs);
+	print "OUTPUT   | Writing output to the following file:\t\t" + outs;
 else:
 	if outs[len(outs)-1] != "/":
 		outs = outs + "/";
-	print("OUTPUT   | Writing output to the following directory:\t\t" + outs);
+	print "OUTPUT   | Writing output to the following directory:\t\t" + outs;
 	if not os.path.exists(outs):
-		print("+Creating output directory.");
+		print "+Creating output directory.";
 		os.system("mkdir " + outs);
-print("---------------------------------------------");
+print "---------------------------------------------";
 #sys.exit();
 
-print(core.getTime() + " Starting...");
+print core.getTime() + " Starting...";
 
 numfiles = len(filelist);
 numbars = 0;
@@ -206,7 +206,7 @@ for each in filelist:
 		continue;
 	
 	if os.path.isfile(ins):
-		print(ins);
+		print ins;
 		infilename = ins;
 		outfilename = outs;
 
@@ -264,13 +264,13 @@ for each in filelist:
 
 	if repl != None:
 	# Replaces symbols in the sequences.
-		seqlen = len(inseqs[list(inseqs.keys())[0]]);
+		seqlen = len(inseqs[inseqs.keys()[0]]);
 		for rep in repl:
 			r1 = rep[0];
 			r2 = rep[1];
 			if r2 == ":":
 				pseqs = {};
-				for x in range(0,seqlen):
+				for x in xrange(0,seqlen):
 					present = [];
 					for title in inseqs:
 						if x == 0:
@@ -314,5 +314,5 @@ for each in filelist:
 if not os.path.isfile(ins):
 	pstring = "100.0% complete.";
 	sys.stderr.write('\b' * len(pstring) + pstring);
-print("\n" + core.getTime() + " Done!");
-print("==============================================================================================");
+print "\n" + core.getTime() + " Done!";
+print "==============================================================================================";

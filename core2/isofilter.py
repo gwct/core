@@ -53,8 +53,8 @@ def optParse():
 ############################################
 def ensFilter(inseqs, spec_label, outfilename):
 
-	print("Indexing", len(inseqs), "sequences to be filtered.");
-	print("Parsing identifiers...");
+	print "Indexing", len(inseqs), "sequences to be filtered.";
+	print "Parsing identifiers...";
 
 	for title in inseqs:
 		geneid = title[title.index("gene:") + 5:title.index("gene:") + 23];
@@ -66,7 +66,7 @@ def ensFilter(inseqs, spec_label, outfilename):
 			identDict[geneid].append((title, inseqs[title]));
 	sys.stderr.write('\b');
 
-	print("Filtering and writing sequences...");
+	print "Filtering and writing sequences...";
 	numbars, donepercent, i = 0,[],0;
 
 	for key in identDict:
@@ -93,9 +93,9 @@ def ensFilter(inseqs, spec_label, outfilename):
 
 	pstring = "100.0% complete.";
 	sys.stderr.write('\b' * len(pstring) + pstring);
-	print("\nDone!");
-	print(i, "sequences written.");
-	print(len(inseqs) - i, "sequences filtered.");
+	print "\nDone!";
+	print i, "sequences written.";
+	print len(inseqs) - i, "sequences filtered.";
 
 ############################################
 def ncbiFilter(inseqs, gff_file, spec_label, outfilename):
@@ -103,7 +103,7 @@ def ncbiFilter(inseqs, gff_file, spec_label, outfilename):
 	numbars, donepercent, i = 0, [], 0;
 
 
-	print("Obtaining longest isoforms from .gff file...");
+	print "Obtaining longest isoforms from .gff file...";
 
 	cmd = "zcat " + gff_file + " | awk \'BEGIN{FS=\"	\";OFS=\"|\"}$3==\"CDS\"{if($4<$5){print $5-$4+1,$9}else{print $4-$5+1,$9}}\' | grep \"[NX]P[_]\" | sed \'s/\([0-9]*\).*GeneID:\([0-9]*\).*\([NX]P[_][0-9]*\.[0-9]*\).*/\\1|\\2|\\3/\' | awk \'BEGIN{FS=\"|\";OFS=\"\t\";gene=\"\";acc=\"\";len=0}{if(acc!=$3){print gene,acc,len/3-1;gene=$2;acc=$3;len=$1}else{len=len+$1}}END{print gene,acc,len/3-1}\' | sort -k1,1n -k3,3nr -k2,2 | awk \'BEGIN{FS=\"	\";OFS=\"	\";gene=\"\";acc=\"\";len=0}{if(gene!=$1){print $1,$2,$3};gene=$1;acc=$2;len=$3}\' > ncbi_isoform_filter_tmp11567.txt"
 	os.system(cmd);
@@ -117,9 +117,9 @@ def ncbiFilter(inseqs, gff_file, spec_label, outfilename):
 
 	for each in tmpLines:
 		longest_isos.append(each.split("\t")[1]);
-	longest_isos = [_f for _f in longest_isos if _f];
+	longest_isos = filter(None, longest_isos);
 
-	print("Writing longest isoforms to output file...");
+	print "Writing longest isoforms to output file...";
 
 	count = 0;
 
@@ -139,9 +139,9 @@ def ncbiFilter(inseqs, gff_file, spec_label, outfilename):
 
 	pstring = "100.0% complete.";
 	sys.stderr.write('\b' * len(pstring) + pstring);
-	print("\nDone!");
-	print(count, "sequences written.");
-	print(len(inseqs) - count, "sequences filtered.");
+	print "\nDone!";
+	print count, "sequences written.";
+	print len(inseqs) - count, "sequences filtered.";
 
 ############################################
 #Main Block
@@ -150,21 +150,21 @@ def ncbiFilter(inseqs, gff_file, spec_label, outfilename):
 infilename, in_type, gff_file, label, outfilename = optParse();
 
 pad = 50;
-print("=======================================================================");
-print("\t\t\t" + core.getDateTime());
-print(core.spacedOut("Filtering isoforms from:", pad), infilename);
+print "=======================================================================";
+print "\t\t\t" + core.getDateTime();
+print core.spacedOut("Filtering isoforms from:", pad), infilename;
 if in_type == "ens":
-	print(core.spacedOut("File type:", pad), "Ensembl");
+	print core.spacedOut("File type:", pad), "Ensembl";
 if in_type == "ncbi":
-	print(core.spacedOut("File type:", pad), "NCBI");
-	print(core.spacedOut("Using GFF file:", pad), gff_file);
+	print core.spacedOut("File type:", pad), "NCBI";
+	print core.spacedOut("Using GFF file:", pad), gff_file;
 if in_type == "crow":
-	print(core.spacedOut("File type:", pad), "Crow");
+	print core.spacedOut("File type:", pad), "Crow";
 if label != "":
-	print(core.spacedOut("Adding label to beginning of FASTA headers:", pad), label);
-print(core.spacedOut("Writing output to:", pad), outfilename);
+	print core.spacedOut("Adding label to beginning of FASTA headers:", pad), label;
+print core.spacedOut("Writing output to:", pad), outfilename;
 core.filePrep(outfilename);
-print("--------------------------");
+print "--------------------------";
 
 identDict = {};
 ins, skip_flag = core.fastaReader(infilename);
@@ -174,7 +174,7 @@ if in_type == "ens":
 elif in_type == "ncbi":
 	ncbiFilter(ins, gff_file, label, outfilename);
 
-print("=======================================================================");
+print "=======================================================================";
 
 
 

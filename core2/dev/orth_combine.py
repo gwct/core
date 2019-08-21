@@ -17,8 +17,8 @@ import sys, os, argparse, itertools, core
 
 ####################
 
-print("\n###### Hello ######")
-print("orth_combine call: " + " ".join(sys.argv) + "\n")
+print "\n###### Hello ######"
+print "orth_combine call: " + " ".join(sys.argv) + "\n"
 
 parser = argparse.ArgumentParser();
 parser.add_argument("-i", dest="input", help="A comma delimited LIST of Ensembl ortholog lists to combine. The first column of each file must be the same species.", default=False);
@@ -38,12 +38,12 @@ if not args.output:
 	sys.exit(" ** ERROR 3: output file not speciefied (-o)");
 ## I/O parsing
 
-print("# =======================================================================");
-print("# Combining files:\t\t\t", infiles);
-print("# Writing output to:\t\t\t" + args.output);
-print("# Writing only possible one-to-one orthologs to output file.");
-print("# -------------------------------------");
-print("# " + core.getTime() + " Reading files...");
+print "# =======================================================================";
+print "# Combining files:\t\t\t", infiles;
+print "# Writing output to:\t\t\t" + args.output;
+print "# Writing only possible one-to-one orthologs to output file.";
+print "# -------------------------------------";
+print "# " + core.getTime() + " Reading files...";
 
 file_lines = {};
 key_ids = {};
@@ -80,14 +80,14 @@ for infile in infiles:
 
 
 
-print("# -------------------------------------");
-print("# " + core.getTime() + " Retrieving key IDs in both files...");
+print "# -------------------------------------";
+print "# " + core.getTime() + " Retrieving key IDs in both files...";
 
-comb_ids = list(set.intersection(*list(map(set,list(key_ids.values())))));
+comb_ids = list(set.intersection(*map(set,key_ids.values())));
 num_ids = len(comb_ids);
 
-print("# -------------------------------------");
-print("# " + core.getTime() + " Retrieving lines with shared key IDs (all combinations)...");
+print "# -------------------------------------";
+print "# " + core.getTime() + " Retrieving lines with shared key IDs (all combinations)...";
 
 i = 0;
 numbars = 0;
@@ -127,6 +127,6 @@ with open(args.output, "w") as outfile:
 
 pstring = "100.0% complete.";
 sys.stderr.write('\b' * len(pstring) + pstring);
-print("\n# " + core.getTime() + " Done!");
-print("# =======================================================================");
+print "\n# " + core.getTime() + " Done!";
+print "# =======================================================================";
 

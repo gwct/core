@@ -22,17 +22,17 @@ def countPos(fasta_files, disp_file=0):
 		for title in seqs:
 			total_seq += 1;
 			if disp_file == 1:
-				print(title + "\t" + len(seqs[title]));
+				print title + "\t" + len(seqs[title]);
 			total_pos += len(seqs[title]);
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print("Total FASTA files:\t", total_files);
-	print("Total sequences:\t", total_seq);
-	print("Total positions:\t", total_pos);
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print "Total FASTA files:\t", total_files;
+	print "Total sequences:\t", total_seq;
+	print "Total positions:\t", total_pos;
 	if fa_skip != []:
-		print("The following", str(len(fa_skip)), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]));
-	print("=======================================================================");
+		print "The following", str(len(fa_skip)), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]);
+	print "=======================================================================";
 
 #############################################################################
 
@@ -58,7 +58,7 @@ def countAln(fasta_files, spec_opt):
 			continue;
 		# Basic check that all the sequences in the file are the same length.
 
-		seqlen = len(seqs[list(seqs.keys())[0]]);
+		seqlen = len(seqs[seqs.keys()[0]]);
 		total_aln += 1;
 		total_seq += len(seqs);
 		# seqlens.append(str(seqlen));
@@ -110,27 +110,27 @@ def countAln(fasta_files, spec_opt):
 			else:
 				variant_sites += 1;
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print("Total # Seqs\t", total_seq);
-	print("Total # Positions\t", total_pos);
-	print("Total # Aligns\t", total_aln);
-	print("Total # Columns\t", total_col);
-	print("# Invariant Sites\t", invariant_sites);
-	print("# Variant Sites\t", variant_sites);
-	print("Total # Gaps\t", total_gaps);
-	print("# Sites with Gaps\t", sites_with_gaps);
-	print("# of Sites that are all Gap\t", sites_all_gaps);
-	print("-----");
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print "Total # Seqs\t", total_seq;
+	print "Total # Positions\t", total_pos;
+	print "Total # Aligns\t", total_aln;
+	print "Total # Columns\t", total_col;
+	print "# Invariant Sites\t", invariant_sites;
+	print "# Variant Sites\t", variant_sites;
+	print "Total # Gaps\t", total_gaps;
+	print "# Sites with Gaps\t", sites_with_gaps;
+	print "# of Sites that are all Gap\t", sites_all_gaps;
+	print "-----";
 	if spec_opt:
-		print("Species counts:");
+		print "Species counts:";
 		for spec in spec_aln:
-			print("\t".join([spec, str(spec_aln[spec][0]), str(spec_aln[spec][1])]));
+			print "\t".join([spec, str(spec_aln[spec][0]), str(spec_aln[spec][1])]);
 	if fa_skip != []:
-		print("The following", str(len(fa_skip)), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]));
+		print "The following", str(len(fa_skip)), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]);
 	if aln_skip != []:
-		print("The following", str(len(aln_skip)), "file(s) were skipped because they might not have been alignments: ", ",".join([os.path.basename(f) for f in aln_skip]));
-	print("=======================================================================");
+		print "The following", str(len(aln_skip)), "file(s) were skipped because they might not have been alignments: ", ",".join([os.path.basename(f) for f in aln_skip]);
+	print "=======================================================================";
 
 	# with open("alnlens.txt", "w") as outfile:
 	# 	outfile.write(",".join(seqlens));
@@ -157,13 +157,13 @@ def concat(fasta_files, header_delim, outfilename):
 			aln_skip.append(fasta_file);
 			continue;
 
-		seqlen = len(seqs[list(seqs.keys())[0]]);
+		seqlen = len(seqs[seqs.keys()[0]]);
 		total_aln += 1;
 		for title in seqs:
 			total_seq += 1;
 			if header_delim != False:
 				if header_delim not in title:
-					print("\n** WARNING! Specified header delimiter (-delim) not found for the following sequence:\t" + os.path.basename(fasta_file) + " : " + title);
+					print "\n** WARNING! Specified header delimiter (-delim) not found for the following sequence:\t" + os.path.basename(fasta_file) + " : " + title;
 					sys.exit("Exiting...\n");
 				else:
 					cur_spec = title[1:title.index(header_delim)];
@@ -194,7 +194,7 @@ def concat(fasta_files, header_delim, outfilename):
 		#numbars, donepercent = core.loadingBar(i, len(filelist), donepercent, numbars);
 		#i = i + 1;
 		seqs, skip = core.fastaReader(fasta_file);
-		seqlen = len(seqs[list(seqs.keys())[0]]);
+		seqlen = len(seqs[seqs.keys()[0]]);
 		pfile.write(fasta_file + " = " + str(total_pos+1) + "-" + str(total_pos+seqlen) + "\n");
 		total_pos = total_pos + seqlen;
 		# Read the sequences and add the file name and positions to the partitions file.
@@ -224,16 +224,16 @@ def concat(fasta_files, header_delim, outfilename):
 	outfile.close();
 	# Write the concatenated alignments to the output file.
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print("Total alignments:\t", total_aln);
-	print("Total sequences:\t", total_seq);
-	print("Total columns:\t", total_pos);
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print "Total alignments:\t", total_aln;
+	print "Total sequences:\t", total_seq;
+	print "Total columns:\t", total_pos;
 	if fa_skip != []:
-		print("The following", str(len(fa_skip)), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]));
+		print "The following", str(len(fa_skip)), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]);
 	if aln_skip != []:
-		print("The following", str(len(aln_skip)), "file(s) were skipped because they might not have been alignments: ", ",".join([os.path.basename(f) for f in aln_skip]));
-	print("=======================================================================");
+		print "The following", str(len(aln_skip)), "file(s) were skipped because they might not have been alignments: ", ",".join([os.path.basename(f) for f in aln_skip]);
+	print "=======================================================================";
 	
 #############################################################################
 
@@ -244,7 +244,7 @@ def combine(fasta_files, outfilename):
 	fa_skip = [];
 	outfile = open(outfilename, "w");
 	for fasta_file in fasta_files:
-		print("Loading file", fasta_file + "...");
+		print "Loading file", fasta_file + "...";
 		seqs, skip = core.fastaReader(fasta_file);
 		if skip:
 			fa_skip.append(fasta_file);
@@ -256,14 +256,14 @@ def combine(fasta_files, outfilename):
 			outfile.write(title + "\n");
 			outfile.write(seqs[title] + "\n");
 	outfile.close();
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print("Total FASTA files:\t", total_files);
-	print("Total sequences:\t", total_seq);
-	print("Total positions:\t", total_pos);
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print "Total FASTA files:\t", total_files;
+	print "Total sequences:\t", total_seq;
+	print "Total positions:\t", total_pos;
 	if fa_skip != []:
-		print("The following", str(len(fa_skip)), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]));
-	print("=======================================================================");
+		print "The following", str(len(fa_skip)), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]);
+	print "=======================================================================";
 
 #############################################################################
 
@@ -272,7 +272,7 @@ def split(fasta_files, header_delim, outdir):
 # into individual files.
 	fasta_file = fasta_files[0];
 	if not os.path.isdir(outdir):
-		print("\n++ Creating output directory...");
+		print "\n++ Creating output directory...";
 		os.system("mkdir " + outdir);
 
 	total_seq = 0;
@@ -291,10 +291,10 @@ def split(fasta_files, header_delim, outdir):
 		outfile.write(seqs[title]);
 		outfile.close();
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");	
-	print("Total sequences:\t", total_seq);
-	print("=======================================================================");
+	print "\n" + core.getTime() + " Done!";
+	print "-----";	
+	print "Total sequences:\t", total_seq;
+	print "=======================================================================";
 
 #############################################################################
 
@@ -321,13 +321,13 @@ def trim(fasta_files, header_delim, file_flag, out_dest):
 			outfile.write(seqs[title] + "\n");
 		outfile.close();
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
 	if fa_skip != []:
-		print("The following", str(len(fa_skip)), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]));
+		print "The following", str(len(fa_skip)), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]);
 	if header_skip != []:
-		print("The following", str(len(header_skip)), "file(s) had headers without the delimeter. These sequences were written as is: ", ",".join([os.path.basename(f) for f in header_skip]));
-	print("=======================================================================");
+		print "The following", str(len(header_skip)), "file(s) had headers without the delimeter. These sequences were written as is: ", ",".join([os.path.basename(f) for f in header_skip]);
+	print "=======================================================================";
 
 #############################################################################
 
@@ -383,16 +383,16 @@ def relabel(fasta_files, ropt, header_delim, new_labels, file_flag, out_dest):
 			outfile.write(seqs[title] + "\n");
 		outfile.close();
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print("Total files written:\t", total_files)
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print "Total files written:\t", total_files
 	if fa_skip != []:
-		print("The following", len(fa_skip), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]));
+		print "The following", len(fa_skip), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]);
 	if label_skip != []:
-		print("The following file(s) had headers that didn't contain any old labels. They were re-written as they are in the new file.")
+		print "The following file(s) had headers that didn't contain any old labels. They were re-written as they are in the new file."
 		for each in label_skip:
-			print(os.path.basename(each[0]) + "\t" + each[1]);
-	print("=======================================================================");
+			print os.path.basename(each[0]) + "\t" + each[1];
+	print "=======================================================================";
 
 #############################################################################
 
@@ -420,14 +420,14 @@ def removeSeq(fasta_files, labels, file_flag, out_dest):
 			outfile.write(seqs[title] + "\n");
 		outfile.close();
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print("Total files read:\t", total_files);
-	print("Total sequences read:\t", total_seq);
-	print("Total sequences removed:\t", total_seq_rm);
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print "Total files read:\t", total_files;
+	print "Total sequences read:\t", total_seq;
+	print "Total sequences removed:\t", total_seq_rm;
 	if fa_skip != []:
-		print("The following", len(fa_skip), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]));
-	print("=======================================================================");
+		print "The following", len(fa_skip), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]);
+	print "=======================================================================";
 
 #############################################################################
 
@@ -457,14 +457,14 @@ def removeStarts(fasta_files, seqtype, file_flag, out_dest):
 			outfile.write(seq + "\n");
 		outfile.close();
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print("Total files read:\t", total_files);
-	print("Total sequences read:\t", total_seq);
-	print("Total starts removed:\t", total_start_rm);
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print "Total files read:\t", total_files;
+	print "Total sequences read:\t", total_seq;
+	print "Total starts removed:\t", total_start_rm;
 	if fa_skip != []:
-		print("The following", len(fa_skip), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]));
-	print("=======================================================================");
+		print "The following", len(fa_skip), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]);
+	print "=======================================================================";
 
 #############################################################################
 
@@ -499,15 +499,15 @@ def replaceBase(fasta_files, replacements, file_flag, out_dest):
 			outfile.write(seq + "\n");
 		outfile.close();
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print("Total files read:\t", total_files);
-	print("Total sequences read:\t", total_seq);
-	print("Total positions read:\t", total_pos);
-	print("Total replacements made:\t", total_repl);
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print "Total files read:\t", total_files;
+	print "Total sequences read:\t", total_seq;
+	print "Total positions read:\t", total_pos;
+	print "Total replacements made:\t", total_repl;
 	if fa_skip != []:
-		print("The following", len(fa_skip), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]));
-	print("=======================================================================");
+		print "The following", len(fa_skip), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]);
+	print "=======================================================================";
 
 #############################################################################
 
@@ -537,13 +537,13 @@ def extractSeqs(fasta_files, titles, delim, file_flag, out_dest):
 					outfile.write(">" + t + "\n");
 					outfile.write(seq + "\n");
 
-	print("\n" + core.getTime() + " Done!");
-	print("-----");
-	print("Total files read:\t", total_files);
-	print("Total sequences read:\t", total_seq);
-	print("Total sequences extracted:\t", len(ext));
+	print "\n" + core.getTime() + " Done!";
+	print "-----";
+	print "Total files read:\t", total_files;
+	print "Total sequences read:\t", total_seq;
+	print "Total sequences extracted:\t", len(ext);
 	if fa_skip != []:
-		print("The following", len(fa_skip), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]));
+		print "The following", len(fa_skip), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]);
 	if set(titles) != set(ext):
-		print("The following sequences were not extracted:\t" + ",".join([t for t in titles if t not in ext]));
-	print("=======================================================================");					
+		print "The following sequences were not extracted:\t" + ",".join([t for t in titles if t not in ext]);
+	print "=======================================================================";					

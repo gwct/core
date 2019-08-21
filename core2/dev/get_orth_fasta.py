@@ -55,24 +55,24 @@ infilename, seqdir, speclist, delim, remstart, outdir = optParse();
 #idmap = { 'chimp':'ENSPTR', 'cow':'ENSBTA', 'gibbon':'ENSNLE', 'gorilla':'ENSGGO', 'human':'ENSG00', 'macaque':'ENSMMU', 'mlemur':'ENSMIC', 'mouse':'ENSMUS', 'orang':'ENSPPY', 'owlmonkey':'ENSANA', 'vervet':'ENSCSA' }
 #idmap = { 'ENSPTR':'chimp', 'ENSBTA':'cow', 'ENSNLE':'gibbon', 'ENSGGO':'gorilla', 'ENSG00':'human', 'ENSMMU':'macaque', 'ENSMIC':'mlemur', 'ENSMUS':'mouse', 'ENSPPY':'orang', 'ENSANA':'owlmonkey', 'ENSCSA':'vervet' }
 
-print("# =======================================================================");
-print("# \t\t\tRetrieving sequences in FASTA format");
-print("# \t\t\t" + core.getDateTime());
-print("# Retrieving ortholog sequences from:\t", infilename);
-print("# Sequence directory\t\t\t" + seqdir);
+print "# =======================================================================";
+print "# \t\t\tRetrieving sequences in FASTA format";
+print "# \t\t\t" + core.getDateTime();
+print "# Retrieving ortholog sequences from:\t", infilename;
+print "# Sequence directory\t\t\t" + seqdir;
 if delim:
-	print("# Trimming FASTA headers at:\t", delim);
+	print "# Trimming FASTA headers at:\t", delim;
 else:
-	print("# Retaining full FASTA headers.")
-print("# Writing combined sequence files to:\t", outdir);
+	print "# Retaining full FASTA headers."
+print "# Writing combined sequence files to:\t", outdir;
 if remstart == 1:
-	print("# Removing start Methionines (-m 1)");
+	print "# Removing start Methionines (-m 1)";
 else:
-	print("# NOT removing start Methionines (-m 0)");
-print("# Reminder: Please ensure your species dictionary was entered correctly.");
-print("# Note: The script will skip any lines that do not have all species.");
-print("# -------------------------------------");
-print("# " + core.getTime() + " Preparing species dictionary...");
+	print "# NOT removing start Methionines (-m 0)";
+print "# Reminder: Please ensure your species dictionary was entered correctly.";
+print "# Note: The script will skip any lines that do not have all species.";
+print "# -------------------------------------";
+print "# " + core.getTime() + " Preparing species dictionary...";
 
 specdict = {};
 for each in speclist:
@@ -80,8 +80,8 @@ for each in speclist:
 	specdict[current[0]] = current[1];
 
 #print specdict;
-print("# -------------------------------------");
-print("# " + core.getTime() + " Reading source files and extracting sequence IDs...");
+print "# -------------------------------------";
+print "# " + core.getTime() + " Reading source files and extracting sequence IDs...";
 #tmp_seq_dict = {};
 main_seq_dict = {};
 for spec in specdict:
@@ -96,9 +96,9 @@ for spec in specdict:
 
 #del tmp_seq_dict;
 
-print("# -------------------------------------");
+print "# -------------------------------------";
 count = core.getFileLen(infilename);
-print("# " + core.getTime() + " Combining", count, "orthologs...");
+print "# " + core.getTime() + " Combining", count, "orthologs...";
 
 i = 0;
 numbars = 0;
@@ -116,7 +116,7 @@ for line in open(infilename):
 		continue;
 
 	if len(tmpline) != numspec:
-		print(line);
+		print line;
 		nonorth = nonorth + 1;
 		continue;
 
@@ -157,6 +157,6 @@ for line in open(infilename):
 
 pstring = "100.0% complete.";
 sys.stderr.write('\b' * len(pstring) + pstring);
-print("\n# " + core.getTime() + " Done!");
-print(nonorth, "lines skipped.");
-print("# =======================================================================");
+print "\n# " + core.getTime() + " Done!";
+print nonorth, "lines skipped.";
+print "# =======================================================================";

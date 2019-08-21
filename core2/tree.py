@@ -63,20 +63,20 @@ else:
 # This checks if the input (-i) entered is valid. If so, it parses it as either a directory or a single file.
 
 if not args.output and not tree_flag:
-	print("\n** Warning -- No output location specified. Will be determined automatically.");
+	print "\n** Warning -- No output location specified. Will be determined automatically.";
 
 pad = 40;
 if args.tree_sep:
 	if not file_flag:
 		sys.exit(core.errorOut(2, "--sep only works on an input FILE!"));
 	output, outnum = core.defaultOutDir(args.input, file_flag, "sep", args.output);
-	print("* Making output directory...");
+	print "* Making output directory...";
 	os.system("mkdir " + output);
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Separating trees in:", pad), args.input);
-	print(core.spacedOut("Writing output to:", pad), output);
-	print("-------------------------");
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Separating trees in:", pad), args.input;
+	print core.spacedOut("Writing output to:", pad), output;
+	print "-------------------------";
 	tree.treeSep(filelist[0], args.file_prefix, output);
 	sys.exit();
 # --sep : takes an input FILE with many trees and puts each tree in its own file.
@@ -85,11 +85,11 @@ if args.tree_join:
 	if file_flag:
 		sys.exit(core.errorOut(3, "--join only works on an input DIRECTORY containing many tree files!"));
 	output, outnum = core.defaultOutFile(args.input, file_flag, "join", args.output);
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Joining trees in:", pad), args.input);
-	print(core.spacedOut("Writing output to:", pad), output);
-	print("-------------------------");
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Joining trees in:", pad), args.input;
+	print core.spacedOut("Writing output to:", pad), output;
+	print "-------------------------";
 	tree.treeJoin(filelist, output);
 	sys.exit();
 # --join : takes an input DIRECTORY with many files and combines all trees from all files into a single file.
@@ -108,17 +108,17 @@ if args.label_tree:
 	# If the input is not a file, check to see if it's a Newick string.
 	else:
 		output, outnum = core.defaultOutFile(args.input, file_flag, "label", args.output);
-		print("=======================================================================");
-		print("\t\t\t" + core.getDateTime());
-		print(core.spacedOut("Labeling all trees in:", pad), args.input);
-		print(core.spacedOut("Writing labeled trees to:", pad), output);
+		print "=======================================================================";
+		print "\t\t\t" + core.getDateTime();
+		print core.spacedOut("Labeling all trees in:", pad), args.input;
+		print core.spacedOut("Writing labeled trees to:", pad), output;
 	tree.labelTree(filelist, tree_flag, output);
 	sys.exit();
 # --label : takes an input Newick string or file and puts labels on the internal nodes.
 
 if args.root_check:
-	print("\n** Warning -- The root check module works on the basis that an unrooted tree has a trifurcation at the 'root.' So if your tree has other non-bifurcating nodes this will not give reliable results!");
-	print("\n              Only use this module with bifurcating trees!");
+	print "\n** Warning -- The root check module works on the basis that an unrooted tree has a trifurcation at the 'root.' So if your tree has other non-bifurcating nodes this will not give reliable results!";
+	print "\n              Only use this module with bifurcating trees!";
 	if file_flag == False and tree_flag == False:
 		sys.exit(core.errorOut(6, "--rootcheck only works on an input FILE containing many trees or a TREE STRING."));
 	if tree_flag:
@@ -132,16 +132,16 @@ if args.root_check:
 	# If the input is not a file, check to see if it's a Newick string.
 	else:
 		output, outnum = core.defaultOutFile(args.input, file_flag, "rootcheck", args.output);
-		print("=======================================================================");
-		print("\t\t\t" + core.getDateTime());
-		print(core.spacedOut("Checking all trees in:", pad), args.input);
-		print(core.spacedOut("Writing output to:", pad), output);
+		print "=======================================================================";
+		print "\t\t\t" + core.getDateTime();
+		print core.spacedOut("Checking all trees in:", pad), args.input;
+		print core.spacedOut("Writing output to:", pad), output;
 	tree.rootCheck(filelist, tree_flag, output);
 	sys.exit();
 # --rootcheck : takes an input Newick string or file and checks if the trees are rooted or not.
 
 if args.root_tree:
-	print("\n** Warning -- The root option relies on the software Newick Utilities. If you don't have this installed and in your PATH variable, you will see an error!");
+	print "\n** Warning -- The root option relies on the software Newick Utilities. If you don't have this installed and in your PATH variable, you will see an error!";
 	if file_flag == False and tree_flag == False:
 		sys.exit(core.errorOut(8, "--root only works on an input FILE containing many trees or a TREE STRING."));
 	if not args.outgroup:
@@ -157,26 +157,26 @@ if args.root_tree:
 	# If the input is not a file, check to see if it's a Newick string.
 	else:
 		output, outnum = core.defaultOutFile(args.input, file_flag, "reroot", args.output);
-		print("=======================================================================");
-		print("\t\t\t" + core.getDateTime());
-		print(core.spacedOut("Re-rooting all trees in:", pad), args.input);
-		print(core.spacedOut("Writing rooted trees to:", pad), output);
+		print "=======================================================================";
+		print "\t\t\t" + core.getDateTime();
+		print core.spacedOut("Re-rooting all trees in:", pad), args.input;
+		print core.spacedOut("Writing rooted trees to:", pad), output;
 	tree.rootTrees(filelist, tree_flag, args.outgroup, output);
 	sys.exit();
 # --root : takes an input Newick string or file and roots or re-roots the trees using Newick Utilities and the specified outgroups.
 
 if args.root_tree_best:
-	print("\n** Warning -- The rootbest option relies on the software Newick Utilities. If you don't have this installed and in your PATH variable, you will see an error!");
+	print "\n** Warning -- The rootbest option relies on the software Newick Utilities. If you don't have this installed and in your PATH variable, you will see an error!";
 	if file_flag == False:
 		sys.exit(core.errorOut(8.1, "--rootbest only works on the best-trees.txt FILE from wrappers.py --raxml containing many rows, each with the source alignment filename and the tree separated by a tab."));
 	if not args.outgroup:
 		sys.exit(core.errorOut(9.1, "With --root, a set of tip labels must be specified as the desired outgroup (-outgroup)."));
 
 	output, outnum = core.defaultOutFile(args.input, file_flag, "reroot", args.output);
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Re-rooting all trees in:", pad), args.input);
-	print(core.spacedOut("Writing rooted trees to:", pad), output);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Re-rooting all trees in:", pad), args.input;
+	print core.spacedOut("Writing rooted trees to:", pad), output;
 	tree.rootTreesBest(filelist, tree_flag, args.outgroup, output);
 	sys.exit();
 # --root : takes an input Newick string or file and roots or re-roots the trees using Newick Utilities and the specified outgroups.
@@ -198,11 +198,11 @@ if args.fotc:
 		except:
 			sys.exit(core.errorOut(13, "Couldn't read the input string as a Newick tree!"));
 	# If the input is not a file, check to see if it's a Newick string.
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("Calculating concordance factors for your species tree.");
-	print(core.spacedOut("Using gene trees in:", pad), args.genetrees);
-	print("Simply printing output to the screen");
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "Calculating concordance factors for your species tree.";
+	print core.spacedOut("Using gene trees in:", pad), args.genetrees;
+	print "Simply printing output to the screen";
 	tree.flightOfTheConcordance(filelist, tree_flag, args.genetrees, args.count_tops);
 	sys.exit();
 # --concordance : takes an input species tree (Newick string or file) and single-copy gene trees (file) 
@@ -211,9 +211,9 @@ if args.fotc:
 if args.count_tips:
 	if not file_flag:
 		sys.exit(core.errorOut(14, "--tipcount takes an input (-i) FILE only."));
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Counting tips in:", pad), args.input);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Counting tips in:", pad), args.input;
 	tree.countTips(filelist[0]);
 	sys.exit();
 # --tipcount : counts all unique tips in an input file with many trees.
@@ -225,10 +225,10 @@ if args.count_clade:
 		clade = set(args.clade.split(","));
 	except:
 		sys.exit(core.errorOut(16, "--clade must be a comma separate list of tips."));
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Counting clades in:", pad), args.input);
-	print(core.spacedOut("Clade tips:", pad), args.clade);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Counting clades in:", pad), args.input;
+	print core.spacedOut("Clade tips:", pad), args.clade;
 	tree.countClade(filelist[0], clade);
 	sys.exit();
 # --tipcount : counts all unique tips in an input file with many trees.
@@ -240,21 +240,21 @@ if args.relabel:
 		sys.exit(core.errorOut(18, "-labels must be entered with --relabeltips"));
 	if args.run_mode not in [1,2,3]:
 		sys.exit(core.errorOut(16, "-m must take values of 1, 2, or 3."));
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Relabeling tips in:", pad), args.input);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Relabeling tips in:", pad), args.input;
 	output, outnum = core.defaultOutFile(args.input, file_flag, "relabel", args.output);
 	if args.run_mode == 1:
-		print("Replacing old labels");
+		print "Replacing old labels";
 	if args.run_mode == 2:
-		print("Adding new labels to beginning of old labels.");
+		print "Adding new labels to beginning of old labels.";
 	if args.run_mode == 3:
-		print("Adding new labels to end of old labels.");
+		print "Adding new labels to end of old labels.";
 	if args.run_mode in [2,3]:
-		print(core.spacedOut("Using delimiter:", pad), args.delim);
+		print core.spacedOut("Using delimiter:", pad), args.delim;
 		if args.delim == 'space':
 			args.delim = ' ';
-	print(core.spacedOut("Writing output to:", pad), output);
+	print core.spacedOut("Writing output to:", pad), output;
 	tree.relabelTips(filelist[0], args.labels, args.run_mode, args.delim, output);
 	sys.exit();
 # --relabeltips : in a file containing many trees, relabels all tips containing an old label with a new label specified by user
@@ -264,11 +264,11 @@ if args.rmlabel or args.rmlabel_best:
 		sys.exit(core.errorOut(19, "--rmlabels takes an input (-i) FILE only."));
 	if args.run_mode not in [1,2,3]:
 		sys.exit(core.errorOut(20, "-m must take values of 1, 2, or 3."));
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Removing internal node labels from:", pad), args.input);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Removing internal node labels from:", pad), args.input;
 	output, outnum = core.defaultOutFile(args.input, file_flag, "rmlabel", args.output);
-	print(core.spacedOut("Writing output to:", pad), output);
+	print core.spacedOut("Writing output to:", pad), output;
 	if args.rmlabel:
 		tree.rmLabel(filelist[0], args.run_mode, output);
 	elif args.rmlabel_best:
@@ -284,11 +284,11 @@ if args.scale != False:
 		scale_factor = float(scale_factor);
 	except:
 		sys.exit(core.errorOut(22, "The scale factor must be an integer or a float."));
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print(core.spacedOut("Scaling branch lengths on trees in:", pad), args.input);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print core.spacedOut("Scaling branch lengths on trees in:", pad), args.input;
 	output, outnum = core.defaultOutFile(args.input, file_flag, "scale", args.output);
-	print(core.spacedOut("Writing output to:", pad), output);
+	print core.spacedOut("Writing output to:", pad), output;
 	tree.scaleBL(filelist[0], scale_op, scale_factor, output);
 	sys.exit();
 
@@ -296,9 +296,9 @@ if args.rf:
 	#if not os.path.exists(args.raxpath):
 	#	sys.exit(core.errorOut(22, "Path to RAxML (" + args.raxpath + ") not found!"));
 	if args.raxpath:
-		print("User specified path to RAxML:", args.raxpath);
+		print "User specified path to RAxML:", args.raxpath;
 	else:
-		print("No path to RAxML specified. Trying 'raxml'");
+		print "No path to RAxML specified. Trying 'raxml'";
 	# Checking the input raxpath.
 
 	if file_flag == False and tree_flag == False:
@@ -317,12 +317,12 @@ if args.rf:
 		except:
 			sys.exit(core.errorOut(25, "Couldn't read the input string as a Newick tree!"));
 	# If the input is not a file, check to see if it's a Newick string.
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("Calculating Robinson-Foulds distance for each gene tree to the species tree.");
-	print(core.spacedOut("Using gene trees in:", pad), args.genetrees);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "Calculating Robinson-Foulds distance for each gene tree to the species tree.";
+	print core.spacedOut("Using gene trees in:", pad), args.genetrees;
 	output, outnum = core.defaultOutFile(args.genetrees, file_flag, "RF", args.output);
-	print(core.spacedOut("Writing output to:", pad), output);
+	print core.spacedOut("Writing output to:", pad), output;
 	tree.robF(filelist, tree_flag, args.genetrees, args.raxpath, output);
 	sys.exit();
 

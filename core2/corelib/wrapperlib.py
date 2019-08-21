@@ -13,24 +13,24 @@ def ioInfo(input_init, path, output_init, program, file_flag):
 # are overwritten. If a duplicate location is given for the output, and integer count is added
 # to that location.
 	pad = 40;
-	print(core.spacedOut("Running " + program + " on FASTA files in:", pad), input_init);
+	print core.spacedOut("Running " + program + " on FASTA files in:", pad), input_init;
 	if path:
-		print(core.spacedOut("User specified path to " + program + ":", pad), path);
+		print core.spacedOut("User specified path to " + program + ":", pad), path;
 		#if not os.path.exists(path):
 		#	sys.exit(core.errorOut(2, "Path (-p) to program not found!!"));
 	else:
-		print(core.spacedOut("No path to " + program + " specified. Trying:", pad), program.lower());
+		print core.spacedOut("No path to " + program + " specified. Trying:", pad), program.lower();
 		path = program.lower();
 	# Parses the path option.
 
 	output, file_num = defaultOut(input_init, file_flag, program.lower(), output_init);
 	# Calls the function that renames the output location based on the previous runs.
 
-	print(core.spacedOut("Writing output to:", pad), output);
+	print core.spacedOut("Writing output to:", pad), output;
 	if not file_flag:
-		print("* Making output directory...");
+		print "* Making output directory...";
 		os.system("mkdir \"" + output + "\"");
-		print("* Making logfile...");
+		print "* Making logfile...";
 		logfilename = os.path.join(output, "run-" + program.lower() + "-" + str(file_num) + ".log");
 	else:
 		logfilename = os.path.join(os.path.dirname(output), "run-" + program.lower() + "-" + str(file_num) + ".log");
@@ -89,7 +89,7 @@ def defaultOut(input_name, file_flag, suffix, output_init=False):
 
 def runMuscle(infiles, file_flag, path, v, output, logfilename):
 # This module runs the MUSCLE alignment program on a list of FASTA files.
-	print("Running MUSCLE...\n");
+	print "Running MUSCLE...\n";
 	if v == 0 and not file_flag:
 		stdoutlog = os.path.join(output, "muscle.stdout");
 	# If the user specifies nothing to be printed to the screen, MUSCLE's output will instead be
@@ -126,17 +126,17 @@ def runMuscle(infiles, file_flag, path, v, output, logfilename):
 	if v == 0 and not file_flag:
 		pstring = "100.0% complete.";
 		sys.stderr.write('\b' * len(pstring) + pstring);
-	print("\n" + core.getTime() + " Done!");
+	print "\n" + core.getTime() + " Done!";
 	core.printWrite(logfilename,"-----", file_flag);
 	if fa_skip != []:
 		core.printWrite(logfilename,"# The following " + str(len(fa_skip)) + " file(s) were skipped because they couldn't be read as fasta files: " + ",".join([os.path.basename(f) for f in fa_skip]), file_flag);
-	print("=======================================================================");
+	print "=======================================================================";
 
 #############################################################################
 
 def runPasta(infiles, file_flag, path, seqtype, v, output, logfilename):
 # This module runs the PASTA alignment program on a list of FASTA files.
-	print("Running PASTA...\n");
+	print "Running PASTA...\n";
 	if v == 0 and not file_flag:
 		stdoutlog = os.path.join(output, "pasta.stdout");
 	# If the user specifies nothing to be printed to the screen, PASTA's output will instead be
@@ -194,17 +194,17 @@ def runPasta(infiles, file_flag, path, seqtype, v, output, logfilename):
 	if v == 0 and not file_flag:
 		pstring = "100.0% complete.";
 		sys.stderr.write('\b' * len(pstring) + pstring);
-	print("\n" + core.getTime() + " Done!");
+	print "\n" + core.getTime() + " Done!";
 	core.printWrite(logfilename,"-----", file_flag);
 	if fa_skip != []:
 		core.printWrite(logfilename,"# The following " + str(len(fa_skip)) + " file(s) were skipped because they couldn't be read as fasta files: " + ",".join([os.path.basename(f) for f in fa_skip]), file_flag);
-	print("=======================================================================");
+	print "=======================================================================";
 
 #############################################################################
 
 def runPrank(infiles, tree, file_flag, path, v, output, logfilename):
 # This module runs the MUSCLE alignment program on a list of FASTA files.
-	print("Running PRANK...\n");
+	print "Running PRANK...\n";
 	if v == 0 and not file_flag:
 		stdoutlog = os.path.join(output, "prank.stdout");
 	# If the user specifies nothing to be printed to the screen, MUSCLE's output will instead be
@@ -244,17 +244,17 @@ def runPrank(infiles, tree, file_flag, path, v, output, logfilename):
 	if v == 0 and not file_flag:
 		pstring = "100.0% complete.";
 		sys.stderr.write('\b' * len(pstring) + pstring);
-	print("\n" + core.getTime() + " Done!");
+	print "\n" + core.getTime() + " Done!";
 	core.printWrite(logfilename,"-----", file_flag);
 	if fa_skip != []:
 		core.printWrite(logfilename,"# The following " + str(len(fa_skip)) + " file(s) were skipped because they couldn't be read as fasta files: " + ",".join([os.path.basename(f) for f in fa_skip]), file_flag);
-	print("=======================================================================");
+	print "=======================================================================";
 
 #############################################################################
 
 def runMacse(infiles, file_flag, path, v, output, logfilename):
 # This module runs the MUSCLE alignment program on a list of FASTA files.
-	print("Running MACSE...\n");
+	print "Running MACSE...\n";
 	if v == 0 and not file_flag:
 		stdoutlog = os.path.join(output, "macse.stdout");
 	# If the user specifies nothing to be printed to the screen, MUSCLE's output will instead be
@@ -294,17 +294,17 @@ def runMacse(infiles, file_flag, path, v, output, logfilename):
 	if v == 0 and not file_flag:
 		pstring = "100.0% complete.";
 		sys.stderr.write('\b' * len(pstring) + pstring);
-	print("\n" + core.getTime() + " Done!");
+	print "\n" + core.getTime() + " Done!";
 	core.printWrite(logfilename,"-----", file_flag);
 	if fa_skip != []:
 		core.printWrite(logfilename,"# The following " + str(len(fa_skip)) + " file(s) were skipped because they couldn't be read as fasta files: " + ",".join([os.path.basename(f) for f in fa_skip]), file_flag);
-	print("=======================================================================");
+	print "=======================================================================";
 
 #############################################################################
 
 def runGblocks(infiles, file_flag, path, seqtype, run_mode, v, output, logfilename):
 # This module runs the GBlocks alignment masking program on a list of aligned FASTA files.
-	print("Running GBlocks...\n");
+	print "Running GBlocks...\n";
 	if v == 0 and not file_flag:
 		stdoutlog = os.path.join(output, "gblocks.stdout");
 	# If the user specifies nothing to be printed to the screen, GBlocks' output will instead be
@@ -325,7 +325,7 @@ def runGblocks(infiles, file_flag, path, seqtype, run_mode, v, output, logfilena
 		if not core.checkAlign(seqs):
 			aln_skip.append(infile);
 			continue;
-		seqlen = len(seqs[list(seqs.keys())[0]]);
+		seqlen = len(seqs[seqs.keys()[0]]);
 		# Read the file if it is a FASTA (.fa) file and check to make sure it is an alignment.
 
 		gblocks_outfile = infile + "-gb";
@@ -350,7 +350,7 @@ def runGblocks(infiles, file_flag, path, seqtype, run_mode, v, output, logfilena
 		percdiff = 100.0;
 		gbseqs = core.fastaGetDict(gblocks_outfile);
 		gbseqs = {title : gbseqs[title].replace(" ","") for title in gbseqs }
-		gblen = len(gbseqs[list(gbseqs.keys())[0]]);
+		gblen = len(gbseqs[gbseqs.keys()[0]]);
 		difflen = seqlen - gblen;
 		percdiff = float(difflen) / float(seqlen) * 100.0;
 		logline += "\t" + str(difflen) + " of " + str(seqlen) + " masked (" + str(round(percdiff,2)) + "%)";
@@ -396,7 +396,7 @@ def runGblocks(infiles, file_flag, path, seqtype, run_mode, v, output, logfilena
 	if v == 0:
 		pstring = "100.0% complete.";
 		sys.stderr.write('\b' * len(pstring) + pstring);
-	print("\n" + core.getTime() + " Done!");
+	print "\n" + core.getTime() + " Done!";
 	core.printWrite(logfilename,"-----", file_flag);
 	core.printWrite(logfilename,"# masks with no seq retained:\t" + str(no_seq), file_flag);
 	core.printWrite(logfilename,"# masks accepted:\t" + str(acc_mask), file_flag);
@@ -405,14 +405,14 @@ def runGblocks(infiles, file_flag, path, seqtype, run_mode, v, output, logfilena
 		core.printWrite(logfilename,"# The following " + str(len(fa_skip)) + " file(s) were skipped because they couldn't be read as fasta files: " + ",".join([os.path.basename(f) for f in fa_skip]), file_flag);
 	if aln_skip != []:
 		core.printWrite(logfilename,"# The following " + str(len(aln_skip)) + " file(s) were skipped because they might not have been alignments: " + ",".join([os.path.basename(f) for f in aln_skip]), file_flag);
-	print("=======================================================================");
+	print "=======================================================================";
 
 #############################################################################
 
 def runRaxml(infiles, file_flag, path, model, bs_reps, threads, constraint_tree, estimate_bl, v, output, logfilename):
 # This module runs RAxML to estimate maximum likelihood phylogenies on a list of FASTA (.fa) alignment files.
 	from random import randint
-	print("Running RAxML...\n");
+	print "Running RAxML...\n";
 	if file_flag:
 		output = os.path.splitext(output)[0];
 		os.system("mkdir '" + output + "'");
@@ -541,7 +541,7 @@ def runRaxml(infiles, file_flag, path, model, bs_reps, threads, constraint_tree,
 	if v == 0:
 		pstring = "100.0% complete.";
 		sys.stderr.write('\b' * len(pstring) + pstring);
-	print("\n" + core.getTime() + " Done!");
+	print "\n" + core.getTime() + " Done!";
 	core.printWrite(logfilename,"-----", file_flag);
 	core.printWrite(logfilename,"# of files processed as .fa files:\t" + str(num_files_read), file_flag);
 	if fa_skip != []:
@@ -550,7 +550,7 @@ def runRaxml(infiles, file_flag, path, model, bs_reps, threads, constraint_tree,
 	core.printWrite(logfilename,"# of trees made successfully:\t" + str(len(trees)), file_flag);
 	if no_tree != []:
 		core.printWrite(logfilename,"# The following " + str(len(no_tree)) + " file(s) did not have trees made successfully: " + ",".join([os.path.basename(f) for f in no_tree]), file_flag);
-	print("=======================================================================");
+	print "=======================================================================";
 
 #############################################################################
 
@@ -558,7 +558,7 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 # This module runs codeml for several purposes including the null and alternate models of the branch-site test and for
 # ancestral reconstructions of input sequences.
 	import treeparse as tr
-	print("Running codeml...\n");
+	print "Running codeml...\n";
 	if file_flag:
 		output = os.path.splitext(output)[0];
 		os.system("mkdir \"" + output + "\"");
@@ -744,7 +744,7 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 			codeml_cmd += " >> " + stdoutlog + " 2>&1";
 		with open(logfilename, "a") as logfile:
 			logfile.write(codeml_cmd + "\n");
-		print(codeml_cmd);
+		print codeml_cmd;
 		os.system(codeml_cmd);
 		# The codeml call
 
@@ -761,7 +761,7 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 
 			found_seqs = 0;
 			node_list = [];
-			for k in range(len(rstlines)):
+			for k in xrange(len(rstlines)):
 				if rstlines[k] == "tree with node labels for Rod Page's TreeView\n":
 					anctree = rstlines[k+1].replace(" ","");
 					with open(anc_treefile, "w") as atfile:
@@ -776,7 +776,7 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 						if rstlines[k+j] != "\n":
 							tmpline = rstlines[k+j].replace("\n", "");
 							tmpline = tmpline.split("  ");
-							tmpline = [_f for _f in tmpline if _f];
+							tmpline = filter(None, tmpline);
 							node_list.append(tmpline[0]);
 
 							title = ">" + tmpline[0] + "\n";
@@ -791,17 +791,17 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 				# to the appropriate file in FASTA format.
 
 			curseqs = { n : "" for n in node_list };
-			for k in range(len(rstlines)):
+			for k in xrange(len(rstlines)):
 				if rstlines[k] == "Prob of best state at each node, listed by site\n":
 					j = 4;
 					while rstlines[k+j] != "\n":
-						tmpline = [_f for _f in rstlines[k+j].replace("\n","").split("  ") if _f];
+						tmpline = filter(None, rstlines[k+j].replace("\n","").split("  "));
 						cur_states = tmpline[2].split(": ");
 						extant = list(cur_states[0].replace(" ",""));
-						ancs = [_f for _f in cur_states[1].split(" ") if _f];
+						ancs = filter(None, cur_states[1].split(" "));
 						all_states = extant + ancs;
 
-						for n in range(len(node_list)):
+						for n in xrange(len(node_list)):
 							cur_spec = node_list[n];
 							cur_aa = all_states[n];
 							if cur_aa.find("(") != -1 and cur_aa.find(")") != -1:
@@ -840,7 +840,7 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 	if v == 0 and not file_flag:
 		pstring = "100.0% complete.";
 		sys.stderr.write('\b' * len(pstring) + pstring);
-	print("\n" + core.getTime() + " Done!");
+	print "\n" + core.getTime() + " Done!";
 	core.printWrite(logfilename,"-----", file_flag);
 	core.printWrite(logfilename,"# of files processed as .fa files:\t" + str(num_files_read), file_flag);
 	if fa_skip != []:
@@ -852,14 +852,14 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 	core.printWrite(logfilename,"# of files that used a pruned species tree:\t" + str(num_pruned), file_flag);
 	if anc and no_anc != []:
 		core.printWrite(logfilename,"# The following " + str(len(no_anc)) + " file(s) failed to write ancestral sequences: " + ",".join([os.path.basename(f) for f in no_anc]), file_flag);
-	print("=======================================================================");
+	print "=======================================================================";
 
 #############################################################################
 
 def runSDM(infiles, file_flag, path, v, output, logfilename):
 # This module infers a species tree runs the SDM implementation of average consensus along with the Neighbor-Joining Algorithm as
 # implemented in R on a set of gene trees.
-	print("Running SDM...\n");
+	print "Running SDM...\n";
 	output = os.path.splitext(output)[0];
 	os.system("mkdir '" + output + "'");
 	os.system("mv '" + logfilename + "' '" + output + "'");
@@ -896,7 +896,7 @@ def runSDM(infiles, file_flag, path, v, output, logfilename):
 
 	matlines = open(sdmfilename, "r").readlines();
 	specs = [];
-	for x in range(len(matlines)):
+	for x in xrange(len(matlines)):
 		if x == 0 or matlines[x] == "\n":
 			continue;
 		while matlines[x].find("  ") != -1:
@@ -907,7 +907,7 @@ def runSDM(infiles, file_flag, path, v, output, logfilename):
 
 	with open(rmatfilename, "w") as rmatfile:
 		rmatfile.write(specs + "\n");
-		for x in range(len(matlines)):
+		for x in xrange(len(matlines)):
 			if x == 0 or matlines[x] == "\n":
 				continue;
 			rmatfile.write(matlines[x]);
@@ -922,17 +922,17 @@ def runSDM(infiles, file_flag, path, v, output, logfilename):
 	##Runs the NJ algorithm within the ape package of R
 
 	if v != 0:
-		print("\n ----Unrooted SDM-NJ tree----");
+		print "\n ----Unrooted SDM-NJ tree----";
 		nj_tree = open(routfilename, "r").read().strip();
-		print(nj_tree + "\n");
-	print("\n" + core.getTime() + " Done!");
-	print("=======================================================================");
+		print nj_tree + "\n";
+	print "\n" + core.getTime() + " Done!";
+	print "=======================================================================";
 
 #############################################################################
 
 def runReights(infiles, file_flag, path, numsites, calspec, calage, output, logfilename):
 # This module runs r8s on a species tree to infer branch lengths in units of absolute time.
-	print("Running r8s...\n");
+	print "Running r8s...\n";
 	output = os.path.splitext(output)[0];
 	os.system("mkdir '" + output + "'");
 	os.system("mv '" + logfilename + "' '" + output + "'");
@@ -962,10 +962,10 @@ def runReights(infiles, file_flag, path, numsites, calspec, calage, output, logf
 		outline = "blformat nsites=" + str(numsites) + " lengths=persite ultrametric=no;\n";
 		r8sfile.write(outline);
 		r8sfile.write("collapse;\n");
-		for n in range(len(calnodes)):
+		for n in xrange(len(calnodes)):
 			outline = "mrca " + calnodes[n] + " " + calspec[n][0] + " " + calspec[n][1] + ";\n";
 			r8sfile.write(outline);
-		for n in range(len(calnodes)):
+		for n in xrange(len(calnodes)):
 			if calage[n].find("min") != -1 and calage[n].find("max") != -1:
 				curcal = calage[n].split("-");
 				outline = "constrain taxon=" + calnodes[n] + " minage=" + curcal[1] + " maxage=" + curcal[3] +";\n";
@@ -989,16 +989,16 @@ def runReights(infiles, file_flag, path, numsites, calspec, calage, output, logf
 	# The r8s call
 
 	div_tree = open(routfilename, "r").readlines()[-1];
-	print("----Smoothed tree----");
-	print(div_tree);
-	print(core.getTime() + " Done!");
-	print("=======================================================================");
+	print "----Smoothed tree----";
+	print div_tree;
+	print core.getTime() + " Done!";
+	print "=======================================================================";
 
 #############################################################################
 
 def runNotung(infiles, file_flag, path, spectree, rearrange, bsthresh, bsroot, v, output, logfilename):
 # This module runs Notung on a set of gene trees for bootstrap rearrangement and rooting.
-	print("Running Notung...");
+	print "Running Notung...";
 	try:
 		specline = open(spectree, "r").read();
 		td, tree, r = tp.treeParse(specline);
@@ -1048,12 +1048,12 @@ def runNotung(infiles, file_flag, path, spectree, rearrange, bsthresh, bsroot, v
 	os.system("mv " + batchfilename + " " + os.path.join(output, batchfilename));
 	# Move the batch file to the output directory.
 
-	print("\n" + core.getTime() + " Done!");
+	print "\n" + core.getTime() + " Done!";
 	core.printWrite(logfilename,"-----", file_flag);
 	core.printWrite(logfilename,"# Total files in input directory:\t" + str(len(infiles)), file_flag);
 	if tre_skip != []:
 		core.printWrite(logfilename,"# The following " + str(len(tre_skip)) + " file(s) were skipped because they couldn't be read as Newick trees: " + ",".join([os.path.basename(f) for f in tre_skip]), file_flag);
-	print("=======================================================================");
+	print "=======================================================================";
 
 
 

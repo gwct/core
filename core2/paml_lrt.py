@@ -50,26 +50,26 @@ indir, altdir, nulldir, mode, outfilename = optParse();
 if outfilename.endswith(".txt"):
 	outfilename = outfilename.replace(".txt","");
 starttime = core.getLogTime();
-print("=======================================================================")
-print("\tPerforming likelihood ratio test (branch-site model)");
-print("\t\t" + core.getDateTime());
-print("INPUT    | Input directory:\t\t" + indir);
-print("INPUT    | Null hypothesis directory:\t" + nulldir);
-print("INPUT    | Alt hypothesis directory:\t" + altdir);
+print "======================================================================="
+print "\tPerforming likelihood ratio test (branch-site model)";
+print "\t\t" + core.getDateTime();
+print "INPUT    | Input directory:\t\t" + indir;
+print "INPUT    | Null hypothesis directory:\t" + nulldir;
+print "INPUT    | Alt hypothesis directory:\t" + altdir;
 if mode == 0:
 	outfilename = outfilename + "-all.txt";
-	print("INFO     | Reporting results for all genes. (5% critical value = 3.84, 1% critical value = 5.99)");
+	print "INFO     | Reporting results for all genes. (5% critical value = 3.84, 1% critical value = 5.99)";
 elif mode == 1:
 	outfilename = outfilename + "-sig1.txt";
-	print("INFO     | Reporting results for only genes at the 1% critical value threshold. (5.99)");
+	print "INFO     | Reporting results for only genes at the 1% critical value threshold. (5.99)";
 elif mode == 2:
 	outfilename = outfilename + "-sig5.txt";
-	print("INFO     | Reporting results for only genes at the 5% critical value threshold. (3.84)");
+	print "INFO     | Reporting results for only genes at the 5% critical value threshold. (3.84)";
 elif mode == 3:
 	outfilename = outfilename + "-nonsig.txt";
-	print("INFO     | Reporting results for the non-significant genes.");
-print("OUTPUT   | Output file:\t\t\t" + outfilename);
-print("-------------------------------------")
+	print "INFO     | Reporting results for the non-significant genes.";
+print "OUTPUT   | Output file:\t\t\t" + outfilename;
+print "-------------------------------------"
 
 altlogfile = os.path.join(altdir, [ f for f in os.listdir(altdir) if "run-codeml-" in f ][0] );
 altfails = getFailedFiles(altlogfile);
@@ -86,7 +86,7 @@ fcritcount, ocritcount, zcount, noln_genes = 0,0,0,[];
 i, numfiles, numbars, donepercent = 0, len(filelist), 0, [];
 # Variables for the progress bar.
 
-print("Performing LRT on PAML output to test for positive selection...");
+print "Performing LRT on PAML output to test for positive selection...";
 with open(outfilename, "w") as outfile:
 	outfile.write("Gene ID\tnull -lnL\talt -lnL\tLR\tabove 5% critical value? (3.84)\tabove 1% critical value? (5.99)\n");
 	for each in filelist:
@@ -177,15 +177,15 @@ with open(outfilename, "w") as outfile:
 
 pstring = "100.0% complete.";
 sys.stderr.write('\b' * len(pstring) + pstring);
-print("\nDone!");
-print("-------------------------------------")
-print(i, "total genes");
-print(fcritcount, " above 5% crit value (" + str(crit5) + ")");
-print(ocritcount, " above 1% crit value (" + str(crit1) + ")");
-print(zcount, " statistics = 0");
-print(float(zcount) / float(i), " percent statistics = 0");
+print "\nDone!";
+print "-------------------------------------"
+print i, "total genes";
+print fcritcount, " above 5% crit value (" + str(crit5) + ")";
+print ocritcount, " above 1% crit value (" + str(crit1) + ")";
+print zcount, " statistics = 0";
+print float(zcount) / float(i), " percent statistics = 0";
 if len(noln_genes) > 0:
-	print("The following genes failed to converge in PAML:");
+	print "The following genes failed to converge in PAML:";
 	for each in noln_genes:
-		print(each);
-print("=======================================================================")
+		print each;
+print "======================================================================="

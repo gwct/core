@@ -32,7 +32,7 @@ def alignCounter(ifile):
 	gaps = 0;
 	gap_sites = 0;
 	gap_dist = {};
-	for x in range(num_seqs):
+	for x in xrange(num_seqs):
 		gap_dist[x+1] = 0;
 
 	j = 0;
@@ -43,7 +43,7 @@ def alignCounter(ifile):
 			seq_len = len(inseqs[seq]);
 		tot_pos = tot_pos + len(inseqs[seq]);
 
-	for col in range(seq_len):
+	for col in xrange(seq_len):
 		site = [];
 		for seq in inseqs:
 			site.append(inseqs[seq][col]);
@@ -64,39 +64,39 @@ def alignCounter(ifile):
 			gap_dist[site.count("-")] = gap_dist[site.count("-")] + 1;
 
 	if disp_file == 1:
-		print(ifile + "\t" + str(num_seqs) + "\t" + str(tot_pos) + "\t" + str(seq_len) + "\t" + str(inv_sites) + "\t" + str(var_sites) + "\t" + str(gaps) + "\t" + str(gap_sites) + "\t" + str(gap_dist));
+		print ifile + "\t" + str(num_seqs) + "\t" + str(tot_pos) + "\t" + str(seq_len) + "\t" + str(inv_sites) + "\t" + str(var_sites) + "\t" + str(gaps) + "\t" + str(gap_sites) + "\t" + str(gap_dist);
 	return num_seqs,tot_pos,seq_len,inv_sites,var_sites,gaps,gap_sites,gap_dist;
 
 ############################################
 #Main Block
 ############################################
 if len(sys.argv) not in [1,2,3]:
-	print("Usage:\t$ count_aln.py [input directory or filename] [1,0 to display individual file counts or not]");
+	print "Usage:\t$ count_aln.py [input directory or filename] [1,0 to display individual file counts or not]";
 	sys.exit();
 
 ins = sys.argv[1];
 
 if os.path.isfile(ins):
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("Gathering alignment stats from file:\t" + ins);
-	print("-----");
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "Gathering alignment stats from file:\t" + ins;
+	print "-----";
 	disp_file = 1;
-	print("Filename\t# Seqs\tTotal # Positions\tAlignment Length\t# Invariant Sites\t# Variant Sites\t# Gaps\t# Sites with Gaps\tGap Distribution");
+	print "Filename\t# Seqs\tTotal # Positions\tAlignment Length\t# Invariant Sites\t# Variant Sites\t# Gaps\t# Sites with Gaps\tGap Distribution";
 	numseqs, totpos, seqlen, invsites, varsites, gap, gapsites, gapdist = alignCounter(ins);
-	print(core.getTime() + " Done!");
-	print("=======================================================================");
+	print core.getTime() + " Done!";
+	print "=======================================================================";
 
 else:
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("Gathering alignment stats from all .fa files in:\t" + ins);
+	print "=======================================================================";
+	print "\t\t\t" + core.getDateTime();
+	print "Gathering alignment stats from all .fa files in:\t" + ins;
 	filelist = os.listdir(ins);
 	disp_file = 0;
 	if len(sys.argv) > 2:
 		disp_file = sys.argv[2];
 	if disp_file not in ["0","1"]:
-		print("Not printing file counts.");
+		print "Not printing file counts.";
 		disp_file = 0;
 
 	disp_file = int(disp_file);
@@ -137,18 +137,18 @@ else:
 	if disp_file == 0:
 		pstring = "100.0% complete.";
 		sys.stderr.write('\b' * len(pstring) + pstring);
-	print("\n" + core.getTime() + " Done!");
+	print "\n" + core.getTime() + " Done!";
 	#print "# Seqs\tTotal # Positions\tTotal # Columns\t# Invariant Sites\t# Variant Sites\t# Gaps\t# Sites with Gaps";
 	#print str(totseqs) + "\t" + str(allpos) + "\t" + str(alllen) + "\t" + str(totinv) + "\t" + str(totvar) + "\t" + str(totgap) + "\t" + str(totgapsite);
-	print("-----");
-	print("Total # Seqs\t" + str(totseqs));
-	print("Total # Positions\t" + str(allpos));
-	print("Total # Columns\t" + str(alllen));
-	print("# Invariant Sites\t" + str(totinv));
-	print("# Variant Sites\t" + str(totvar));
-	print("Total # Gaps\t" + str(totgap));
-	print("# Sites with Gaps\t" + str(totgapsite));
-	print("=======================================================================");
+	print "-----";
+	print "Total # Seqs\t" + str(totseqs);
+	print "Total # Positions\t" + str(allpos);
+	print "Total # Columns\t" + str(alllen);
+	print "# Invariant Sites\t" + str(totinv);
+	print "# Variant Sites\t" + str(totvar);
+	print "Total # Gaps\t" + str(totgap);
+	print "# Sites with Gaps\t" + str(totgapsite);
+	print "=======================================================================";
 
 
 

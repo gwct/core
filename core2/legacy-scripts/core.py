@@ -4,7 +4,12 @@
 #August 2013-present
 #############################################################################
 
-import string, sys, os, re, subprocess,datetime
+import string
+import sys
+import os
+import re
+import subprocess
+import datetime
 
 #############################################################################
 
@@ -18,11 +23,11 @@ def dnaCheck(seq, i_name):
 	seq = seq.replace('U', 'T');
 	#The function then converts any U's to T's, changing RNA to DNA.
 
-	for n in range(len(seq)):
+	for n in xrange(len(seq)):
 	#This loop then reads through every letter of the sequence and makes sure they are all nucleotide symbols.
 	#If they are not, an error is printed and the program exits.
 		if seq[n] not in dna_symbols:		
-			print("\nError! Input sequence from the file", i_name, "is not a nucleotide sequence. Please input only DNA sequences.\n")
+			print "\nError! Input sequence from the file", i_name, "is not a nucleotide sequence. Please input only DNA sequences.\n"
 			sys.exit();
 	return seq;
 	#If the input sequence checks out, it is returned to the call.
@@ -221,12 +226,12 @@ def getLogTime():
 
 #############################################################################
 
-def printWrite(o_name, o_line, file_flag=True):
+def printWrite(o_name, o_line):
 #Function to print a string AND write it to the file.
-	print(o_line);
-	if file_flag == False:
-		with open(o_name, "a") as f:
-			f.write(o_line + "\n");
+	print o_line;
+	f = open(o_name, "a");
+	f.write(o_line + "\n");
+	f.close();
 
 #############################################################################
 
@@ -235,18 +240,15 @@ def logCheck(lopt, lfilename, outline):
 	if lopt == 1:
 		printWrite(lfilename, outline);
 	else:
-		print(outline);
+		print outline;
 
 #############################################################################
 
-def errorOut(errnum, errmsg, ropt=0):
+def errorOut(errnum, errmsg):
 #Formatting for error messages.
-	fullmsg = "| ** Error " + str(errnum) + ": " + errmsg + " |";
+	fullmsg = "|**Error " + str(errnum) + ": " + errmsg + " |";
 	border = " " + "-" * (len(fullmsg)-2);
-	if ropt:
-		return "\n" + border + "\n" + fullmsg + "\n" + border + "\n";
-	else:
-		print("\n" + border + "\n" + fullmsg + "\n" + border + "\n");
+	print border + "\n" + fullmsg + "\n" + border;
 
 #############################################################################
 
@@ -287,67 +289,6 @@ def listCheck(lst):
 		return True;
 	else:
 		return False;
-
-#############################################################################
-
-def checkAlign(seqdict):
-# Checks if a set of sequences is of equal length.
-	aln_flag = True;
-	seqlen = len(seqdict[list(seqdict.keys())[0]]);
-	for title in seqdict:
-		if len(seqdict[title]) != seqlen:
-			aln_flag = False;
-	return aln_flag;
-
-#############################################################################
-
-def defaultOutFile(input_name, file_flag, suffix="", output_init=False):
-	i = 2;
-	if suffix != "" and suffix[0] != "-":
-		suffix = "-" + suffix;
-	if not output_init:
-		output, ext = list(os.path.splitext(input_name));
-	# If the user did not specify an output file name, take the base of the input file name.
-	else:
-		output, ext = list(os.path.splitext(output_init));
-	# Otherwise, use the user specified option.
-	if not file_flag:
-		if output[-1] in ["\\", "/"]:
-			output = output[:-1];
-		output = output + suffix + "-1" + ".txt";
-	else:
-		output = output + suffix + "-1" + ext;
-
-	while os.path.exists(output) or os.path.exists(os.path.splitext(output)[0]):
-		output = os.path.splitext(output);
-		output = output[0][:output[0].rindex("-")+1] + str(i) + output[1];
-		i += 1;
-	# If the chosen output file exists, this will continually add 1 to a counter label at the end
-	# of the file until a new file is chosen that does not exist.
-
-	return output, (i-1);
-
-#############################################################################
-
-def defaultOutDir(input_name, file_flag, suffix="", output_init=False):
-	i = 2;
-	if suffix != "" and suffix[0] != "-":
-		suffix = "-" + suffix;
-	if not output_init:
-		output = os.path.splitext(input_name)[0].rstrip("/").rstrip("\\") + suffix;
-	# If the user did not specify an output name, a directory will be made based on the input directory name.
-	else:
-		output = output_init;
-	# Otherwise, use the user specified option.
-	output += "-1";
-
-	while os.path.exists(output):
-		output = output[:output.rindex("-")+1] + str(i);
-		i += 1;
-	# If the chosen output directory exists, this will continually add 1 to a counter label at the end
-	# of the directory until a new directory is chosen that does not exist.
-
-	return output, (i-1);
 
 #############################################################################
 ##########################################################################################################################################################
@@ -394,57 +335,6 @@ def fastaGetLists(i_name):
 
 #############################################################################
 
-def fastaReader(i_name, meth="dict"):
-# This function takes an input file and determines if it is a compressed or
-# uncompressed FASTA file (.fa). If it doesn't end with .fa it returns it to
-# be skipped.
-	try:
-		if i_name.endswith(".fa.gz") or i_name.endswith(".fas.gz") or i_name.endswith(".faa.gz") or i_name.endswith(".fna.gz") or i_name.endswith(".fasta.gz"):
-			if meth == "dict":
-				seqs = fastaGetDictCompressed(i_name);
-			elif meth == "ind":
-				seqs = fastaReadInd(i_name);
-		elif i_name.endswith(".fa") or i_name.endswith(".fas") or i_name.endswith(".faa") or i_name.endswith(".fna") or i_name.endswith(".fasta"):
-			if meth == "dict":
-				seqs = fastaGetDict(i_name);
-			elif meth == "ind":
-				seqs = fastaReadInd(i_name);
-		else:
-			return None, i_name;
-	except:
-		return None, i_name;
-	if seqs == {}:
-		return None, i_name;
-	return seqs, False;
-	# If the reading of the file was successful, it returns the sequences. If not,
-	# it returns the file name to be recorded as being skipped.
-
-#############################################################################
-
-def relabelHeader(title, new_label, header_delim, ropt):
-	#print title, new_label, header_delim, ropt;
-	if ropt == 1:
-		new_title = ">" + new_label + header_delim + title[1:];
-	elif ropt == 2:
-		new_title = ">" + new_label;
-	elif ropt == 3:
-		new_title = title + header_delim + new_label;
-	return new_title;
-
-#############################################################################
-
-def getOutFile(fasta_file, file_flag, out_dest, label):
-	if file_flag:
-		if out_dest:
-			outfilename = out_dest;
-		else:
-			outfilename = os.path.splitext(fasta_file)[0] + "." + label + os.path.splitext(fasta_file)[1];
-	else:
-		outfilename = os.path.join(out_dest, os.path.splitext(os.path.basename(fasta_file))[0] + "." + label + os.path.splitext(fasta_file)[1]);
-	return outfilename;
-
-#############################################################################
-
 def fastaGetDict(i_name):
 #fastaGetDict reads a FASTA file and returns a dictionary containing all sequences in the file with 
 #the key:value format as title:sequence.
@@ -459,25 +349,6 @@ def fastaGetDict(i_name):
 			seqdict[curkey] = seqdict[curkey] + line;
 
 	return seqdict;
-
-#############################################################################
-
-def fastaGetDictCompressed(i_name):
-#fastaGetDict reads a FASTA file and returns a dictionary containing all sequences in the file with 
-#the key:value format as title:sequence.
-	import gzip
-
-	seqdict = {};
-	for line in gzip.open(i_name, "rb"):
-		line = line.replace("\n", "");
-		if line[:1] == '>':
-			curkey = line;
-			seqdict[curkey] = "";
-		else:
-			seqdict[curkey] = seqdict[curkey] + line;
-
-	return seqdict;
-
 
 #############################################################################
 
@@ -533,70 +404,6 @@ def getFastafromInd(i_name, titlestart, titleend, seqstart, seqend):
 	seq = infile.read(seqend - seqstart);
 
 	infile.close();
-
-	title = title.replace("\n", "");
-	seq = seq.replace("\n", "");
-
-	return title, seq;
-
-#############################################################################
-
-def fastaReadInd(i_name):
-# fastaGetFileInd reads a FASTA file and returns a dictionary containing file indexes for each title
-# and sequence with the key:value format as [title start index]:[sequence start index]
-
-	try:
-		gzip_check = gzip.open(i_name).read(1);
-		reader = gzip.open;
-	except:
-		reader = open;
-	# Check if the genotype likelihood file is gzipped, and if so set gzip as the file reader. Otherwise, read as a normal text file.
-	# MAKE SURE THIS WORKS WITH GZIPPED FILES!!
-
-	with reader(i_name, "rb") as infile:
-		fasta, first, curlist = {}, False, [];
-		line = "derp";
-		while line != '':
-			line = infile.readline();
-			if line[:1] == '>':
-				if first:
-					curseqend = infile.tell() - len(line) - 1;
-					curlist.append(curseqend);
-					fasta[cur_title] = curlist;
-					curlist = [];
-
-				#cur_title = line[1:].strip().split(" ")[0];
-				cur_title = line.strip();
-				curtitlestart = infile.tell() - len(line);
-				curtitleend = infile.tell() - 1;
-				curseqstart = infile.tell();
-
-				curlist.append(curtitlestart);
-				curlist.append(curtitleend);
-				curlist.append(curseqstart);
-
-				first = True;
-
-		curseqend = infile.tell() - len(line);
-		curlist.append(curseqend);
-		fasta[cur_title] = curlist;
-
-	return fasta;
-		
-#############################################################################
-
-def fastaGetInd(i_name, inds):
-# This takes the file index for a corresponding FASTA title and sequence (as retrieved by
-# fastaGetFileInd and returns the actual text of the title and the sequence.
-
-	titlestart, titleend, seqstart, seqend = inds;
-
-	with open(i_name, "rb") as infile:
-		infile.seek(titlestart);
-		title = infile.read(titleend - titlestart);
-
-		infile.seek(seqstart);
-		seq = infile.read(seqend - seqstart);
 
 	title = title.replace("\n", "");
 	seq = seq.replace("\n", "");
@@ -674,7 +481,7 @@ def nexusGetDict(i_name):
 		if seqflag == 1:
 			if line[0] != "\t":
 				tmpline = line.replace("\n","").split(" ");
-				tmpline = [_f for _f in tmpline if _f];
+				tmpline = filter(None, tmpline);
 				seqs[tmpline[0]] = tmpline[1];
 
 	return seqs;
@@ -688,7 +495,7 @@ def writeNexus(seqdict, o_name):
 	outfile.write("#NEXUS\n\nBegin data;\n");
 
 	ntaxa = len(seqdict);
-	nsites = len(seqdict[list(seqdict.keys())[0]]);
+	nsites = len(seqdict[seqdict.keys()[0]]);
 
 	outline = "\tDimensions ntax=" + str(ntaxa) + " nchar=" + str(nsites) + ";\n";
 	outfile.write(outline);
@@ -697,7 +504,7 @@ def writeNexus(seqdict, o_name):
 	outline = "\tMatrix\n";
 	outfile.write(outline);
 
-	interval = len(max(list(seqdict.keys()), key=len)) + 3;
+	interval = len(max(seqdict.keys(), key=len)) + 3;
 
 	for title in seqdict:
 		newtitle = title.replace(" ",":");
@@ -787,10 +594,10 @@ def writePhylip(seqs, o_name):
 #This function takes a sequence dictionary and writes it in Phylip format to
 #the output file name.
 	outfile = open(o_name, "w");
-	outline = " " + str(len(seqs)) + " " + str(len(seqs[list(seqs.keys())[0]])) + "\n";
+	outline = " " + str(len(seqs)) + " " + str(len(seqs[seqs.keys()[0]])) + "\n";
 	outfile.write(outline);
 
-	interval = len(max(list(seqs.keys()), key=len)) + 3;
+	interval = len(max(seqs.keys(), key=len)) + 3;
 
 	for title in seqs:
 		newtitle = title.replace(" ", ":");
