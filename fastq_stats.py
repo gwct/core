@@ -9,7 +9,7 @@
 
 import sys, os, random, argparse
 sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
-import core, lib.fastqlib as fql
+import core, fastqlib as fql
 
 ####################
 parser = argparse.ArgumentParser(description="A general purpose FASTA editing script.");
