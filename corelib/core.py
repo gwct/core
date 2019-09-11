@@ -4,7 +4,7 @@
 #August 2013-present
 #############################################################################
 
-import string, sys, os, re, subprocess,datetime
+import string, sys, os, re, subprocess, datetime, gzip
 
 #############################################################################
 
@@ -348,6 +348,19 @@ def defaultOutDir(input_name, file_flag, suffix="", output_init=False):
 	# of the directory until a new directory is chosen that does not exist.
 
 	return output, (i-1);
+
+#############################################################################
+
+def getFileReader(i_name):
+# Check if a file is gzipped, and if so set gzip as the file reader. Otherwise, read as a normal text file.
+	try:
+		gzip_check = gzip.open(i_name).read(1);
+		reader = gzip.open;
+	except:
+		reader = open;
+	return reader;
+
+#############################################################################
 
 #############################################################################
 ##########################################################################################################################################################
