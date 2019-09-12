@@ -14,7 +14,7 @@ def printStats(num_reads, len_sum, genome_size, base_comp, read_lens, qual_pos, 
     if pyv == '2':
         bar = u'\u2588'.encode('utf-8');
     elif pyv == '3':
-        bar = "█";
+        bar = u'\u2588';
 
     print("TOTAL READS:         " + str(num_reads));
     avg_len = len_sum / num_reads;
