@@ -9,7 +9,13 @@ from collections import defaultdict
 
 #############################################################################
 
-def printStats(num_reads, len_sum, genome_size, base_comp, read_lens, qual_pos, site_sum):
+def printStats(num_reads, len_sum, genome_size, base_comp, read_lens, qual_pos, site_sum, pyv):
+
+    if pyv == '2':
+        bar = u'\u2588'.encode('utf-8');
+    elif pyv == '3':
+        bar = "█";
+
     print("TOTAL READS:         " + str(num_reads));
     avg_len = len_sum / num_reads;
     print("AVERAGE READ LENGTH: " + str(round(avg_len, 2)));
@@ -56,7 +62,7 @@ def printStats(num_reads, len_sum, genome_size, base_comp, read_lens, qual_pos, 
             if read_lens[b] == 0.00:
                 print(b_str + "............|"); 
             else:
-                print(b_str + "............" + "█"*int(read_lens[b]));
+                print(b_str + "............" + bar*int(read_lens[b]));
         else:
             print(b_str + "............");
         b += 5;
@@ -91,6 +97,8 @@ def printStats(num_reads, len_sum, genome_size, base_comp, read_lens, qual_pos, 
 
 def countReads(fastq_files, genome_size, dirflag, paired):
 # This function counts the number of sequences and positions in a given set of FASTA files.
+    py_vers = sys.version[0];
+
     total_reads, total_len_sum, total_sites = 0,0,0;
 
     total_site_sum = defaultdict(int);
@@ -160,12 +168,12 @@ def countReads(fastq_files, genome_size, dirflag, paired):
                         site_sum[pos] += 1;
                         total_site_sum[pos] += 1;
 
-            printStats(num_reads, len_sum, genome_size, base_comp, read_lens, qual_pos, site_sum);
+            printStats(num_reads, len_sum, genome_size, base_comp, read_lens, qual_pos, site_sum, py_vers);
 
     if dirflag:
         print("\n=======================================================================");
         print("\nCOMBINED STATS FOR ALL FILES:")
-        printStats(total_reads, total_len_sum, genome_size, total_base_comp, total_read_lens, total_qual_pos, total_site_sum);
+        printStats(total_reads, total_len_sum, genome_size, total_base_comp, total_read_lens, total_qual_pos, total_site_sum, py_vers);
 
 
 
