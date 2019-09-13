@@ -15,11 +15,11 @@ import core, fastqlib as fql
 parser = argparse.ArgumentParser(description="A general purpose FASTA editing script.");
 parser.add_argument("-i", dest="input", help="A directory containing FASTQ formatted files, a single FASTQ file, or a pair of FASTQ files (separated by a semicolon).");
 parser.add_argument("-g", dest="genome_size", help="The size of the original genome. If specified, coverage will be calculated.", type=int, default=False);
-parser.add_argument("--reads", dest="count_reads", help="Set to count the number of reads in each file.", default=False, action="store_true");
-parser.add_argument("--readlen", dest="count_reads", help="Set to calculate the average read length in each file.", default=False, action="store_true");
+parser.add_argument("--reads", dest="reads", help="Set to count the number of reads in each file.", default=False, action="store_true");
+parser.add_argument("--readlen", dest="lens", help="Set to calculate the average read length in each file.", default=False, action="store_true");
 parser.add_argument("--basecomp", dest="base_comp", help="Set to count the base compositions in each file.", default=False, action="store_true");
 parser.add_argument("--qual", dest="qual", help="Set to calculate the average base quality in the file and across reads.", default=False, action="store_true");
-parser.add_argument("--header", dest="count_reads", help="Set to extract the header info for each file.", default=False, action="store_true");
+parser.add_argument("--header", dest="header", help="Set to extract the header info for each file.", default=False, action="store_true");
 parser.add_argument("-outfile", dest="outfile", help="The output file for commands: --concat, --combine, -extract");
 parser.add_argument("-outdir", dest="outdir", help="The output directory for commands:");
 args = parser.parse_args();
@@ -68,10 +68,18 @@ else:
 
 #print(infiles);
 
-if args.count_reads:
-	print("=======================================================================");
-	print("\t\t\t" + core.getDateTime());
-	print("Counting the total number of reads in:\t", args.input);
-	fql.countReads(infiles, args.genome_size, dirflag, paired);
-	sys.exit();
-# --countpos
+globs = {
+    'reads' : args.reads,
+    'lens' : args.lens,
+    'bc' : args.base_comp,
+    'qual' : args.qual,
+    'genome_size' : args.genome_size,
+    'dirflag' : dirflag,
+    'paired' : paired,
+    'pyv' : sys.version[0]
+}
+
+print("=======================================================================");
+print("\t\t\t" + core.getDateTime());
+print("Parsing FASTQ files in:\t" + args.input);
+fql.countReads(infiles, globs);
