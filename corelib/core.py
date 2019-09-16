@@ -44,6 +44,16 @@ def loadingBar(counter, length, done, bars):
 #
 #If length is lines in a file use the core.getFileLen function to get the number of lines in the file
 
+	try:
+		if sys.version[0] == '2':
+			pchr = u'\u2591'.encode('utf-8');
+			lchr = u'\u2588'.encode('utf-8');
+		elif sys.version[0] == '3':
+			pchr = u'\u2591';
+			lchr = u'\u2588';		
+	except:
+		pchr, lchr = "*","*";
+
 	percent = float(counter) / float(length) * 100.0;
 	percentdone = int(percent);
 
@@ -52,17 +62,22 @@ def loadingBar(counter, length, done, bars):
 
 	if percentdone % 2 == 0 and done != None and percentdone not in done:
 		loading = "";
-		loading = "[";
+		loading = "|";
 		j = 0;
-		while j <= bars:
-			loading = loading + "*";
-			j = j + 1;
+		while j < bars:
+			loading += pchr;
+			j += 1;
+		if j < 49:
+			loading += lchr;
+		else:
+			loading += pchr;
+		j += 1;
 		while j < 50:
-			loading = loading + "-";
-			j = j + 1;
-		loading = loading + "]";
+			loading += "-";
+			j += 1;
+		loading += "|";
 
-		loading = loading + "                 ";
+		loading += "                 ";
 		sys.stderr.write('\b' * len(loading) + loading);
 
 		done.append(percentdone);

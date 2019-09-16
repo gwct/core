@@ -4,11 +4,18 @@
 # September 2019
 #############################################################################
 
-import core, sys, os, math
+import core, sys, os, math, gzip
 from collections import defaultdict
-from Bio import SeqIO as seq
+import multiprocessing as mp
+#from Bio import SeqIO as seq
 
 #############################################################################
+
+def chunks(l, n):
+    n = max(1, n)
+    return (l[i:i+n] for i in range(0, len(l), n))
+
+####################
 
 def printStats(stats, globs):
 
@@ -108,6 +115,10 @@ def fqProcessRead(lines=None):
     return {k: v for k, v in zip(ks, lines)};
 
 ####################
+def lenSum(item):
+    read, globs = item;
+    return len(read['seq']);
+####################
 
 def countReads(fastq_files, globs):
 # This function counts the number of sequences and positions in a given set of FASTA files.
@@ -150,18 +161,33 @@ def countReads(fastq_files, globs):
             # read_lens: The number of reads of every length in the current file
             # base_comp: The base compositions for the current file
 
-            fq_lines = core.getFileReader(fqf)(fqf).read().decode().split("\n");
+            if fqf.endswith(".gz"):
+                fq_lines = gzip.open(fqf).read().decode().split("\n");
+            else:
+                fq_lines = open(fqf).read().split("\n");
             lines = [];
             reads = [];
+            #numlines, numbars, donepercent, i = len(fq_lines),0,[],0;
             for line in (fq_lines):
+                #numbars, donepercent = core.loadingBar(i, numlines, donepercent, numbars);
+                #i += 1;
                 lines.append(line.rstrip());
                 if len(lines) == 4:
                     read = fqProcessRead(lines);
                     reads.append(read);
                     lines = [];
 
+            #pstring = "100.0% complete.";
+            #sys.stderr.write('\b' * len(pstring) + pstring + "\n");
             print("READ READS");
             print(len(reads));
+            read_chunks = chunks(reads, 8);
+            #print(len(read_chunks));
+            pool = mp.Pool(processes = 4);
+            for result in pool.imap(lenSum, ((read, globs) for read in reads)):
+                len_sum += result;
+
+            print(len_sum / len(reads));
             sys.exit();                
             
             

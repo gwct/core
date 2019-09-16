@@ -12,74 +12,77 @@ sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/
 import core, fastqlib as fql
 
 ####################
-parser = argparse.ArgumentParser(description="A general purpose FASTA editing script.");
-parser.add_argument("-i", dest="input", help="A directory containing FASTQ formatted files, a single FASTQ file, or a pair of FASTQ files (separated by a semicolon).");
-parser.add_argument("-g", dest="genome_size", help="The size of the original genome. If specified, coverage will be calculated.", type=int, default=False);
-parser.add_argument("--reads", dest="reads", help="Set to count the number of reads in each file.", default=False, action="store_true");
-parser.add_argument("--readlen", dest="lens", help="Set to calculate the average read length in each file.", default=False, action="store_true");
-parser.add_argument("--basecomp", dest="base_comp", help="Set to count the base compositions in each file.", default=False, action="store_true");
-parser.add_argument("--qual", dest="qual", help="Set to calculate the average base quality in the file and across reads.", default=False, action="store_true");
-parser.add_argument("--header", dest="header", help="Set to extract the header info for each file.", default=False, action="store_true");
-parser.add_argument("-outfile", dest="outfile", help="The output file for commands: --concat, --combine, -extract");
-parser.add_argument("-outdir", dest="outdir", help="The output directory for commands:");
-args = parser.parse_args();
-# Input option definitions.
+if __name__ == '__main__':
+# Main is necessary for multiprocessing to work on Windows.
 
-paired = False;
-dirflag = False;
+    parser = argparse.ArgumentParser(description="A general purpose FASTA editing script.");
+    parser.add_argument("-i", dest="input", help="A directory containing FASTQ formatted files, a single FASTQ file, or a pair of FASTQ files (separated by a semicolon).");
+    parser.add_argument("-g", dest="genome_size", help="The size of the original genome. If specified, coverage will be calculated.", type=int, default=False);
+    parser.add_argument("--reads", dest="reads", help="Set to count the number of reads in each file.", default=False, action="store_true");
+    parser.add_argument("--readlen", dest="lens", help="Set to calculate the average read length in each file.", default=False, action="store_true");
+    parser.add_argument("--basecomp", dest="base_comp", help="Set to count the base compositions in each file.", default=False, action="store_true");
+    parser.add_argument("--qual", dest="qual", help="Set to calculate the average base quality in the file and across reads.", default=False, action="store_true");
+    parser.add_argument("--header", dest="header", help="Set to extract the header info for each file.", default=False, action="store_true");
+    parser.add_argument("-outfile", dest="outfile", help="The output file for commands: --concat, --combine, -extract");
+    parser.add_argument("-outdir", dest="outdir", help="The output directory for commands:");
+    args = parser.parse_args();
+    # Input option definitions.
 
-if os.path.isdir(args.input):
-    dirflag = True;
-    infiles = [ os.path.join(args.input, f) for f in os.listdir(args.input) if any(ext in f for ext in ["fastq","fq"]) ];
+    paired = False;
+    dirflag = False;
 
-    if any("R2" in f for f in infiles):
-        paired = True;
+    if os.path.isdir(args.input):
+        dirflag = True;
+        infiles = [ os.path.join(args.input, f) for f in os.listdir(args.input) if any(ext in f for ext in ["fastq","fq"]) ];
 
-    pairs = [];
-    if paired:
-        for f in infiles:
-            if "R2" in f:
-                continue;
-            pairs.append([f, f.replace("R1","R2")]);
-        infiles = pairs;
-    else:
-        infiles = [[f] for f in infiles];
-    # Check if input is paired.
-# If input is a directory.
+        if any("R2" in f for f in infiles):
+            paired = True;
 
-else:
-    if ";" in args.input:
-        paired = True;
-        f = args.input.split(";");
-        if not all(os.path.isfile(i) for i in f):
-            sys.exit(core.errorOut(1, "Cannot find input file/directory (-i)."));
-
-        if "R1" in f[0]:
-            f1, f2 = f[0], f[1];
+        pairs = [];
+        if paired:
+            for f in infiles:
+                if "R2" in f:
+                    continue;
+                pairs.append([f, f.replace("R1","R2")]);
+            infiles = pairs;
         else:
-            f1, f2 = f[1], f[0];
-        infiles = [[f1, f2]]
-    # If input is paired.
+            infiles = [[f] for f in infiles];
+        # Check if input is paired.
+    # If input is a directory.
 
     else:
-        if not os.path.isfile(args.input):
-            sys.exit(core.errorOut(1, "Cannot find input file/directory (-i)."));
-        infiles = [[args.input]];
+        if ";" in args.input:
+            paired = True;
+            f = args.input.split(";");
+            if not all(os.path.isfile(i) for i in f):
+                sys.exit(core.errorOut(1, "Cannot find input file/directory (-i)."));
 
-#print(infiles);
+            if "R1" in f[0]:
+                f1, f2 = f[0], f[1];
+            else:
+                f1, f2 = f[1], f[0];
+            infiles = [[f1, f2]]
+        # If input is paired.
 
-globs = {
-    'reads' : args.reads,
-    'lens' : args.lens,
-    'bc' : args.base_comp,
-    'qual' : args.qual,
-    'genome_size' : args.genome_size,
-    'dirflag' : dirflag,
-    'paired' : paired,
-    'pyv' : sys.version[0]
-}
+        else:
+            if not os.path.isfile(args.input):
+                sys.exit(core.errorOut(1, "Cannot find input file/directory (-i)."));
+            infiles = [[args.input]];
 
-print("=======================================================================");
-print("\t\t\t" + core.getDateTime());
-print("Parsing FASTQ files in:\t" + args.input);
-fql.countReads(infiles, globs);
+    #print(infiles);
+
+    globs = {
+        'reads' : args.reads,
+        'lens' : args.lens,
+        'bc' : args.base_comp,
+        'qual' : args.qual,
+        'genome_size' : args.genome_size,
+        'dirflag' : dirflag,
+        'paired' : paired,
+        'pyv' : sys.version[0]
+    }
+
+    print("=======================================================================");
+    print("\t\t\t" + core.getDateTime());
+    print("Parsing FASTQ files in:\t" + args.input);
+    fql.countReads(infiles, globs);
