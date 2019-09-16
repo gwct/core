@@ -18,13 +18,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="A general purpose FASTA editing script.");
     parser.add_argument("-i", dest="input", help="A directory containing FASTQ formatted files, a single FASTQ file, or a pair of FASTQ files (separated by a semicolon).");
     parser.add_argument("-g", dest="genome_size", help="The size of the original genome. If specified, coverage will be calculated.", type=int, default=False);
+    parser.add_argument("-p", dest="procs", help="The number of processes the script should use. Default: 1.", type=int, default=1);
     parser.add_argument("--reads", dest="reads", help="Set to count the number of reads in each file.", default=False, action="store_true");
     parser.add_argument("--readlen", dest="lens", help="Set to calculate the average read length in each file.", default=False, action="store_true");
     parser.add_argument("--basecomp", dest="base_comp", help="Set to count the base compositions in each file.", default=False, action="store_true");
     parser.add_argument("--qual", dest="qual", help="Set to calculate the average base quality in the file and across reads.", default=False, action="store_true");
-    parser.add_argument("--header", dest="header", help="Set to extract the header info for each file.", default=False, action="store_true");
-    parser.add_argument("-outfile", dest="outfile", help="The output file for commands: --concat, --combine, -extract");
-    parser.add_argument("-outdir", dest="outdir", help="The output directory for commands:");
+    #parser.add_argument("--header", dest="header", help="Set to extract the header info for each file.", default=False, action="store_true");
+    #parser.add_argument("-outfile", dest="outfile", help="The output file for commands: --concat, --combine, -extract");
+    #parser.add_argument("-outdir", dest="outdir", help="The output directory for commands:");
     args = parser.parse_args();
     # Input option definitions.
 
@@ -71,6 +72,9 @@ if __name__ == '__main__':
 
     #print(infiles);
 
+    if args.procs < 1:
+        sys.exit(core.errorOut(2, "Number of processes (-p) must be > 0."));
+
     globs = {
         'reads' : args.reads,
         'lens' : args.lens,
@@ -79,6 +83,7 @@ if __name__ == '__main__':
         'genome_size' : args.genome_size,
         'dirflag' : dirflag,
         'paired' : paired,
+        'procs' : args.procs,
         'pyv' : sys.version[0]
     }
 
