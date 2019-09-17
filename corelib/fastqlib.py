@@ -72,6 +72,7 @@ def printStats(stats, globs):
         print("               ---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|")
         while b <= max_bin+5:
             b_str = str(b);
+            #print(b_str);
             while len(b_str) != 3:
                 b_str = "0" + b_str;
             if b in stats['read_lens']:
@@ -116,6 +117,10 @@ def printStats(stats, globs):
 def fqProcessRead(lines=None):
     ks = ['title', 'seq', 'optional', 'qual'];
     return {k: v for k, v in zip(ks, lines)};
+####################
+def chunks(l, n):
+    n = max(1, n)
+    return (l[i:i+n] for i in range(0, len(l), n))
 
 ####################
 def lenSum(item):
@@ -141,39 +146,44 @@ def createFunc(globs):
     func = '''
 import math
 from collections import defaultdict
-def fqFunc(read):
+def fqFunc(reads):
     read_info = {
+        'reads' : 0,
         'length' : 0, 
         'read_lens' : defaultdict(int),
         'base_comp' : { "A" : 0, "T" : 0, "C" : 0, "G" : 0, "N" : 0 },
         'qual_pos' : defaultdict(int),
         'site_pos' : defaultdict(int)
         }
-    readlen = len(read['seq']);
+
+    for read in reads:
+        read_info['reads'] += 1;
+
+        readlen = len(read['seq']);
     '''
 
     if globs['lens']:
         func += '''
-    read_info['length'] = readlen;
-    cur_bin = math.floor(readlen/5)*5;
-    read_info['read_lens'][cur_bin] += 1;
+        read_info['length'] = readlen;
+        cur_bin = math.floor(readlen/5)*5;
+        read_info['read_lens'][cur_bin] += 1;
     '''
 
     if globs['bc']:
         func += '''
-    for char in read['seq']:
-        read_info['base_comp'][char] += 1;
+        for char in read['seq']:
+            read_info['base_comp'][char] += 1;
     '''
 
     if globs['qual']:
         func += '''
-    for pos in range(readlen):
-        read_info['qual_pos'][pos] += ord(read['qual'][pos]) - 33;
-        read_info['site_pos'][pos] += 1;
+        for pos in range(readlen):
+            read_info['qual_pos'][pos] += ord(read['qual'][pos]) - 33;
+            read_info['site_pos'][pos] += 1;
     '''
 
     func += '''
-    return read_info;
+        return read_info;
     '''
 
     funcpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fqfunc.py");
@@ -253,7 +263,11 @@ def countReads(fastq_files, globs):
             print(len(reads));
             print(core.getTime() + " READING READS");
         
-            #read_chunks = chunks(reads, 4);
+            read_chunks = chunks(reads, 4);
+            for reads in read_chunks:
+                print(len(reads));
+            sys.exit();
+            #print
             pool = mp.Pool(processes=globs['procs']);
             for result in pool.imap(fq.fqFunc, (read for read in reads)):
                 num_reads += 1;
