@@ -140,11 +140,11 @@ def ncbiFilter(inseqs, gff_file, spec_label, cds_opt, outfilename):
 
 		for gid in longest_isos:
 			if gid in title:
-				if "|" in title:
-					gid = title[title.index("P_")-1:title.index("|",title.index("P_"))]
-					new_title = ">" + spec_label + gid + " |" + title[1:title.index("P_")-1] + title[title.index("|",title.index("P_"))+1:];
-				else:
+				if cds_opt or "|" not in title:
 					new_title = ">" + spec_label + title[1:];
+				else:
+					gid = title[title.index("P_")-1:title.index("|",title.index("P_"))]
+					new_title = ">" + spec_label + gid + " |" + title[1:title.index("P_")-1] + title[title.index("|",title.index("P_"))+1:];	
 				core.writeSeq(outfilename, inseqs[title], new_title);
 				count += 1;
 				break;
