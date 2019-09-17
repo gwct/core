@@ -29,7 +29,7 @@ def dnaCheck(seq, i_name):
 
 #############################################################################
 
-def loadingBar(counter, length, done, bars):
+def loadingBar(counter, length, done, bars, firstbar=False, disperc=False):
 #This function serves as a text loading bar for long scripts with counters. The following
 #lines must be added within the script to initialize and terminate the script:
 #Initilization:
@@ -44,17 +44,21 @@ def loadingBar(counter, length, done, bars):
 #
 #If length is lines in a file use the core.getFileLen function to get the number of lines in the file
 
-	try:
-		if sys.version[0] == '2':
-			pchr = u'\u2591'.encode('utf-8');
-			lchr = u'\u2588'.encode('utf-8');
-		elif sys.version[0] == '3':
-			pchr = u'\u2591';
-			lchr = u'\u2588';		
-	except:
-		pchr, lchr = "*","*";
+	# try:
+	# 	if sys.version[0] == '2':
+	# 		pchr = u'\u2591'.encode('utf-8');
+	# 		lchr = u'\u2588'.encode('utf-8');
+	# 	elif sys.version[0] == '3':
+	# 		pchr = u'\u2591';
+	# 		lchr = u'\u2588';		
+	# except:
+	# 	pchr, lchr = "*","*";
 
-	#pchr,lchr="=","*";
+	try:
+		#pchr, lchr=u'\u2591',u'\u2588';
+		pchr, lchr=u'\u2588',u'\u2591';
+	except:
+		pchr, lchr = "=","|";
 
 	percent = float(counter) / float(length) * 100.0;
 	percentdone = int(percent);
@@ -68,25 +72,34 @@ def loadingBar(counter, length, done, bars):
 		while j < bars:
 			loading += pchr;
 			j += 1;
-		if j < 49:
+		if j <= 49:
 			loading += lchr;
 		else:
 			loading += pchr;
 		j += 1;
+		if j == 50:
+			loading = loading[:-1] + pchr;
+
 		while j < 50:
 			loading += "-";
 			j += 1;
 		loading += "|";
 
-		loading += "                 ";
-		sys.stderr.write('\b' * len(loading) + loading);
+		if disperc:
+			loading += "                 ";
+		if firstbar:
+			sys.stderr.write(loading);
+			firstbar = False
+		else:
+			sys.stderr.write('\b' * len(loading) + loading);
 
 		done.append(percentdone);
 		bars = bars + 1;
-
-	sys.stderr.write('\b' * len(pstring) + pstring);
-
-	return bars, done;
+		sys.stderr.flush();
+	if disperc:
+		sys.stderr.write('\b' * len(pstring) + pstring);
+	
+	return bars, done, firstbar;
 
 #############################################################################
 
@@ -433,21 +446,21 @@ def fastaReader(i_name, meth="dict"):
 # This function takes an input file and determines if it is a compressed or
 # uncompressed FASTA file (.fa). If it doesn't end with .fa it returns it to
 # be skipped.
-	try:
-		if i_name.endswith(".fa.gz") or i_name.endswith(".fas.gz") or i_name.endswith(".faa.gz") or i_name.endswith(".fna.gz") or i_name.endswith(".fasta.gz"):
-			if meth == "dict":
-				seqs = fastaGetDictCompressed(i_name);
-			elif meth == "ind":
-				seqs = fastaReadInd(i_name);
-		elif i_name.endswith(".fa") or i_name.endswith(".fas") or i_name.endswith(".faa") or i_name.endswith(".fna") or i_name.endswith(".fasta"):
-			if meth == "dict":
-				seqs = fastaGetDict(i_name);
-			elif meth == "ind":
-				seqs = fastaReadInd(i_name);
-		else:
-			return None, i_name;
-	except:
+	#try:
+	if i_name.endswith(".fa.gz") or i_name.endswith(".fas.gz") or i_name.endswith(".faa.gz") or i_name.endswith(".fna.gz") or i_name.endswith(".fasta.gz"):
+		if meth == "dict":
+			seqs = fastaGetDictCompressed(i_name);
+		elif meth == "ind":
+			seqs = fastaReadInd(i_name);
+	elif i_name.endswith(".fa") or i_name.endswith(".fas") or i_name.endswith(".faa") or i_name.endswith(".fna") or i_name.endswith(".fasta"):
+		if meth == "dict":
+			seqs = fastaGetDict(i_name);
+		elif meth == "ind":
+			seqs = fastaReadInd(i_name);
+	else:
 		return None, i_name;
+	#except:
+	#	return None, i_name;
 	if seqs == {}:
 		return None, i_name;
 	return seqs, False;
@@ -504,7 +517,7 @@ def fastaGetDictCompressed(i_name):
 
 	seqdict = {};
 	for line in gzip.open(i_name, "rb"):
-		line = line.replace("\n", "");
+		line = line.decode().replace("\n", "");
 		if line[:1] == '>':
 			curkey = line;
 			seqdict[curkey] = "";

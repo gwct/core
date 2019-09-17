@@ -100,11 +100,11 @@ def ensFilter(inseqs, spec_label, outfilename):
 		core.writeSeq(outfilename, long_seq, new_title);
 		i += 1;
 
-	pstring = "100.0% complete.";
-	sys.stderr.write('\b' * len(pstring) + pstring);
+	#pstring = "100.0% complete.";
+	#sys.stderr.write('\b' * len(pstring) + pstring);
 	print("\nDone!");
-	print(i, "sequences written.");
-	print(len(inseqs) - i, "sequences filtered.");
+	print(str(i) + " sequences written.");
+	print(str(len(inseqs) - i) + " sequences filtered.");
 
 ############################################
 def ncbiFilter(inseqs, gff_file, spec_label, cds_opt, outfilename):
@@ -125,40 +125,40 @@ def ncbiFilter(inseqs, gff_file, spec_label, cds_opt, outfilename):
 		longest_isos.append(each.split("\t")[1]);
 	longest_isos = [_f for _f in longest_isos if _f];
 
-	print("Writing longest isoforms to output file...");
+	print("Writing longest isoforms to output file...\n");
 
-	i, numseqs, donepercent, numbars = 0,len(inseqs),[],0;
+	i, numseqs, donepercent, numbars, firstbar = 0,len(inseqs),[],0,True;
 	count = 0;
 
 	for title in inseqs:
-		numbars, donepercent = core.loadingBar(i, numseqs, donepercent, numbars);
+		numbars, donepercent, firstbar = core.loadingBar(i, numseqs, donepercent, numbars, firstbar);
 		i += 1;
 
-		# found = 0;
+		found = 0;
 
-		# for gid in longest_isos:
-		# 	if gid in title:
-		# 		if cds_opt or "|" not in title:
-		# 			new_title = ">" + spec_label + title[1:];
-		# 		else:
-		# 			gid = title[title.index("P_")-1:title.index("|",title.index("P_"))]
-		# 			new_title = ">" + spec_label + gid + " |" + title[1:title.index("P_")-1] + title[title.index("|",title.index("P_"))+1:];	
-		# 		core.writeSeq(outfilename, inseqs[title], new_title);
-		# 		count += 1;
-		# 		break;
+		for gid in longest_isos:
+			if gid in title:
+				if cds_opt or "|" not in title:
+					new_title = ">" + spec_label + title[1:];
+				else:
+					gid = title[title.index("P_")-1:title.index("|",title.index("P_"))]
+					new_title = ">" + spec_label + gid + " |" + title[1:title.index("P_")-1] + title[title.index("|",title.index("P_"))+1:];	
+				core.writeSeq(outfilename, inseqs[title], new_title);
+				count += 1;
+				break;
 
-	pstring = "100.0% complete.";
-	sys.stderr.write('\b' * len(pstring) + pstring);
+	#pstring = "100.0% complete.";
+	#sys.stderr.write('\b' * len(pstring) + pstring);
 	print("\nDone!");
-	print(count, "sequences written.");
-	print(len(inseqs) - count, "sequences filtered.");
+	print(str(count) + " sequences written.");
+	print(str(len(inseqs) - count) + " sequences filtered.");
 
 ############################################
 #Main Block
 ############################################
 
 infilename, in_type, gff_file, label, cds_opt, outfilename = optParse();
-
+print(sys.version);
 pad = 25;
 print("=======================================================================");
 print("\t\t\t" + core.getDateTime());
