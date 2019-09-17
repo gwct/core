@@ -54,6 +54,8 @@ def loadingBar(counter, length, done, bars):
 	except:
 		pchr, lchr = "*","*";
 
+	#pchr,lchr="=","*";
+
 	percent = float(counter) / float(length) * 100.0;
 	percentdone = int(percent);
 
@@ -61,7 +63,6 @@ def loadingBar(counter, length, done, bars):
 	pstring = " " + p[:5] + "% complete.";
 
 	if percentdone % 2 == 0 and done != None and percentdone not in done:
-		loading = "";
 		loading = "|";
 		j = 0;
 		while j < bars:

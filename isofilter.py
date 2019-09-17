@@ -109,9 +109,6 @@ def ensFilter(inseqs, spec_label, outfilename):
 ############################################
 def ncbiFilter(inseqs, gff_file, spec_label, cds_opt, outfilename):
 
-	numbars, donepercent, i = 0, [], 0;
-
-
 	print("Obtaining longest isoforms from .gff file...");
 
 	cmd = "zcat " + gff_file + " | awk \'BEGIN{FS=\"	\";OFS=\"|\"}$3==\"CDS\"{if($4<$5){print $5-$4+1,$9}else{print $4-$5+1,$9}}\' | grep \"[NX]P[_]\" | sed \'s/\([0-9]*\).*GeneID:\([0-9]*\).*\([NX]P[_][0-9]*\.[0-9]*\).*/\\1|\\2|\\3/\' | awk \'BEGIN{FS=\"|\";OFS=\"\t\";gene=\"\";acc=\"\";len=0}{if(acc!=$3){print gene,acc,len/3-1;gene=$2;acc=$3;len=$1}else{len=len+$1}}END{print gene,acc,len/3-1}\' | sort -k1,1n -k3,3nr -k2,2 | awk \'BEGIN{FS=\"	\";OFS=\"	\";gene=\"\";acc=\"\";len=0}{if(gene!=$1){print $1,$2,$3};gene=$1;acc=$2;len=$3}\' > ncbi_isoform_filter_tmp11567.txt"
@@ -130,24 +127,25 @@ def ncbiFilter(inseqs, gff_file, spec_label, cds_opt, outfilename):
 
 	print("Writing longest isoforms to output file...");
 
+	i, numseqs, donepercent, numbars = 0,len(inseqs),[],0;
 	count = 0;
 
 	for title in inseqs:
-		numbars, donepercent = core.loadingBar(i, len(inseqs), donepercent, numbars);
+		numbars, donepercent = core.loadingBar(i, numseqs, donepercent, numbars);
 		i += 1;
 
-		found = 0;
+		# found = 0;
 
-		for gid in longest_isos:
-			if gid in title:
-				if cds_opt or "|" not in title:
-					new_title = ">" + spec_label + title[1:];
-				else:
-					gid = title[title.index("P_")-1:title.index("|",title.index("P_"))]
-					new_title = ">" + spec_label + gid + " |" + title[1:title.index("P_")-1] + title[title.index("|",title.index("P_"))+1:];	
-				core.writeSeq(outfilename, inseqs[title], new_title);
-				count += 1;
-				break;
+		# for gid in longest_isos:
+		# 	if gid in title:
+		# 		if cds_opt or "|" not in title:
+		# 			new_title = ">" + spec_label + title[1:];
+		# 		else:
+		# 			gid = title[title.index("P_")-1:title.index("|",title.index("P_"))]
+		# 			new_title = ">" + spec_label + gid + " |" + title[1:title.index("P_")-1] + title[title.index("|",title.index("P_"))+1:];	
+		# 		core.writeSeq(outfilename, inseqs[title], new_title);
+		# 		count += 1;
+		# 		break;
 
 	pstring = "100.0% complete.";
 	sys.stderr.write('\b' * len(pstring) + pstring);
@@ -161,7 +159,7 @@ def ncbiFilter(inseqs, gff_file, spec_label, cds_opt, outfilename):
 
 infilename, in_type, gff_file, label, cds_opt, outfilename = optParse();
 
-pad = 50;
+pad = 25;
 print("=======================================================================");
 print("\t\t\t" + core.getDateTime());
 print(core.spacedOut("Filtering isoforms from:", pad) + infilename);
