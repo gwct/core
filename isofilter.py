@@ -164,19 +164,19 @@ infilename, in_type, gff_file, label, cds_opt, outfilename = optParse();
 pad = 50;
 print("=======================================================================");
 print("\t\t\t" + core.getDateTime());
-print(core.spacedOut("Filtering isoforms from:", pad), infilename);
+print(core.spacedOut("Filtering isoforms from:", pad) + infilename);
 if in_type == "ens":
-	print(core.spacedOut("File type:", pad), "Ensembl");
+	print(core.spacedOut("File type:", pad) + "Ensembl");
 if in_type == "ncbi":
-	print(core.spacedOut("File type:", pad), "NCBI");
-	print(core.spacedOut("Using GFF file:", pad), gff_file);
+	print(core.spacedOut("File type:", pad) + "NCBI");
+	print(core.spacedOut("Using GFF file:", pad) + gff_file);
 	if cds_opt:
 		print(" + CDS input");
 if in_type == "crow":
-	print(core.spacedOut("File type:", pad), "Crow");
+	print(core.spacedOut("File type:", pad) + "Crow");
 if label != "":
-	print(core.spacedOut("Adding label to beginning of FASTA headers:", pad), label);
-print(core.spacedOut("Writing output to:", pad), outfilename);
+	print(core.spacedOut("Adding label to beginning of FASTA headers:", pad) + label);
+print(core.spacedOut("Writing output to:", pad) + outfilename);
 core.filePrep(outfilename);
 print("--------------------------");
 
