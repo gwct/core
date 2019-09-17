@@ -32,23 +32,32 @@ def optParse():
 	parser.add_argument("-t", dest="file_type", help="Currently supported file types are ENSEMBL and NCBI peptide files. Enter as 'ens' or 'ncbi' here. Note: If file type is NCBI you will also need to specify the top level gff file with -g")
 	parser.add_argument("-g", dest="gff_file", help="If file type is NCBI, the top level gff file is also needed and should be specified here.");
 	parser.add_argument("-l", dest="spec_label", help="A species label to add to the gene ID of each sequence.", default="");
+	parser.add_argument("--cds", dest="cds_opt", help="Set if input file is a CDS file from NCBI.", action="store_true", default=False);
 	parser.add_argument("-o", dest="output_file", help="The desired name of the output file. If none is specified the default is [input_filename]_isofiltered.fa or [input_filename]_isofiltered_relabel.fa");
 
 	args = parser.parse_args();
 
+	args.file_type = args.file_type.lower();
+
 	if None in [args.input_file, args.file_type, args.output_file]:
-		sys.exit(core.errorOut(1, "An input file (-i), input file type (-t), and an output file (-o) must all be specified"));
+		sys.exit(core.errorOut(1, "An input file (-i), input file type (-t), and an output file (-o) must all be specified."));
 
 	if args.file_type not in ['ens', 'ncbi']:
-		sys.exit(core.errorOut(2, "File type (-t) must be one of either 'ens' (Ensembl) or 'ncbi'"));
+		sys.exit(core.errorOut(2, "File type (-t) must be one of either 'ens' (Ensembl) or 'ncbi'."));
 
 	if args.file_type == "ens" and args.gff_file != None:
-		sys.exit(core.errorOut(3, "A gff file (-g) should not be specified with file type ens"));
+		sys.exit(core.errorOut(3, "A gff file (-g) should not be specified with file type ens."));
 
 	if args.file_type == "ncbi" and args.gff_file == None:
-		sys.exit(core.errorOut(4, "A gff file (-g) must be specified with file type ncbi"));
+		sys.exit(core.errorOut(4, "A gff file (-g) must be specified with file type ncbi."));
 
-	return args.input_file, args.file_type, args.gff_file, args.spec_label, args.output_file;
+	if args.cds_opt and args.file_type != "ncbi":
+		sys.exit(core.errorOut(5, "CDS files (--cds) only accepted with NCBI input (-t ncbi)."));
+
+	if args.spec_label != "":
+		args.spec_label += "_";
+
+	return args.input_file, args.file_type, args.gff_file, args.spec_label, args.cds_opt, args.output_file;
 
 ############################################
 def ensFilter(inseqs, spec_label, outfilename):
@@ -87,7 +96,7 @@ def ensFilter(inseqs, spec_label, outfilename):
 			long_seq = max(seqlist, key=len)
 			long_title = titlelist[seqlist.index(long_seq)];
 
-		new_title = ">" + spec_label + "_" + long_title[1:];
+		new_title = ">" + spec_label + long_title[1:];
 		core.writeSeq(outfilename, long_seq, new_title);
 		i += 1;
 
@@ -98,7 +107,7 @@ def ensFilter(inseqs, spec_label, outfilename):
 	print(len(inseqs) - i, "sequences filtered.");
 
 ############################################
-def ncbiFilter(inseqs, gff_file, spec_label, outfilename):
+def ncbiFilter(inseqs, gff_file, spec_label, cds_opt, outfilename):
 
 	numbars, donepercent, i = 0, [], 0;
 
@@ -131,8 +140,11 @@ def ncbiFilter(inseqs, gff_file, spec_label, outfilename):
 
 		for gid in longest_isos:
 			if gid in title:
-				gid = title[title.index("P_")-1:title.index("|",title.index("P_"))]
-				new_title = ">" + spec_label + "_" + gid + " |" + title[1:title.index("P_")-1] + title[title.index("|",title.index("P_"))+1:];
+				if "|" in title:
+					gid = title[title.index("P_")-1:title.index("|",title.index("P_"))]
+					new_title = ">" + spec_label + gid + " |" + title[1:title.index("P_")-1] + title[title.index("|",title.index("P_"))+1:];
+				else:
+					new_title = ">" + spec_label + title[1:];
 				core.writeSeq(outfilename, inseqs[title], new_title);
 				count += 1;
 				break;
@@ -147,7 +159,7 @@ def ncbiFilter(inseqs, gff_file, spec_label, outfilename):
 #Main Block
 ############################################
 
-infilename, in_type, gff_file, label, outfilename = optParse();
+infilename, in_type, gff_file, label, cds_opt, outfilename = optParse();
 
 pad = 50;
 print("=======================================================================");
@@ -158,6 +170,8 @@ if in_type == "ens":
 if in_type == "ncbi":
 	print(core.spacedOut("File type:", pad), "NCBI");
 	print(core.spacedOut("Using GFF file:", pad), gff_file);
+	if cds_opt:
+		print(" + CDS input");
 if in_type == "crow":
 	print(core.spacedOut("File type:", pad), "Crow");
 if label != "":
@@ -172,7 +186,7 @@ ins, skip_flag = core.fastaReader(infilename);
 if in_type == "ens":
 	ensFilter(ins, label, outfilename);
 elif in_type == "ncbi":
-	ncbiFilter(ins, gff_file, label, outfilename);
+	ncbiFilter(ins, gff_file, label, cds_opt, outfilename);
 
 print("=======================================================================");
 

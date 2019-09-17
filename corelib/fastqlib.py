@@ -214,7 +214,7 @@ def countReads(fastq_files, globs):
             bases = ['A','T','C','G'];
             base_comp = { "A" : 0, "T" : 0, "C" : 0, "G" : 0, "N" : 0 };
             qual_pos = defaultdict(int);    
-            site_sum = defaultdict(int);
+            site_pos = defaultdict(int);
             # num_reads: The total number of reads parse in the current file
             # len_sum: The sum length of all reads in the current file
             # site_sum: The total number of sites at each position in all reads
@@ -222,25 +222,39 @@ def countReads(fastq_files, globs):
             # read_lens: The number of reads of every length in the current file
             # base_comp: The base compositions for the current file
 
-            print(core.getTime() + " READING FILE");
             if fqf.endswith(".gz"):
-                fq_lines = gzip.open(fqf).read().decode().split("\n");
+                lread = lambda l : l.decode().rstrip();
             else:
-                fq_lines = open(fqf).read().split("\n");
+                lread = lambda l : l.rstrip();
+
+            print(core.getTime() + " READING FILE");
             lines, reads = [], [];
-            for line in (fq_lines):
-                lines.append(line.rstrip());
+            for line in core.getFileReader(fqf)(fqf):
+                lines.append(lread(line));
                 if len(lines) == 4:
                     read = fqProcessRead(lines);
                     reads.append(read);
                     lines = [];
-            del fq_lines;
+
+            # if fqf.endswith(".gz"):
+            #     fq_lines = gzip.open(fqf).read().decode().split("\n");
+            # else:
+            #     fq_lines = open(fqf).read().split("\n");
+            # lines, reads = [], [];
+            # for line in (fq_lines):
+            #     lines.append(line.rstrip());
+            #     if len(lines) == 4:
+            #         read = fqProcessRead(lines);
+            #         reads.append(read);
+            #         lines = [];
+            # del fq_lines;
+
             print(core.getTime() + " DONE READING FILE");
             print(len(reads));
             print(core.getTime() + " READING READS");
         
-            read_chunks = chunks(reads, 4);
-            pool = mp.Pool(processes =globs['procs']);
+            #read_chunks = chunks(reads, 4);
+            pool = mp.Pool(processes=globs['procs']);
             for result in pool.imap(fq.fqFunc, (read for read in reads)):
                 num_reads += 1;
                 len_sum += result['length'];
@@ -260,7 +274,7 @@ def countReads(fastq_files, globs):
                 site_pos = dsum(site_pos, result['site_pos']);
 
                 # Counter: 9:55:17
-                # dsum: 8:48:506
+                # dsum: 8:48:506, 7:50:406 with read by line and 1 proc, 8:10:233 with read by line and 4 proc (???)
                 # reduce: 19:16:859
 
             stats = {
