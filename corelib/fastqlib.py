@@ -8,19 +8,11 @@ import core, sys, os, math, gzip
 from collections import defaultdict
 import multiprocessing as mp
 import fqfunc as fq
-from collections import Counter
-from functools import reduce
-#from Bio import SeqIO as seq
 
 #############################################################################
 
-def chunks(l, n):
-    n = max(1, n)
-    return (l[i:i+n] for i in range(0, len(l), n))
-
-####################
-
 def printStats(stats, globs):
+# Outputs fastq stats in a nice format to read.
 
     if globs['pyv'] == '2':
         bar = u'\u2588'.encode('utf-8');
@@ -28,9 +20,9 @@ def printStats(stats, globs):
         bar = u'\u2588';
 
     if globs['reads']:
-        print("TOTAL READS:         " + str(stats['num_reads']));
+        print("\nTOTAL READS:         " + str(stats['num_reads']));
     if globs['lens']:
-        avg_len = stats['len_sum'] / stats['num_reads'];
+        avg_len = stats['num_sites'] / stats['num_reads'];
         print("AVERAGE READ LENGTH: " + str(round(avg_len, 2)));
     if globs['reads'] and globs['lens'] and globs['genome_size']:
         coverage = (stats['num_reads'] * avg_len) / globs['genome_size'];
@@ -46,13 +38,13 @@ def printStats(stats, globs):
             if stats['base_comp'][base] == 0:
                 bc = "0.00";
             else:
-                bc = str(round(stats['base_comp'][base] / base_sum, 2))
-                while len(bc) != 4:
+                bc = str(round(stats['base_comp'][base] / base_sum, 3))
+                while len(bc) < 4:
                     bc += "0";
 
             stats['base_comp'][base] = bc;
 
-        print("".join([b + "     " for b in bases]));
+        print("".join([b + "      " for b in bases]));
         outline = "";
         for base in bases:
             outline = outline + stats['base_comp'][base] + "  ";
@@ -72,7 +64,6 @@ def printStats(stats, globs):
         print("               ---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|")
         while b <= max_bin+5:
             b_str = str(b);
-            #print(b_str);
             while len(b_str) != 3:
                 b_str = "0" + b_str;
             if b in stats['read_lens']:
@@ -115,19 +106,21 @@ def printStats(stats, globs):
 ####################
 
 def fqProcessRead(lines=None):
+# Takes a list of four lines assumed to be the four lines from a fastq read and stores them in a dictionary.
     ks = ['title', 'seq', 'optional', 'qual'];
     return {k: v for k, v in zip(ks, lines)};
+
 ####################
+
 def chunks(l, n):
+# Splits a list l into even chunks of size n.
     n = max(1, n)
     return (l[i:i+n] for i in range(0, len(l), n))
 
 ####################
-def lenSum(item):
-    read, globs = item;
-    return len(read['seq']);
-####################
+
 def dsum(*dicts):
+    # Given a list of dictionaries, this function merges them into a single dictionary, summing values of common keys.
     ret = defaultdict(int)
     for d in dicts:
         for k, v in d.items():
@@ -135,44 +128,44 @@ def dsum(*dicts):
     return dict(ret)
 
 ####################
-def reducer(accumulator, element):
-    for key, value in element.items():
-        accumulator[key] = accumulator.get(key, 0) + value
-    return accumulator
-
-####################
 def createFunc(globs):
+# This function dynamically writes a function depending on the input options. This prevents having an if statement
+# for each option for each line in a fastq file. Pretty cool...
 
     func = '''
 import math
 from collections import defaultdict
-def fqFunc(reads):
+def fqFunc(cur_reads):
     read_info = {
         'reads' : 0,
-        'length' : 0, 
+        'length' : 0,
+        'num_sites' : 0, 
         'read_lens' : defaultdict(int),
         'base_comp' : { "A" : 0, "T" : 0, "C" : 0, "G" : 0, "N" : 0 },
         'qual_pos' : defaultdict(int),
         'site_pos' : defaultdict(int)
         }
+    # All the info possibily collected for a set of reads is compiled in this dictionary.
 
-    for read in reads:
+    for read in cur_reads:
         read_info['reads'] += 1;
-
         readlen = len(read['seq']);
+        # Always get the number of reads and the read lengths.
     '''
 
     if globs['lens']:
         func += '''
-        read_info['length'] = readlen;
+        read_info['num_sites'] += readlen;
         cur_bin = math.floor(readlen/5)*5;
         read_info['read_lens'][cur_bin] += 1;
+        # Get the read length bins if that option is specified.
     '''
 
     if globs['bc']:
         func += '''
         for char in read['seq']:
             read_info['base_comp'][char] += 1;
+        # Get the base counts if the base composition option is specified.
     '''
 
     if globs['qual']:
@@ -180,15 +173,17 @@ def fqFunc(reads):
         for pos in range(readlen):
             read_info['qual_pos'][pos] += ord(read['qual'][pos]) - 33;
             read_info['site_pos'][pos] += 1;
+        # Get the quality sums for each position and total number of sites for each position if the qual option is specified.
     '''
 
     func += '''
-        return read_info;
+    return read_info;
     '''
 
     funcpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), "fqfunc.py");
     with open(funcpath, "w") as funcfile:
         funcfile.write(func);
+    # Write the function to a file. This file has been imported above.
 
 ####################
 
@@ -214,12 +209,10 @@ def countReads(fastq_files, globs):
 
     for fastq_file in fastq_files:
         for fqf in fastq_file:
-            print("\n--------------------\n");
-            print(core.getTime() + " FILE :\t" + fqf);
-            #numlines = core.getFileLen(fqf);
-            #print("LINES:\t" + str(numlines));
+            print("\n# --------------------\n");
+            print("# " + core.getTime() + " READING FILE :\t" + fqf);
 
-            num_reads, len_sum = 0,0;
+            num_reads, num_sites = 0,0;
             read_lens = defaultdict(int);
             bases = ['A','T','C','G'];
             base_comp = { "A" : 0, "T" : 0, "C" : 0, "G" : 0, "N" : 0 };
@@ -236,8 +229,8 @@ def countReads(fastq_files, globs):
                 lread = lambda l : l.decode().rstrip();
             else:
                 lread = lambda l : l.rstrip();
+            # Declare a lambda function to parse lines in the file based on the file type. This prevents having an if statement for each line read.
 
-            print(core.getTime() + " READING FILE");
             lines, reads = [], [];
             for line in core.getFileReader(fqf)(fqf):
                 lines.append(lread(line));
@@ -245,6 +238,55 @@ def countReads(fastq_files, globs):
                     read = fqProcessRead(lines);
                     reads.append(read);
                     lines = [];
+            # Read the file and process the lines as fastq reads.
+
+            print("# " + core.getTime() + " Read " + str(len(reads)) + " reads");
+
+            reads_per_chunk = int(math.ceil(len(reads) / globs['procs']));
+            print("# " + core.getTime() + " Splitting into " + str(globs['procs']) + " chunks (" + str(reads_per_chunk) + " reads per chunk)");
+            read_chunks = list(chunks(reads, reads_per_chunk));
+            # Split the reads into even sized chunks depending on how many processes specified.
+
+            print("# " + core.getTime() + " Starting parse...");
+            pool = mp.Pool(processes=globs['procs']);
+            # Declare the processor pool.
+            for result in pool.imap(fq.fqFunc, (read_chunk for read_chunk in read_chunks)):
+                num_reads += result['reads'];
+                num_sites += result['num_sites'];
+
+                read_lens = dsum(read_lens, result['read_lens']);
+                base_comp = dsum(base_comp, result['base_comp']);
+                qual_pos = dsum(qual_pos, result['qual_pos']);
+                site_pos = dsum(site_pos, result['site_pos']);
+            # Call the fqFunc on each chunk in parallel.
+            
+            stats = {
+                'num_reads' : num_reads,
+                'num_sites' : num_sites,
+                'base_comp' : base_comp,
+                'read_lens' : read_lens,
+                'qual_pos' : qual_pos,
+                'site_pos' : site_pos
+            }
+            # Compile all the stats for this file into a single dictionary to easily pass to output function.
+
+            print("# " + core.getTime() + " Done parsing...printing stats...");
+            printStats(stats, globs);
+            # Output the stats for the current file.
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
 
             # if fqf.endswith(".gz"):
             #     fq_lines = gzip.open(fqf).read().decode().split("\n");
@@ -259,64 +301,6 @@ def countReads(fastq_files, globs):
             #         lines = [];
             # del fq_lines;
 
-            print(core.getTime() + " DONE READING FILE");
-            print(len(reads));
-            print(core.getTime() + " READING READS");
-        
-            read_chunks = chunks(reads, 4);
-            for reads in read_chunks:
-                print(len(reads));
-            sys.exit();
-            #print
-            pool = mp.Pool(processes=globs['procs']);
-            for result in pool.imap(fq.fqFunc, (read for read in reads)):
-                num_reads += 1;
-                len_sum += result['length'];
-
-                # collection = [read_lens, result['read_lens']];
-                # keys = list(read_lens.keys()) + list(result['read_lens'].keys());
-                # total = reduce(reducer, collection, {})
-                # for k in keys:
-                #     assert total[k] == sum(d.get(k, 0) for d in collection);
-                # read_lens = total;
-                read_lens = dsum(read_lens, result['read_lens']);
-                #read_lens = dict(Counter(read_lens)+Counter(result['read_lens']));
-
-                base_comp = dsum(base_comp, result['base_comp']);
-
-                qual_pos = dsum(qual_pos, result['qual_pos']);
-                site_pos = dsum(site_pos, result['site_pos']);
-
-                # Counter: 9:55:17
-                # dsum: 8:48:506, 7:50:406 with read by line and 1 proc, 8:10:233 with read by line and 4 proc (???)
-                # reduce: 19:16:859
-
-            stats = {
-                'num_reads' : num_reads,
-                'len_sum' : len_sum,
-                'base_comp' : base_comp,
-                'read_lens' : read_lens,
-                'qual_pos' : qual_pos,
-                'site_pos' : site_pos
-            }
-
-            printStats(stats, globs);
-
-
-        sys.exit();
-
-
-
-
-
-
-
-
-
-
-
-
-'''
             print(core.getTime() + " DONE READING READS");
             print(len_sum / len(reads));
             sys.exit();                

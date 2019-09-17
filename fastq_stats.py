@@ -87,7 +87,7 @@ if __name__ == '__main__':
         'pyv' : sys.version[0]
     }
 
-    print("=======================================================================");
-    print("\t\t\t" + core.getDateTime());
-    print("Parsing FASTQ files in:\t" + args.input);
+    print("# =======================================================================");
+    print("#\t\t\t" + core.getDateTime());
+    print("# Parsing FASTQ files in:\t" + args.input);
     fql.countReads(infiles, globs);
