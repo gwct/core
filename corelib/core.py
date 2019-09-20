@@ -251,7 +251,7 @@ def getLogTime():
 #############################################################################
 
 def printWrite(o_name, o_line, file_flag=True):
-#Function to print a string AND write it to the file.
+# Function to print a string AND write it to the file.
 	print(o_line);
 	if file_flag == False:
 		with open(o_name, "a") as f:
@@ -259,8 +259,17 @@ def printWrite(o_name, o_line, file_flag=True):
 
 #############################################################################
 
+def PW(o_line, o_name, file_flag=True):
+# Function to print a string AND write it to the file.
+	print(o_line);
+	if file_flag == True:
+		with open(o_name, "a", encoding="utf-8") as f:
+			f.write(o_line + "\n");
+
+#############################################################################
+
 def logCheck(lopt, lfilename, outline):
-#Function checks whether or not to write to a logfile, print something, or both.
+# Function checks whether or not to write to a logfile, print something, or both.
 	if lopt == 1:
 		printWrite(lfilename, outline);
 	else:
@@ -269,7 +278,7 @@ def logCheck(lopt, lfilename, outline):
 #############################################################################
 
 def errorOut(errnum, errmsg, ropt=0):
-#Formatting for error messages.
+# Formatting for error messages.
 	fullmsg = "| ** Error " + str(errnum) + ": " + errmsg + " |";
 	border = " " + "-" * (len(fullmsg)-2);
 	if ropt:
@@ -280,7 +289,7 @@ def errorOut(errnum, errmsg, ropt=0):
 #############################################################################
 
 def getOutdir(indir, prefix, suffix, stime):
-#Retrieves full input directory name and proper output directory name for other scripts.
+# Retrieves full input directory name and proper output directory name for other scripts.
 	if not os.path.isdir(indir):
 		errorOut(0, "-i must be a valid directory path");
 		sys.exit();
@@ -297,14 +306,14 @@ def getOutdir(indir, prefix, suffix, stime):
 #############################################################################
 
 def spacedOut(string, totlen):
-#Properly adds spaces to the end of a message to make it a given length
+# Properly adds spaces to the end of a string to make it a given length
 	spaces = " " * (totlen - len(string));
 	return string + spaces;
 
 #############################################################################
 
 def filePrep(filename, header=""):
-#Writes over a file, header optional (if no header just pass "")
+# Writes over a file, header optional (if no header just pass "")
 	f = open(filename, "w");
 	f.write(header);
 	f.close();

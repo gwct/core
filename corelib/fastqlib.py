@@ -4,34 +4,37 @@
 # September 2019
 #############################################################################
 
-import core, sys, os, math, gzip
+import core, sys, os, math, gzip, copy
 from collections import defaultdict
 import multiprocessing as mp
 import fqfunc as fq
 
 #############################################################################
 
-def printStats(stats, globs):
+def textOut(stats, globs):
 # Outputs fastq stats in a nice format to read.
 
     if globs['pyv'] == '2':
         bar = u'\u2588'.encode('utf-8');
     elif globs['pyv'] == '3':
         bar = u'\u2588';
+    pad = 25;
+
+    core.PW("\n" + core.spacedOut("FILE:", pad) + stats['file'], globs['outtxt']);
 
     if globs['reads']:
-        print("\nTOTAL READS:         " + str(stats['num_reads']));
+        core.PW(core.spacedOut("TOTAL READS:", pad) + str(stats['num_reads']), globs['outtxt']);
     if globs['lens']:
         avg_len = stats['num_sites'] / stats['num_reads'];
-        print("AVERAGE READ LENGTH: " + str(round(avg_len, 2)));
+        core.PW(core.spacedOut("AVERAGE READ LENGTH:", pad) + str(round(avg_len, 2)), globs['outtxt']);
     if globs['reads'] and globs['lens'] and globs['genome_size']:
         coverage = (stats['num_reads'] * avg_len) / globs['genome_size'];
-        print("COVERAGE:            " + str(round(coverage, 2)));
+        core.PW(core.spacedOut("COVERAGE:", pad) + str(round(coverage, 2)), globs['outtxt']);
     # Count the number of reads.
 
     #####
     if globs['bc']:
-        print("\nBASE COMPOSITION:");
+        core.PW("\nBASE COMPOSITION:", globs['outtxt']);
         base_sum = sum(stats['base_comp'].values());
         bases = ["A","T","C","G","N"];
         for base in bases:
@@ -44,24 +47,24 @@ def printStats(stats, globs):
 
             stats['base_comp'][base] = bc;
 
-        print("".join([b + "      " for b in bases]));
+        core.PW("".join([b + "      " for b in bases]), globs['outtxt']);
         outline = "";
         for base in bases:
             outline = outline + stats['base_comp'][base] + "  ";
-        print(outline);
+        core.PW(outline, globs['outtxt']);
     # Calculate base composition
     #####
 
     #####
     if globs['lens']:
-        print("\nRough read length distribution:");
-        print("Read length....Proportion of reads");
+        core.PW("\nRough read length distribution:", globs['outtxt']);
+        core.PW("Read length....Proportion of reads", globs['outtxt']);
 
         b = min(stats['read_lens']) - 5;
         max_bin = max(stats['read_lens']);
 
-        print("                       0.1       0.2       0.3       0.4       0.5       0.6       0.7       0.8       0.9       1.0")
-        print("               ---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|")
+        core.PW("                       0.1       0.2       0.3       0.4       0.5       0.6       0.7       0.8       0.9       1.0", globs['outtxt'])
+        core.PW("               ---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|", globs['outtxt'])
         while b <= max_bin+5:
             b_str = str(b);
             while len(b_str) != 3:
@@ -69,24 +72,24 @@ def printStats(stats, globs):
             if b in stats['read_lens']:
                 stats['read_lens'][b] = round(stats['read_lens'][b] / stats['num_reads'], 2) * 100;
                 if stats['read_lens'][b] == 0.00:
-                    print(b_str + "............|"); 
+                    core.PW(b_str + "............|", globs['outtxt']); 
                 else:
-                    print(b_str + "............" + bar*int(stats['read_lens'][b]));
+                    core.PW(b_str + "............" + bar*int(stats['read_lens'][b]), globs['outtxt']);
             else:
-                print(b_str + "............");
+                core.PW(b_str + "............", globs['outtxt']);
             b += 5;
-        print("               ---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|")
-        print("                       0.1       0.2       0.3       0.4       0.5       0.6       0.7       0.8       0.9       1.0")
+        core.PW("               ---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|", globs['outtxt'])
+        core.PW("                       0.1       0.2       0.3       0.4       0.5       0.6       0.7       0.8       0.9       1.0", globs['outtxt'])
     # Read length proportion histogram.
     #####
 
     #####
     # Average quality per position plot
     if globs['qual']:
-        print("\nAverage quality score per read position:");
-        print("Position....Quality");
-        print("           0        10        20        30        40");
-        print("           |---------|---------|---------|---------|-");
+        core.PW("\nAverage quality score per read position:", globs['outtxt']);
+        core.PW("Position....Quality", globs['outtxt']);
+        core.PW("           0        10        20        30        40", globs['outtxt']);
+        core.PW("           |---------|---------|---------|---------|-", globs['outtxt']);
         for pos in sorted(stats['qual_pos'].keys()):
             stats['qual_pos'][pos] = round(stats['qual_pos'][pos] / stats['site_pos'][pos]);
 
@@ -95,13 +98,80 @@ def printStats(stats, globs):
                 pos_str = "0" + pos_str;
 
             if stats['qual_pos'][pos] == 0:
-                print(pos_str + "........!");
+                core.PW(pos_str + "........!", globs['outtxt']);
             else:
-                print(pos_str + "........|" + "-" * (stats['qual_pos'][pos]-1) + chr(stats['qual_pos'][pos] + 33));
-        print("           |---------|---------|---------|---------|-");
-        print("           0        10        20        30        40");
+                core.PW(pos_str + "........|" + "-" * (stats['qual_pos'][pos]-1) + chr(stats['qual_pos'][pos] + 33), globs['outtxt']);
+        core.PW("           |---------|---------|---------|---------|-", globs['outtxt']);
+        core.PW("           0        10        20        30        40", globs['outtxt']);
     # Average quality per position plot
     #####
+
+####################
+
+def csvOut(stats, globs):
+# Outputs fastq stats in a nice format to parse.
+
+    with open(globs['outcsv'], 'a') as csvfile:
+        outline = [stats['file']];
+
+        if globs['reads']:
+            outline.append(str(stats['num_reads']));
+        # Num reads output
+
+        if globs['lens']:
+            avg_len = stats['num_sites'] / stats['num_reads'];
+            outline.append(str(round(avg_len, 3)));
+        # Read length output
+
+        if globs['reads'] and globs['lens'] and globs['genome_size']:
+            coverage = round((stats['num_reads'] * avg_len) / globs['genome_size'], 3);
+            outline.append(str(coverage));
+        # Genome coverage output
+
+        if globs['bc']:
+            base_sum = sum(stats['base_comp'].values());
+            bases = ["A","T","C","G","N"];
+            for base in bases:
+                if stats['base_comp'][base] == 0:
+                    bc = "0.00";
+                else:
+                    bc = str(round(stats['base_comp'][base] / base_sum, 3))
+                    while len(bc) < 4:
+                        bc += "0";
+
+                stats['base_comp'][base] = str(bc);
+
+            outline.extend([stats['base_comp'][base] for base in bases]);
+        # Base composition output
+
+        if globs['qual']:
+            qual_sum = sum(stats['qual_pos'].values());
+            avg_qual = round(qual_sum / stats['num_sites'], 3);
+            # Compute the average quality of all bases.
+
+            sorted_qual_pos = sorted(stats['qual_pos'].keys())
+            qual_pos_first = { pos : stats['qual_pos'][pos] for pos in sorted_qual_pos[:5] }
+            qual_pos_last = { pos : stats['qual_pos'][pos] for pos in sorted_qual_pos[-5:] }
+
+            sorted_count_pos = sorted(stats['site_pos'].keys())
+            count_pos_first = { pos : stats['site_pos'][pos] for pos in sorted_count_pos[:5] }
+            count_pos_last = { pos : stats['site_pos'][pos] for pos in sorted_count_pos[-5:] }            
+
+            qual_sum_first = sum(qual_pos_first.values());
+            count_sum_first = sum(count_pos_first.values());
+            avg_qual_first = round(qual_sum_first / count_sum_first, 3);
+            # Comput the average quality of the first 5 bases in all reads.
+
+            qual_sum_last = sum(qual_pos_last.values());
+            count_sum_last = sum(count_pos_last.values());
+            avg_qual_last = qual_sum_last / count_sum_last;
+            # Compute the average quality of the last 5 bases of the longest reads. This doesn't work well because reads are of different lengths.
+
+            outline.extend([str(avg_qual), str(avg_qual_first)]);
+        # Quality output
+
+        csvfile.write(",".join(outline) + "\n");
+        
 
 ####################
 
@@ -192,20 +262,18 @@ def countReads(fastq_files, globs):
 
     createFunc(globs);
 
-    total_reads, total_len_sum, total_sites = 0,0,0;
-
-    total_site_sum = defaultdict(int);
-    total_qual_pos = defaultdict(int);
-    
+    total_reads, total_sites = 0,0;
     total_read_lens = defaultdict(int);
+    bases = ['A','T','C','G'];
     total_base_comp = { "A" : 0, "T" : 0, "C" : 0, "G" : 0, "N" : 0 };
+    total_qual_pos = defaultdict(int);
+    total_site_pos = defaultdict(int);
     # total_reads: The total number of reads parsed in all input files
-    # total_len_sum: The sum of the lengths of all reads from all input files
     # total_sites: The total number of sites in all input files
-    # total_site_sum: The total number of sites for all positions in all reads in all files
-    # total_qual_pos: The sum of quality scores from all positions in all reads in all files
     # total_read_lens: The count of read lengths for every read in every file
     # total_base_comp: The base compositions for every file
+    # total_qual_pos: The sum of quality scores from all positions in all reads in all files
+    # total_site_pos: The total number of sites for all positions in all reads in all files
 
     for fastq_file in fastq_files:
         for fqf in fastq_file:
@@ -214,7 +282,6 @@ def countReads(fastq_files, globs):
 
             num_reads, num_sites = 0,0;
             read_lens = defaultdict(int);
-            bases = ['A','T','C','G'];
             base_comp = { "A" : 0, "T" : 0, "C" : 0, "G" : 0, "N" : 0 };
             qual_pos = defaultdict(int);    
             site_pos = defaultdict(int);
@@ -258,9 +325,20 @@ def countReads(fastq_files, globs):
                 base_comp = dsum(base_comp, result['base_comp']);
                 qual_pos = dsum(qual_pos, result['qual_pos']);
                 site_pos = dsum(site_pos, result['site_pos']);
+
+                #if globs['paired'] and fastq_file.index(fqf) == 0:
+                total_reads += result['reads'];
+                total_sites += result['num_sites'];
+
+                total_read_lens = dsum(total_read_lens, result['read_lens']);
+                total_base_comp = dsum(total_base_comp, result['base_comp']);
+                total_qual_pos = dsum(total_qual_pos, result['qual_pos']);
+                total_site_pos = dsum(total_site_pos, result['site_pos']);
+                # Get the total stats for all files, only taking the first of a pair of read pair files.
             # Call the fqFunc on each chunk in parallel.
             
             stats = {
+                'file' : fqf,
                 'num_reads' : num_reads,
                 'num_sites' : num_sites,
                 'base_comp' : base_comp,
@@ -270,16 +348,43 @@ def countReads(fastq_files, globs):
             }
             # Compile all the stats for this file into a single dictionary to easily pass to output function.
 
-            print("# " + core.getTime() + " Done parsing...printing stats...");
-            printStats(stats, globs);
+            #print(stats['qual_pos']);
+            #sys.exit();
+
+            print("# " + core.getTime() + " Done parsing...");
+            if not globs['summary']:
+                if globs['outtxt']:
+                    print("# " + core.getTime() + " Printing stats and writing to text file...");
+                    textOut(copy.deepcopy(stats), globs);
+                if globs['outcsv']:
+                    print("\n# " + core.getTime() + " Writing stats to csv file...");
+                    csvOut(stats, globs);
             # Output the stats for the current file.
 
 
+    if globs['summary']:
+        total_stats = {
+            'file' : globs['dirflag'],
+            'num_reads' : total_reads,
+            'num_sites' : total_sites,
+            'base_comp' : total_base_comp,
+            'read_lens' : total_read_lens,
+            'qual_pos' : total_qual_pos,
+            'site_pos' : total_site_pos
+        }
+ 
+        print("\n# --------------------\n");
+        if globs['outtxt']:
+            print("# " + core.getTime() + " Printing TOTAL stats and writing to text file...");
+            textOut(copy.deepcopy(total_stats), globs);
+        if globs['outcsv']:
+            print("\n# " + core.getTime() + " Writing TOTAL stats to csv file...");
+            csvOut(total_stats, globs);
+        # Output the stats for the current file.
+    # Output summary stats for ALL files combined.
 
-
-
-
-
+    print("# " + core.getTime() + " Done!");
+    print("\n# =======================================================================");
 
 
 
