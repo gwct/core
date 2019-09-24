@@ -1,3 +1,4 @@
+#!/usr/bin/python
 ############################################################
 # For substitution rates, 03.19
 # Retrieves Ensembl orthologs for a given query species and
