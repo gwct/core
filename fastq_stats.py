@@ -40,14 +40,12 @@ if __name__ == '__main__':
     parser.add_argument("--readlen", dest="lens", help="Set to calculate the average read length in each file.", default=False, action="store_true");
     parser.add_argument("--basecomp", dest="base_comp", help="Set to count the base compositions in each file.", default=False, action="store_true");
     parser.add_argument("--qual", dest="qual", help="Set to calculate the average base quality in the file and across reads.", default=False, action="store_true");
-    parser.add_argument("--all", dest="all", help="Sets all of --reads, --readlen, --basecomp, --qual to true..", default=False, action="store_true");
+    parser.add_argument("--all", dest="all", help="Sets all of --reads, --readlen, --basecomp, --qual to True.", default=False, action="store_true");
     parser.add_argument("-outcsv", dest="outcsv", help="CSV output file for easy parsing (only log info will be printed to screen).", default=False);
     parser.add_argument("-outtxt", dest="outtxt", help="Text output file for easy reading.", default=False);
     parser.add_argument("--summary", dest="summary", help="When input is a dirctory with multiple files, set this to print only combined statistics from all files.", default=False, action="store_true");
     parser.add_argument("--overwrite", dest="overwrite", help="Set this to indicate you wish to overwrite files specified by -outcsv and -outtxt if they already exist. WARNING: This means the original contents of the file will be deleted.", default=False, action="store_true");
     #parser.add_argument("--header", dest="header", help="Set to extract the header info for each file.", default=False, action="store_true");
-    #parser.add_argument("-outfile", dest="outfile", help="The output file for commands: --concat, --combine, -extract");
-    #parser.add_argument("-outdir", dest="outdir", help="The output directory for commands:");
     args = parser.parse_args();
     # Input option definitions.
 

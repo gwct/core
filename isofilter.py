@@ -76,10 +76,10 @@ def ensFilter(inseqs, spec_label, outfilename):
 	sys.stderr.write('\b');
 
 	print("Filtering and writing sequences...");
-	numbars, donepercent, i = 0,[],0;
+	i, numseqs, donepercent, numbars, firstbar = 0,len(identDict),[],0,True;
 
 	for key in identDict:
-		numbars, donepercent = core.loadingBar(i, len(identDict), donepercent, numbars);
+		numbars, donepercent, firstbar = core.loadingBar(i, numseqs, donepercent, numbars, firstbar);
 
 		if len(identDict[key]) == 1:
 			long_title, long_seq = identDict[key][0];

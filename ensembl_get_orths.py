@@ -11,11 +11,15 @@
 # aotus_nancymaae
 # homo_sapiens,bos_taurus,chlorocebus_sabaeus,gorilla_gorilla,macaca_mulatta,microcebus_murinus,monodelphis_domestica,mus_musculus,nomascus_leucogenys,pan_troglodytes,pongo_abelii
 
+# mus_musculus
+# mus_musculus_wsbeij,mus_spretus,mus_caroli,mus_pahari,mus_spicilegus,rattus_norvegicus,meriones_unguiculatus,peromyscus_maniculatus,microtus_ochrogaster,mesocricetus_auratus,cricetulus_griseus,nannospalax_galili,jaculus_jaculus,ictidomys_tridecemlineatus
 
-import core, sys, os, argparse, treeparse as tp, requests
+import sys, os, argparse, requests
 import xml.etree.ElementTree as ET
+sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
+import core, treeparse as tp
 
-print "Program call: " + " ".join(sys.argv) + "\n"
+print("Program call: " + " ".join(sys.argv) + "\n");
 
 parser = argparse.ArgumentParser(description="");
 parser.add_argument("-q", dest="query", help="The path to a FASTA file with sequences from the target species.", default=False);
@@ -54,9 +58,9 @@ with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
     query_seqs = core.fastaGetDict(args.query);
     num_orths = 0;
 
-    numbars, donepercent, i, numseq = 0, [], 0, len(query_seqs);
+    numbars, donepercent, i, numseq, firstbar = 0, [], 0, len(query_seqs), True;
     for title in query_seqs:
-        numbars, donepercent = core.loadingBar(i, numseq, donepercent, numbars);
+        numbars, donepercent, firstbar = core.loadingBar(i, numseq, donepercent, numbars, firstbar);
         i += 1;
         # Loading bar
 
@@ -89,10 +93,11 @@ with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
         r = requests.get(server+ext, headers={ "Content-Type" : "text/xml"})
         while not r.ok:
             logfile.write(" -> Attempt " + str(attempt) + "\n");
+            attempt += 1;
             r = requests.get(server+ext, headers={ "Content-Type" : "text/xml"});
             if attempt > 100:
                 #print r.raise_for_status()
-                print " -> Coult not connect... skipping...";
+                print(" -> Coult not connect... skipping...");
                 continue;
                 #sys.exit()
         # Query as XML and retrieve from Ensembl
@@ -148,5 +153,5 @@ with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
 
 pstring = "100.0% complete.";
 sys.stderr.write('\b' * len(pstring) + pstring);
-print "\nDone!";
-print num_orths, "orths written.";
+print("\nDone!");
+print(num_orths, "orths written.");

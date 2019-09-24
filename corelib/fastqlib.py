@@ -80,6 +80,7 @@ def textOut(stats, globs):
             b += 5;
         core.PW("               ---------|---------|---------|---------|---------|---------|---------|---------|---------|---------|", globs['outtxt'])
         core.PW("                       0.1       0.2       0.3       0.4       0.5       0.6       0.7       0.8       0.9       1.0", globs['outtxt'])
+        core.PW("Read length....Proportion of reads", globs['outtxt']);
     # Read length proportion histogram.
     #####
 
@@ -87,7 +88,7 @@ def textOut(stats, globs):
     # Average quality per position plot
     if globs['qual']:
         core.PW("\nAverage quality score per read position:", globs['outtxt']);
-        core.PW("Position....Quality", globs['outtxt']);
+        core.PW("Position...Quality", globs['outtxt']);
         core.PW("           0        10        20        30        40", globs['outtxt']);
         core.PW("           |---------|---------|---------|---------|-", globs['outtxt']);
         for pos in sorted(stats['qual_pos'].keys()):
@@ -103,6 +104,7 @@ def textOut(stats, globs):
                 core.PW(pos_str + "........|" + "-" * (stats['qual_pos'][pos]-1) + chr(stats['qual_pos'][pos] + 33), globs['outtxt']);
         core.PW("           |---------|---------|---------|---------|-", globs['outtxt']);
         core.PW("           0        10        20        30        40", globs['outtxt']);
+        core.PW("Position...Quality", globs['outtxt']);
     # Average quality per position plot
     #####
 
@@ -348,9 +350,6 @@ def countReads(fastq_files, globs):
             }
             # Compile all the stats for this file into a single dictionary to easily pass to output function.
 
-            #print(stats['qual_pos']);
-            #sys.exit();
-
             print("# " + core.getTime() + " Done parsing...");
             if not globs['summary']:
                 if globs['outtxt']:
@@ -360,7 +359,6 @@ def countReads(fastq_files, globs):
                     print("\n# " + core.getTime() + " Writing stats to csv file...");
                     csvOut(stats, globs);
             # Output the stats for the current file.
-
 
     if globs['summary']:
         total_stats = {
@@ -385,129 +383,3 @@ def countReads(fastq_files, globs):
 
     print("# " + core.getTime() + " Done!");
     print("\n# =======================================================================");
-
-
-
-
-
-
-'''
-
-            # if fqf.endswith(".gz"):
-            #     fq_lines = gzip.open(fqf).read().decode().split("\n");
-            # else:
-            #     fq_lines = open(fqf).read().split("\n");
-            # lines, reads = [], [];
-            # for line in (fq_lines):
-            #     lines.append(line.rstrip());
-            #     if len(lines) == 4:
-            #         read = fqProcessRead(lines);
-            #         reads.append(read);
-            #         lines = [];
-            # del fq_lines;
-
-            print(core.getTime() + " DONE READING READS");
-            print(len_sum / len(reads));
-            sys.exit();                
-            
-            #fqhandler = core.getFileReader(fqf)(fqf, "r");
-
-            numbars, donepercent, i = 0,[],0;
-            #with core.getFileReader(fqf)(fqf) as infile:
-            lines = [];
-            for line in seq.parse(fqhandler, "fastq"):
-                numbars, donepercent = core.loadingBar(i, numlines, donepercent, numbars);
-                i += 1;
-                print(line);
-                sys.exit();
-
-
-                #lines.append(line);
-                lines.append(line.decode().rstrip());
-                if len(lines) == 4:
-                    read = fqProcessRead(lines);
-
-                    if globs['reads']:
-                        num_reads += 1;
-                    
-                    if globs['lens']:
-                        readlen = len(read['seq'])
-                        len_sum += readlen;                           
-                        cur_bin = math.floor(readlen/5)*5;
-                        read_lens[cur_bin] += 1;
-                        
-                    if globs['paired'] and fastq_file.index(fqf) == 0:
-                        if globs['reads']:
-                            total_reads += 1;
-                        if globs['lens']:
-                            total_len_sum += readlen;
-                            total_read_lens[cur_bin] += 1;
-
-                    if globs['bc']:
-                        for char in read['seq']:
-                            base_comp[char] += 1;
-                            if globs['paired'] and fastq_file.index(fqf) == 0:
-                                total_base_comp[char] += 1;
-
-                    if globs['qual']:
-                        for pos in range(readlen):
-                            qual = ord(read['qual'][pos]) - 33;
-                            qual_pos[pos] += qual;
-                            total_qual_pos[pos] += qual;
-                            site_sum[pos] += 1;
-                            total_site_sum[pos] += 1;
-
-                    lines = []
-
-            pstring = "100.0% complete.";
-            sys.stderr.write('\b' * len(pstring) + pstring + "\n");
-
-            stats = {
-                'num_reads' : num_reads,
-                'len_sum' : len_sum,
-                'base_comp' : base_comp,
-                'read_lens' : read_lens,
-                'qual_pos' : qual_pos,
-                'site_sum' : site_sum
-            }
-
-            printStats(stats, globs);
-
-
-    if globs['dirflag']:
-        stats = {
-            'num_reads' : total_reads,
-            'len_sum' : total_len_sum,
-            'base_comp' : total_base_comp,
-            'read_lens' : total_read_lens,
-            'qual_pos' : total_qual_pos,
-            'site_sum' : total_site_sum
-        }
-
-        print("\n=======================================================================");
-        print("\nCOMBINED STATS FOR ALL FILES:")
-        printStats(stats, globs);
-
-
-
-	# 	seqs, skip = core.fastaReader(fasta_file);
-	# 	if skip:
-	# 		fa_skip.append(fasta_file);
-	# 		continue;
-	# 	total_files += 1;
-	# 	for title in seqs:
-	# 		total_seq += 1;
-	# 		if disp_file == 1:
-	# 			print(title + "\t" + len(seqs[title]));
-	# 		total_pos += len(seqs[title]);
-
-	# print("\n" + core.getTime() + " Done!");
-	# print("-----");
-	# print("Total FASTA files:\t", total_files);
-	# print("Total sequences:\t", total_seq);
-	# print("Total positions:\t", total_pos);
-	# if fa_skip != []:
-	# 	print("The following", str(len(fa_skip)), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]));
-	# print("=======================================================================");
-
-#############################################################################'''
