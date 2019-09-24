@@ -137,8 +137,6 @@ with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
         outline = "";
         if args.mode == 'oto':
             if all(len(orths[spec]) == 1 for spec in orths):
-                #print(orths[spec])
-                sys.exit();
                 num_orths += 1;
                 for spec in ordered_speclist:
                     outline += orths[spec][0] + "\t";
