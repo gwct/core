@@ -13,7 +13,7 @@
 # homo_sapiens,bos_taurus,chlorocebus_sabaeus,gorilla_gorilla,macaca_mulatta,microcebus_murinus,monodelphis_domestica,mus_musculus,nomascus_leucogenys,pan_troglodytes,pongo_abelii
 
 # mus_musculus
-# mus_musculus_wsbeij,mus_spretus,mus_caroli,mus_pahari,mus_spicilegus,rattus_norvegicus,meriones_unguiculatus,peromyscus_maniculatus,microtus_ochrogaster,mesocricetus_auratus,cricetulus_griseus,nannospalax_galili,jaculus_jaculus,ictidomys_tridecemlineatus
+# mus_musculus_wsbeij,mus_spretus,mus_caroli,mus_pahari,mus_spicilegus,rattus_norvegicus,meriones_unguiculatus,peromyscus_maniculatus_bairdii,microtus_ochrogaster,mesocricetus_auratus,cricetulus_griseus_crigri,nannospalax_galili,jaculus_jaculus,ictidomys_tridecemlineatus
 
 import sys, os, argparse, requests
 import xml.etree.ElementTree as ET
@@ -61,7 +61,7 @@ with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
 
     numbars, donepercent, i, numseq, firstbar = 0, [], 0, len(query_seqs), True;
     for title in query_seqs:
-        numbars, donepercent, firstbar = core.loadingBar(i, numseq, donepercent, numbars, firstbar);
+        numbars, donepercent, firstbar = core.loadingBar(i, numseq, donepercent, numbars, firstbar, True);
         i += 1;
         # Loading bar
 
@@ -90,6 +90,9 @@ with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
         ext = ext[:-1];
         # Add the target species to the query
 
+        #print(ext);
+        #sys.exit();
+
         attempt = 2;
         r = requests.get(server+ext, headers={ "Content-Type" : "text/xml"})
         while not r.ok:
@@ -98,8 +101,8 @@ with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
             r = requests.get(server+ext, headers={ "Content-Type" : "text/xml"});
             if attempt > 100:
                 #print r.raise_for_status()
-                print(" -> Coult not connect... skipping...");
-                continue;
+                logfile.write(" -> Coult not connect after 100 attempts... skipping...\n");
+                break;
                 #sys.exit()
         # Query as XML and retrieve from Ensembl
 
@@ -132,11 +135,14 @@ with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
         #print "----------";
 
         outline = "";
-        if args.mode == 'oto' and all(len(orths[spec]) == 1 for spec in orths):
-            num_orths += 1;
-            for spec in ordered_speclist:
-                outline += orths[spec][0] + "\t";
-            outfile.write(outline[:-1] + "\n");
+        if args.mode == 'oto':
+            if all(len(orths[spec]) == 1 for spec in orths):
+                #print(orths[spec])
+                sys.exit();
+                num_orths += 1;
+                for spec in ordered_speclist:
+                    outline += orths[spec][0] + "\t";
+                outfile.write(outline[:-1] + "\n");
 
         else:
             num_orths += 1;
@@ -150,7 +156,7 @@ with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
         #print "------------\n\n";
         #sys.exit();
     logfile.write("----------\n");
-    logfile.write(str(num_orths) + " otos written\n");
+    logfile.write(str(num_orths) + " orths written\n");
 
 pstring = "100.0% complete.";
 sys.stderr.write('\b' * len(pstring) + pstring);

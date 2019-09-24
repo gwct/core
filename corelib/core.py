@@ -95,9 +95,9 @@ def loadingBar(counter, length, done, bars, firstbar=False, disperc=False):
 
 		done.append(percentdone);
 		bars = bars + 1;
-		sys.stderr.flush();
 	if disperc:
 		sys.stderr.write('\b' * len(pstring) + pstring);
+	sys.stderr.flush();
 	
 	return bars, done, firstbar;
 
