@@ -51,7 +51,7 @@ logfilename = args.output.replace(".txt","") + "-" + start + ".log";
 
 skiplines = [];
 if args.skipfile:
-    skiplines = open(args.skipfile, "r").readlines();
+    skiplines = open(args.skipfile, "r").read().split("\n");
 # Read the skip file.
 
 server = "http://rest.ensembl.org"
