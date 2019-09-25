@@ -28,23 +28,31 @@ parser.add_argument("-n", dest="query_name", help="The name of the target specie
 parser.add_argument("-t", dest="targets", help="A comma separated list of species to query.", default=False);
 parser.add_argument("-m", dest="mode", help="Which orthologs to retrieve: 'all' (default), 'oto'.", default='all');
 parser.add_argument("-s", dest="seqtype", help="Which type of sequence to retrieve: 'cds' (default), 'prot'.", default='cds');
+parser.add_argument("-f", dest="skipfile", help="A file that may contain gene ids to skip (one per line).", default=False);
 parser.add_argument("-o", dest="output", help="The output file name.", default=False);
 args = parser.parse_args();
 # Input options.
 
 if not any(opt for opt in [args.query, args.query_name, args.targets, args.output]):
-    sys.exit(" * ERROR: All of -q, -n, -t, and -o must be specified.");
+    sys.exit(" * ERROR 1: All of -q, -n, -t, and -o must be specified.");
 if not os.path.isfile(args.query):
-    sys.exit(" * ERROR: Cannot find specified query fasta file (-q): " + args.query);
+    sys.exit(" * ERROR 2: Cannot find specified query fasta file (-q): " + args.query);
 if args.mode not in ['all', 'oto']:
-    sys.exit(" * ERROR: -m must be either 'all' or 'oto'.");
+    sys.exit(" * ERROR 3: -m must be either 'all' or 'oto'.");
 if args.seqtype not in ['cds', 'prot']:
-    sys.exit(" * ERROR: -s must be either 'cds' or 'prot'.");
+    sys.exit(" * ERROR 4: -s must be either 'cds' or 'prot'.");
+if args.skipfile and not os.path.isfile(args.skipfile):
+    sys.exit(" * ERROR 5: Invalid file path given for skip file (-f).");
 targets = args.targets.split(",");
 ##############
 
 start = core.getLogTime();
 logfilename = args.output.replace(".txt","") + "-" + start + ".log";
+
+skiplines = [];
+if args.skipfile:
+    skiplines = open(args.skipfile, "r").readlines();
+# Read the skip file.
 
 server = "http://rest.ensembl.org"
 # The Ensembl REST server.
@@ -81,6 +89,10 @@ with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
         #gid = "ENSG00000188086";
         #print gid;
         logfile.write(gid + "\n");
+
+        if gid in skiplines:
+            logfile.write(" -> Flagged for skipping...");
+            continue;
 
         ext = "/homology/id/" + gid + "?type=orthologues;sequence=cds;aligned=0;format=condensed;"
         # Make the Ensembl query
