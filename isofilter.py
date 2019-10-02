@@ -62,7 +62,7 @@ def optParse():
 ############################################
 def ensFilter(inseqs, spec_label, outfilename):
 
-	print("Indexing", len(inseqs), "sequences to be filtered.");
+	print("Indexing " + str(len(inseqs)) + " sequences to be filtered.");
 	print("Parsing identifiers...");
 
 	for title in inseqs:
@@ -75,7 +75,7 @@ def ensFilter(inseqs, spec_label, outfilename):
 			identDict[geneid].append((title, inseqs[title]));
 	sys.stderr.write('\b');
 
-	print("Filtering and writing sequences...");
+	print(" Filtering and writing sequences...");
 	i, numseqs, donepercent, numbars, firstbar = 0,len(identDict),[],0,True;
 
 	for key in identDict:
