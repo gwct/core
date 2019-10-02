@@ -66,16 +66,16 @@ def ensFilter(inseqs, spec_label, outfilename):
 	print("Parsing identifiers...");
 
 	for title in inseqs:
-		geneid = title[title.index("gene:") + 5:title.index("gene:") + 23];
-
+		#geneid = title[title.index("gene:") + 5:title.index("gene:") + 23];
+		geneid = title[title.index("gene:") + 5:title.index(" ", title.index("gene:"))];
+		
 		if geneid in identDict:
 			identDict[geneid].append((title, inseqs[title]));
 		else:
 			identDict[geneid] = [];
 			identDict[geneid].append((title, inseqs[title]));
-	sys.stderr.write('\b');
 
-	print(" Filtering and writing sequences...");
+	print("Filtering and writing sequences...");
 	i, numseqs, donepercent, numbars, firstbar = 0,len(identDict),[],0,True;
 
 	for key in identDict:
