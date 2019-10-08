@@ -10,16 +10,16 @@
 display_usage() {
 # Usage message for -h
     echo
-	echo "Usage:"
+    echo "Usage:"
     echo
     echo "Read file directly:"
-    echo "ensembl_get_orths.sh -r [97] -f [file] -o [both] -h"
+    echo "ensembl_get_orths.sh -r [98] -f [file] -o [both] -h"
     echo
     echo "Read from STDIN:"
-    echo "cat [file with species names, one per line] | ensembl_get_orths.sh -r [97] -o [both] -h"
+    echo "cat [file with species names, one per line] | ensembl_get_orths.sh -r [98] -o [both] -h"
     echo
-    echo "-r: Ensembl release. Default: 97"
-    echo "-f: An input file with one Ensembl species name per line. Can also be read from STDIN."
+    echo "-r: Ensembl release. Default: 98"
+    echo "-f: An input file with one Ensembl species name per line. Can also be read from STDIN. Lines starting with # are skipped."
     echo "-o: The type of sequence to retrieve: cds (coding sequences), pep (peptides), or both (default)."
     echo "-h: Display this help message."
     echo
@@ -42,7 +42,7 @@ invalit_out(){
     echo "Error 2: Invalid output (-o) option: $1"
     echo "Error 2: Output (-o) must be one of: both, pep, cds"
     echo "====================================="
-    exit 1   
+    exit 1
 }
 
 ############################################################
@@ -50,7 +50,7 @@ invalit_out(){
 echo
 echo "====================================="
 echo "Get Ensembl sequences with rsync for all species in a file."
-release="97"
+release="98"
 input="/dev/stdin"
 output="both"
 # Defaults
@@ -79,6 +79,9 @@ echo
 # Print info
 
 while read spec; do
+    if [[ $spec == \#* ]]; then
+        continue
+    fi
     echo $spec
     mkdir $spec
     #cd $spec
@@ -90,7 +93,7 @@ while read spec; do
     if [ $output == "cds" ] || [ $output == "both" ]; then
         rsync -av rsync://ftp.ensembl.org/ensembl/pub/$release/fasta/$spec/pep/*.pep.all.fa.gz $spec/.
         rsync -av rsync://ftp.ensembl.org/ensembl/pub/$release/fasta/$spec/pep/CHECKSUMS $spec/CHECKSUMS-PEP
-    fi   
+    fi
     #rsync -av rsync://ftp.ensembl.org/ensembl/pub/latest/fasta/$spec/cds/ $spec/
     #rsync -av rsync://ftp.ensembl.org/ensembl/pub/latest/fasta/$spec/pep/ $spec/
 done < "$input"

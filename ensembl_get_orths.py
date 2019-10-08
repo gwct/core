@@ -13,7 +13,7 @@
 # homo_sapiens,bos_taurus,chlorocebus_sabaeus,gorilla_gorilla,macaca_mulatta,microcebus_murinus,monodelphis_domestica,mus_musculus,nomascus_leucogenys,pan_troglodytes,pongo_abelii
 
 # mus_musculus
-# mus_musculus_wsbeij,mus_spretus,mus_caroli,mus_pahari,mus_spicilegus,rattus_norvegicus,meriones_unguiculatus,peromyscus_maniculatus_bairdii,microtus_ochrogaster,mesocricetus_auratus,cricetulus_griseus_crigri,nannospalax_galili,jaculus_jaculus,ictidomys_tridecemlineatus
+# mus_musculus_pwkphj,mus_musculus_wsbeij,mus_musculus_casteij,mus_spretus,mus_caroli,mus_pahari,mus_spicilegus,rattus_norvegicus,meriones_unguiculatus,peromyscus_maniculatus_bairdii,microtus_ochrogaster,mesocricetus_auratus,cricetulus_griseus_crigri,nannospalax_galili,jaculus_jaculus,ictidomys_tridecemlineatus
 
 import sys, os, argparse, requests
 import xml.etree.ElementTree as ET
@@ -24,7 +24,7 @@ print("Program call: " + " ".join(sys.argv) + "\n");
 
 parser = argparse.ArgumentParser(description="");
 parser.add_argument("-q", dest="query", help="The path to a FASTA file with sequences from the target species.", default=False);
-parser.add_argument("-n", dest="query_name", help="The name of the target species.", default=False);
+parser.add_argument("-n", dest="query_name", help="The name of the query species.", default=False);
 parser.add_argument("-t", dest="targets", help="A comma separated list of species to query.", default=False);
 parser.add_argument("-m", dest="mode", help="Which orthologs to retrieve: 'all' (default), 'oto'.", default='all');
 parser.add_argument("-s", dest="seqtype", help="Which type of sequence to retrieve: 'cds' (default), 'prot'.", default='cds');
