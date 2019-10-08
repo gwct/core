@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 ############################################################
 # For substitution rates, 03.19
 # Retrieves Ensembl orthologs for a given query species and
@@ -64,7 +64,7 @@ with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
     logfile.write("Program call: " + " ".join(sys.argv) + "\n\n");
 
     outfile.write("\t".join(ordered_speclist) + "\n");
-    query_seqs = core.fastaGetDict(args.query);
+    query_seqs, read_flag = core.fastaReader(args.query);
     num_orths = 0;
 
     numbars, donepercent, i, numseq, firstbar = 0, [], 0, len(query_seqs), True;
