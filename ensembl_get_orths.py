@@ -2,7 +2,7 @@
 ############################################################
 # For substitution rates, 03.19
 # Retrieves Ensembl orthologs for a given query species and
-# a set of target species. Retrieves sequences.
+# a set of target species.
 ############################################################
 
 # homo_sapiens
@@ -11,9 +11,17 @@
 
 # aotus_nancymaae
 # homo_sapiens,bos_taurus,chlorocebus_sabaeus,gorilla_gorilla,macaca_mulatta,microcebus_murinus,monodelphis_domestica,mus_musculus,nomascus_leucogenys,pan_troglodytes,pongo_abelii
+# Owl monkey
 
 # mus_musculus
 # mus_musculus_pwkphj,mus_musculus_wsbeij,mus_musculus_casteij,mus_spretus,mus_caroli,mus_pahari,mus_spicilegus,rattus_norvegicus,meriones_unguiculatus,peromyscus_maniculatus_bairdii,microtus_ochrogaster,mesocricetus_auratus,cricetulus_griseus_crigri,nannospalax_galili,jaculus_jaculus,ictidomys_tridecemlineatus
+# Big rodent comparative project
+
+# mus_musculus
+# mus_musculus_pwkphj,mus_musculus_wsbeij,mus_spretus
+# Phodopus X project
+
+############################################################
 
 import sys, os, argparse, requests
 import xml.etree.ElementTree as ET
