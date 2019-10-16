@@ -38,7 +38,7 @@ invalid_opt() {
 
 ##########
 # Invalid output option message
-invalit_out(){
+invalid_out(){
     echo "Error 2: Invalid output (-o) option: $1"
     echo "Error 2: Output (-o) must be one of: both, pep, cds"
     echo "====================================="
