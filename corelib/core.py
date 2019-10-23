@@ -5,6 +5,7 @@
 #############################################################################
 
 import string, sys, os, re, subprocess, datetime, gzip
+from collections import defaultdict
 
 #############################################################################
 
@@ -13,7 +14,7 @@ def dnaCheck(seq, i_name):
 
 	dna_symbols = ["A","T","C","G","N","-"];
 
-	seq = string.upper(seq);
+	seq = seq.upper();
 	#It first converts the sequence to all uppercase letters.
 	seq = seq.replace('U', 'T');
 	#The function then converts any U's to T's, changing RNA to DNA.
@@ -400,11 +401,28 @@ def getFileReader(i_name):
 
 #############################################################################
 
-def getFileLen(i_name):
+def getFileLenRead(i_name):
 # Gets the number of lines in a file.
 	num_lines = 0;
 	for line in getFileReader(i_name)(i_name): num_lines += 1;
 	return float(num_lines);
+
+#############################################################################
+
+def dsum(*dicts):
+# Given a list of dictionaries, this function merges them into a single dictionary, summing values of common keys.
+    ret = defaultdict(int);
+    for d in dicts:
+        for k, v in d.items():
+            ret[k] += v;
+    return dict(ret);
+
+#############################################################################
+
+def chunks(l, n):
+# Splits a list l into even chunks of size n.
+    n = max(1, n)
+    return (l[i:i+n] for i in range(0, len(l), n))
 
 #############################################################################
 ##########################################################################################################################################################
