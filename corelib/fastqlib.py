@@ -23,12 +23,12 @@ def textOut(stats, globs):
     core.PW("\n" + core.spacedOut("FILE:", pad) + stats['file'], globs['outtxt']);
 
     if globs['reads']:
-        core.PW(core.spacedOut("TOTAL READS:", pad) + str(stats['num_reads']), globs['outtxt']);
+        core.PW(core.spacedOut("TOTAL READS:", pad) + str(stats['reads']), globs['outtxt']);
     if globs['lens']:
-        avg_len = stats['num_sites'] / stats['num_reads'];
+        avg_len = stats['sites'] / stats['reads'];
         core.PW(core.spacedOut("AVERAGE READ LENGTH:", pad) + str(round(avg_len, 2)), globs['outtxt']);
     if globs['reads'] and globs['lens'] and globs['genome_size']:
-        coverage = (stats['num_reads'] * avg_len) / globs['genome_size'];
+        coverage = (stats['reads'] * avg_len) / globs['genome_size'];
         core.PW(core.spacedOut("COVERAGE:", pad) + str(round(coverage, 2)), globs['outtxt']);
     # Count the number of reads.
 
@@ -70,7 +70,7 @@ def textOut(stats, globs):
             while len(b_str) != 3:
                 b_str = "0" + b_str;
             if b in stats['read_lens']:
-                stats['read_lens'][b] = round(stats['read_lens'][b] / stats['num_reads'], 2) * 100;
+                stats['read_lens'][b] = round(stats['read_lens'][b] / stats['reads'], 2) * 100;
                 if stats['read_lens'][b] == 0.00:
                     core.PW(b_str + "............|", globs['outtxt']); 
                 else:
@@ -117,16 +117,16 @@ def csvOut(stats, globs):
         outline = [stats['file']];
 
         if globs['reads']:
-            outline.append(str(stats['num_reads']));
+            outline.append(str(stats['reads']));
         # Num reads output
 
         if globs['lens']:
-            avg_len = stats['num_sites'] / stats['num_reads'];
+            avg_len = stats['sites'] / stats['reads'];
             outline.append(str(round(avg_len, 3)));
         # Read length output
 
         if globs['reads'] and globs['lens'] and globs['genome_size']:
-            coverage = round((stats['num_reads'] * avg_len) / globs['genome_size'], 3);
+            coverage = round((stats['reads'] * avg_len) / globs['genome_size'], 3);
             outline.append(str(coverage));
         # Genome coverage output
 
@@ -148,7 +148,7 @@ def csvOut(stats, globs):
 
         if globs['qual']:
             qual_sum = sum(stats['qual_pos'].values());
-            avg_qual = round(qual_sum / stats['num_sites'], 3);
+            avg_qual = round(qual_sum / stats['sites'], 3);
             # Compute the average quality of all bases.
 
             sorted_qual_pos = sorted(stats['qual_pos'].keys())
@@ -200,6 +200,24 @@ def dsum(*dicts):
     return dict(ret)
 
 ####################
+def combineResults(ocounts, fcounts, r):
+    ocounts['reads'] += r['reads'];
+    ocounts['sites'] += r['sites'];
+    ocounts['read_lens'] = dsum(ocounts['read_lens'], r['read_lens']);
+    ocounts['base_comp'] = dsum(ocounts['base_comp'], r['base_comp']);
+    ocounts['qual_pos'] = dsum(ocounts['qual_pos'], r['qual_pos']);
+    ocounts['site_pos'] = dsum(ocounts['site_pos'], r['site_pos']);
+
+    fcounts['reads'] += r['reads'];
+    fcounts['sites'] += r['sites'];
+    fcounts['read_lens'] = dsum(fcounts['read_lens'], r['read_lens']);
+    fcounts['base_comp'] = dsum(fcounts['base_comp'], r['base_comp']);
+    fcounts['qual_pos'] = dsum(fcounts['qual_pos'], r['qual_pos']);
+    fcounts['site_pos'] = dsum(fcounts['site_pos'], r['site_pos']);
+
+    return ocounts, fcounts
+
+####################
 def createFunc(globs):
 # This function dynamically writes a function depending on the input options. This prevents having an if statement
 # for each option for each line in a fastq file. Pretty cool...
@@ -211,7 +229,7 @@ def fqFunc(cur_reads):
     read_info = {
         'reads' : 0,
         'length' : 0,
-        'num_sites' : 0, 
+        'sites' : 0, 
         'read_lens' : defaultdict(int),
         'base_comp' : { "A" : 0, "T" : 0, "C" : 0, "G" : 0, "N" : 0 },
         'qual_pos' : defaultdict(int),
@@ -227,7 +245,7 @@ def fqFunc(cur_reads):
 
     if globs['lens']:
         func += '''
-        read_info['num_sites'] += readlen;
+        read_info['sites'] += readlen;
         cur_bin = math.floor(readlen/5)*5;
         read_info['read_lens'][cur_bin] += 1;
         # Get the read length bins if that option is specified.
@@ -264,12 +282,15 @@ def countReads(fastq_files, globs):
 
     createFunc(globs);
 
-    total_reads, total_sites = 0,0;
-    total_read_lens = defaultdict(int);
-    bases = ['A','T','C','G'];
-    total_base_comp = { "A" : 0, "T" : 0, "C" : 0, "G" : 0, "N" : 0 };
-    total_qual_pos = defaultdict(int);
-    total_site_pos = defaultdict(int);
+    overall_counts = {
+        'file' : globs['dirflag'],
+        'reads' : 0,
+        'sites' : 0,
+        'read_lens' : defaultdict(int),
+        'base_comp' : { "A" : 0, "T" : 0, "C" : 0, "G" : 0, "N" : 0 },
+        'qual_pos' : defaultdict(int),
+        'site_pos' : defaultdict(int)
+    }
     # total_reads: The total number of reads parsed in all input files
     # total_sites: The total number of sites in all input files
     # total_read_lens: The count of read lengths for every read in every file
@@ -282,11 +303,15 @@ def countReads(fastq_files, globs):
             print("\n# --------------------\n");
             print("# " + core.getTime() + " READING FILE :\t" + fqf);
 
-            num_reads, num_sites = 0,0;
-            read_lens = defaultdict(int);
-            base_comp = { "A" : 0, "T" : 0, "C" : 0, "G" : 0, "N" : 0 };
-            qual_pos = defaultdict(int);    
-            site_pos = defaultdict(int);
+            file_counts = {
+                'file' : fqf,
+                'reads' : 0,
+                'sites' : 0,
+                'read_lens' : defaultdict(int),
+                'base_comp' : { "A" : 0, "T" : 0, "C" : 0, "G" : 0, "N" : 0 },
+                'qual_pos' : defaultdict(int),
+                'site_pos' : defaultdict(int)
+            }
             # num_reads: The total number of reads parse in the current file
             # len_sum: The sum length of all reads in the current file
             # site_sum: The total number of sites at each position in all reads
@@ -301,84 +326,51 @@ def countReads(fastq_files, globs):
             # Declare a lambda function to parse lines in the file based on the file type. This prevents having an if statement for each line read.
 
             lines, reads = [], [];
+            reads_per_chunk = 10000;
+            pool = mp.Pool(processes=globs['procs']);
+
+            print("# " + core.getTime() + " Processing reads in chunks of size " + str(reads_per_chunk) + " using " + str(globs['procs']) + " processes.");
+            i, i_start = 0, 1;
             for line in core.getFileReader(fqf)(fqf):
                 lines.append(lread(line));
                 if len(lines) == 4:
+                    i += 1;
                     read = fqProcessRead(lines);
                     reads.append(read);
                     lines = [];
-            # Read the file and process the lines as fastq reads.
 
-            print("# " + core.getTime() + " Read " + str(len(reads)) + " reads");
+                if len(reads) == globs['procs']*reads_per_chunk:
+                    print("# " + core.getTime() + " Processing reads " + str(i_start) + "-" + str(i));
+                    i_start = i + 1;
+                    read_chunks = list(chunks(reads, reads_per_chunk));
+                    reads = [];
+                    for result in pool.imap(fq.fqFunc, (read_chunk for read_chunk in read_chunks)):
+                        overall_counts, file_counts = combineResults(overall_counts, file_counts, result);
 
-            reads_per_chunk = int(math.ceil(len(reads) / globs['procs']));
-            print("# " + core.getTime() + " Splitting into " + str(globs['procs']) + " chunks (" + str(reads_per_chunk) + " reads per chunk)");
-            read_chunks = list(chunks(reads, reads_per_chunk));
-            # Split the reads into even sized chunks depending on how many processes specified.
-
-            print("# " + core.getTime() + " Starting parse...");
-            pool = mp.Pool(processes=globs['procs']);
-            # Declare the processor pool.
-            for result in pool.imap(fq.fqFunc, (read_chunk for read_chunk in read_chunks)):
-                num_reads += result['reads'];
-                num_sites += result['num_sites'];
-
-                read_lens = dsum(read_lens, result['read_lens']);
-                base_comp = dsum(base_comp, result['base_comp']);
-                qual_pos = dsum(qual_pos, result['qual_pos']);
-                site_pos = dsum(site_pos, result['site_pos']);
-
-                #if globs['paired'] and fastq_file.index(fqf) == 0:
-                total_reads += result['reads'];
-                total_sites += result['num_sites'];
-
-                total_read_lens = dsum(total_read_lens, result['read_lens']);
-                total_base_comp = dsum(total_base_comp, result['base_comp']);
-                total_qual_pos = dsum(total_qual_pos, result['qual_pos']);
-                total_site_pos = dsum(total_site_pos, result['site_pos']);
-                # Get the total stats for all files, only taking the first of a pair of read pair files.
-            # Call the fqFunc on each chunk in parallel.
-            
-            stats = {
-                'file' : fqf,
-                'num_reads' : num_reads,
-                'num_sites' : num_sites,
-                'base_comp' : base_comp,
-                'read_lens' : read_lens,
-                'qual_pos' : qual_pos,
-                'site_pos' : site_pos
-            }
-            # Compile all the stats for this file into a single dictionary to easily pass to output function.
+            if reads != []:
+                print("# " + core.getTime() + " Processing reads " + str(i_start) + "-" + str(i));
+                read_chunks = list(chunks(reads, reads_per_chunk));
+                reads = [];
+                for result in pool.imap(fq.fqFunc, (read_chunk for read_chunk in read_chunks)):
+                    overall_counts, file_counts = combineResults(overall_counts, file_counts, result);
 
             print("# " + core.getTime() + " Done parsing...");
             if not globs['summary']:
                 if globs['outtxt']:
                     print("# " + core.getTime() + " Printing stats and writing to text file...");
-                    textOut(copy.deepcopy(stats), globs);
+                    textOut(copy.deepcopy(file_counts), globs);
                 if globs['outcsv']:
                     print("\n# " + core.getTime() + " Writing stats to csv file...");
-                    csvOut(stats, globs);
+                    csvOut(file_counts, globs);
             # Output the stats for the current file.
-
-    if globs['summary']:
-        total_stats = {
-            'file' : globs['dirflag'],
-            'num_reads' : total_reads,
-            'num_sites' : total_sites,
-            'base_comp' : total_base_comp,
-            'read_lens' : total_read_lens,
-            'qual_pos' : total_qual_pos,
-            'site_pos' : total_site_pos
-        }
  
-        print("\n# --------------------\n");
-        if globs['outtxt']:
-            print("# " + core.getTime() + " Printing TOTAL stats and writing to text file...");
-            textOut(copy.deepcopy(total_stats), globs);
-        if globs['outcsv']:
-            print("\n# " + core.getTime() + " Writing TOTAL stats to csv file...");
-            csvOut(total_stats, globs);
-        # Output the stats for the current file.
+    print("\n# --------------------\n");
+    if globs['outtxt']:
+        print("# " + core.getTime() + " Printing TOTAL stats and writing to text file...");
+        textOut(copy.deepcopy(overall_counts), globs);
+    if globs['outcsv']:
+        print("\n# " + core.getTime() + " Writing TOTAL stats to csv file...");
+        csvOut(overall_counts, globs);
     # Output summary stats for ALL files combined.
 
     print("# " + core.getTime() + " Done!");

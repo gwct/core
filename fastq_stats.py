@@ -56,7 +56,7 @@ if __name__ == '__main__':
         dirflag = args.input;
         infiles = [ os.path.join(args.input, f) for f in os.listdir(args.input) if any(ext in f for ext in ["fastq","fq"]) ];
 
-        if any("R2" in f for f in infiles):
+        if any("_R2_" in f for f in infiles):
             paired = True;
 
         pairs = [];
@@ -64,7 +64,7 @@ if __name__ == '__main__':
             for f in infiles:
                 if "R2" in f:
                     continue;
-                pairs.append([f, f.replace("R1","R2")]);
+                pairs.append([f, f.replace("_R1_","_R2_")]);
             infiles = pairs;
         else:
             infiles = [[f] for f in infiles];
