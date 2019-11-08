@@ -74,11 +74,12 @@ if __name__ == '__main__':
     else:
         if ";" in args.input:
             paired = True;
+            dirflag = args.input;
             f = args.input.split(";");
             if not all(os.path.isfile(i) for i in f):
                 sys.exit(core.errorOut(1, "Cannot find input file/directory (-i)."));
 
-            if "R1" in f[0]:
+            if "_R1_" in f[0]:
                 f1, f2 = f[0], f[1];
             else:
                 f1, f2 = f[1], f[0];
