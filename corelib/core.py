@@ -426,7 +426,7 @@ def chunks(l, n):
 
 #############################################################################
 
-def runTime(msg=False);
+def runTime(msg=False):
 	if msg:
 		print("###### " + msg + " ######");
 	print("# PYTHON VERSION: " + ".".join(map(str, sys.version_info[:3])))
