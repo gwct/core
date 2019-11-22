@@ -431,7 +431,7 @@ def runTime(msg=False):
 		print("###### " + msg + " ######");
 	print("# PYTHON VERSION: " + ".".join(map(str, sys.version_info[:3])))
 	print("# Script call: " + " ".join(sys.argv))
-	print("# Runtime: " + datetime.now().strftime("%m/%d/%Y %H:%M:%S"));
+	print("# Runtime: " + datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S"));
 	print("----------");
 
 #############################################################################
