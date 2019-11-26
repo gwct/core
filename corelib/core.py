@@ -428,7 +428,9 @@ def chunks(l, n):
 
 def runTime(msg=False):
 	if msg:
-		print("###### " + msg + " ######");
+		if not msg.startswith("#"):
+			msg = "# " + msg;
+		print(msg);
 	print("# PYTHON VERSION: " + ".".join(map(str, sys.version_info[:3])))
 	print("# Script call: " + " ".join(sys.argv))
 	print("# Runtime: " + datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S"));
