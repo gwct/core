@@ -310,6 +310,18 @@ def rootedOrNot(treedict):
 
 #############################################################################
 
+def ultrametricOrNot(treedict, root):
+	root_dists = [];
+	tips = [ n for n in treedict if treedict[n][2] == 'tip' ];
+	root_dists = [ round(nodeDist(node, root, treedict), 3) for node in tips ];
+	print(root_dists);
+	if root_dists.count(root_dists[0]) == len(root_dists):
+		return True;
+	else:
+		return False;		
+
+#############################################################################
+
 def treeParse(tree, debug=0):
 # The treeParse function takes as input a rooted phylogenetic tree with branch lengths and returns the tree with node labels and a
 # dictionary with usable info about the tree in the following format:
