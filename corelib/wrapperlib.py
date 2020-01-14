@@ -738,8 +738,8 @@ def runCodeml(infiles, file_flag, path, seqtype, treefile, gt_opt, prune, branch
 			#ctlFile.write("fix_blength = 1\n\n")
 		# Write the control file based on the input options.
 
-		codeml_cmd = os.path.join(path, "bin", "codeml " + ctlfilename);
-		#codeml_cmd = path + " " + ctlfilename;
+		#codeml_cmd = os.path.join(path, "bin", "codeml " + ctlfilename);
+		codeml_cmd = path + " " + ctlfilename;
 		if v == 0:
 			codeml_cmd += " >> " + stdoutlog + " 2>&1";
 		with open(logfilename, "a") as logfile:

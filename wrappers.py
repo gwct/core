@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 ########################################################################################
 # A script with wrapper modules for many evolutionary analysis programs.
 #
