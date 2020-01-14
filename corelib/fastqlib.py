@@ -20,7 +20,7 @@ def textOut(stats, globs):
         bar = u'\u2588';
     pad = 25;
 
-    core.PW("\n" + core.spacedOut("FILE:", pad) + stats['file'], globs['outtxt']);
+    core.PW("\n" + core.spacedOut("FILE:", pad), globs['outtxt']); 
 
     if globs['reads']:
         core.PW(core.spacedOut("TOTAL READS:", pad) + str(stats['reads']), globs['outtxt']);

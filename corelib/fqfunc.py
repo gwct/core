@@ -23,14 +23,5 @@ def fqFunc(cur_reads):
         read_info['read_lens'][cur_bin] += 1;
         # Get the read length bins if that option is specified.
     
-        for char in read['seq']:
-            read_info['base_comp'][char] += 1;
-        # Get the base counts if the base composition option is specified.
-    
-        for pos in range(readlen):
-            read_info['qual_pos'][pos] += ord(read['qual'][pos]) - 33;
-            read_info['site_pos'][pos] += 1;
-        # Get the quality sums for each position and total number of sites for each position if the qual option is specified.
-    
     return read_info;
     
