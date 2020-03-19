@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 ########################################################################################
 # A script to do many Newick tree related things
 #

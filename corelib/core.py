@@ -235,7 +235,7 @@ def getFileLen(i_name):
 
 def getDateTime():
 #Function to get the date and time in a certain format.
-	return datetime.datetime.now().strftime("%m.%d.%Y | %I:%M:%S");
+	return datetime.datetime.now().strftime("%m.%d.%Y | %H:%M:%S");
 
 #############################################################################
 
@@ -266,6 +266,14 @@ def PW(o_line, o_name, file_flag=True):
 	if file_flag == True:
 		with open(o_name, "a", encoding="utf-8") as f:
 			f.write(o_line + "\n");
+
+#############################################################################
+
+def PWS(o_line, o_stream, file_flag=True):
+# Function to print a string AND write it to the file.
+	print(o_line);
+	if o_stream == True:
+		o_stream.write(o_line + "\n");
 
 #############################################################################
 
@@ -306,9 +314,9 @@ def getOutdir(indir, prefix, suffix, stime):
 
 #############################################################################
 
-def spacedOut(string, totlen):
+def spacedOut(string, totlen, sep=" "):
 # Properly adds spaces to the end of a string to make it a given length
-	spaces = " " * (totlen - len(string));
+	spaces = sep * (totlen - len(string));
 	return string + spaces;
 
 #############################################################################
@@ -426,15 +434,28 @@ def chunks(l, n):
 
 #############################################################################
 
-def runTime(msg=False):
+def runTime(msg=False, writeout=False):
 	if msg:
 		if not msg.startswith("#"):
 			msg = "# " + msg;
-		print(msg);
-	print("# PYTHON VERSION: " + ".".join(map(str, sys.version_info[:3])))
-	print("# Script call: " + " ".join(sys.argv))
-	print("# Runtime: " + datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S"));
-	print("# ----------");
+		PWS(msg, writeout);
+
+	PWS("# PYTHON VERSION: " + ".".join(map(str, sys.version_info[:3])), writeout)
+	PWS("# Script call: " + " ".join(sys.argv), writeout)
+	PWS("# Runtime: " + datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S"), writeout);
+	PWS("# ----------", writeout);
+
+
+	# print("# PYTHON VERSION: " + ".".join(map(str, sys.version_info[:3])))
+	# print("# Script call: " + " ".join(sys.argv))
+	# print("# Runtime: " + datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S"));
+	# print("# ----------");
+
+	# if writeout:
+	# 	writeout.write("# PYTHON VERSION: " + ".".join(map(str, sys.version_info[:3])) + "\n");
+	# 	writeout.write("# Script call: " + " ".join(sys.argv) + "\n");
+	# 	writeout.write("# Runtime: " + datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S") + "\n");
+	# 	writeout.write("# ----------" + "\n");
 
 #############################################################################
 ##########################################################################################################################################################
@@ -539,7 +560,7 @@ def fastaGetDict(i_name):
 	seqdict = {};
 	for line in open(i_name, "r"):
 		line = line.replace("\n", "");
-		if line[:1] == '>':
+		if line[0] == '>':
 			curkey = line;
 			seqdict[curkey] = "";
 		else:
