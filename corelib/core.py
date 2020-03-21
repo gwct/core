@@ -269,9 +269,10 @@ def PW(o_line, o_name, file_flag=True):
 
 #############################################################################
 
-def PWS(o_line, o_stream=False):
+def PWS(o_line, std_stream=True, o_stream=False):
 # Function to print a string AND write it to the file.
-	print(o_line);
+	if std_stream:
+		print(o_line);
 	if o_stream:
 		o_stream.write(o_line + "\n");
 
