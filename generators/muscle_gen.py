@@ -10,7 +10,7 @@ import sys, os, core, argparse
 
 parser = argparse.ArgumentParser(description="Fisher's test for GO enrichment");
 parser.add_argument("-i", dest="input", help="Directory of input FASTA files.", default=False);
-parser.add_argument("-o", dest="output", help="Desired output directory for aligned files.", default=False);
+parser.add_argument("-o", dest="output", help="Desired output directory for aligned files. Job name (-n) will be appended to output directory name.", default=False);
 parser.add_argument("-n", dest="name", help="A short name for all files associated with this job.", default=False);
 parser.add_argument("-p", dest="path", help="The path to MUSCLE. Default: muscle", default="muscle");
 parser.add_argument("--overwrite", dest="overwrite", help="If the output directory already exists and you wish to overwrite it, set this option.", default=False);
@@ -27,15 +27,19 @@ args = parser.parse_args();
 if not args.input or not os.path.isdir(args.input):
     sys.exit( " * Error 1: An input directory must be defined with -i.");
 args.input = os.path.abspath(args.input);
-if not args.output:
-    sys.exit( " * Error 2: An output directory must be defined with -o.");
-if os.path.isdir(args.output) and not args.overwrite:
-    sys.exit( " * Error 3: Output directory (-o) already exists! Explicity specify --overwrite to overwrite it.");
-args.output = os.path.abspath(args.output);
+
 if not args.name:
     name = core.getRandStr();
 else:
     name = args.name;
+
+if not args.output:
+    sys.exit( " * Error 2: An output directory must be defined with -o.");
+
+args.output = os.path.abspath(args.output);
+args.output = args.output + "-" + name + "/";
+if os.path.isdir(args.output) and not args.overwrite:
+    sys.exit( " * Error 3: Output directory (-o) already exists! Explicity specify --overwrite to overwrite it.");
 # IO error checking
 
 if not args.part:
@@ -51,6 +55,7 @@ if args.tasks < 1:
 pad = 26
 cwd = os.getcwd();
 
+
 output_file = os.path.join(cwd, "jobs", "muscle_cmds_" + name + ".sh");
 submit_file = os.path.join(cwd, "submit", "muscle_submit_" + name + ".sh");
 
@@ -62,19 +67,19 @@ logdir = os.path.join(args.output, "logs");
 with open(output_file, "w") as outfile:
     core.runTime("#!/bin/bash\n# MUSCLE command generator", outfile);
     core.PWS(core.spacedOut("# Input directory:", pad) + args.input, outfile);
+    if not args.name:
+        core.PWS("# -n not specified --> Generating random string for job name", outfile);
+    core.PWS(core.spacedOut("# Job name:", pad) + name, outfile);
     core.PWS(core.spacedOut("# Output directory:", pad) + args.output, outfile);
     if args.overwrite:
         core.PWS(core.spacedOut("# --overwrite set:", pad) + "Overwriting previous files in output directory.", outfile);
     if not os.path.isdir(args.output):
         core.PWS("# Creating output directory.", outfile);
         os.system("mkdir " + args.output);
-    if not args.name:
-        core.PWS("# -n not specified --> Generating random string for job name", outfile);
     core.PWS(core.spacedOut("# Logfile directory:", pad) + logdir, outfile);
     if not os.path.isdir(logdir):
         core.PWS("# Creating logfile directory.", outfile);
         os.system("mkdir " + logdir);
-    core.PWS(core.spacedOut("# Job name:", pad) + name, outfile);
     core.PWS(core.spacedOut("# Job file:", pad) + output_file, outfile);
     core.PWS(core.spacedOut("# Submit file:", pad) + submit_file, outfile);
     core.PWS("# ----------");
