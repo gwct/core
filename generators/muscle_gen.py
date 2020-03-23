@@ -86,11 +86,11 @@ with open(output_file, "w") as outfile:
     
     for f in os.listdir(args.input):
         base_input = os.path.splitext(f)[0];
-        infile = os.path.join(args.input, f);
-        outfile = os.path.join(args.output, base_input + "-muscle-" + name + ".fa");
-        logfile = os.path.join(logdir, base_input + "-muscle-" + name + ".log");
+        cur_infile = os.path.join(args.input, f);
+        cur_outfile = os.path.join(args.output, base_input + "-muscle-" + name + ".fa");
+        cur_logfile = os.path.join(logdir, base_input + "-muscle-" + name + ".log");
 
-        muscle_cmd = args.path + " -in '" + infile + "' -out '" + outfile +"' > " + logfile + "2>&1";
+        muscle_cmd = args.path + " -in '" + cur_infile + "' -out '" + cur_outfile +"' > " + cur_logfile + "2>&1";
 
         outfile.write(muscle_cmd + "\n");
 
