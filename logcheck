@@ -1,0 +1,12 @@
+#!/bin/bash
+
+grep Error *.log
+grep ERROR *.log
+grep error *.log
+grep AssertionError *.log
+grep "java.lang.RuntimeException:" *.log
+grep "java.lang.AssertionError:" *.log
+grep "Can't read file" *.log
+grep Warning *.log
+grep WARNING *.log
+grep warning *.log
