@@ -98,11 +98,12 @@ with open(output_file, "w") as outfile:
         core.PWS("# Creating logfile directory.", outfile);
         os.system("mkdir " + logdir);
     core.PWS(core.spacedOut("# Job file:", pad) + output_file, outfile);
+    core.PWS("# ----------", outfile);
     core.PWS("# PRANK OPTIONS", outfile);
     core.PWS(core.spacedOut("# Num PRANK iters:", pad) + args.iters, outfile);
     if args.codon:
         core.PWS(core.spacedOut("# --codon:", pad) + "Using PRANK's empirical codon model.", outfile);
-    core.PWS("# ----------");
+    core.PWS("# ----------", outfile);
     core.PWS("# SLURM OPTIONS", outfile);
     core.PWS(core.spacedOut("# Submit file:", pad) + submit_file, outfile);
     core.PWS(core.spacedOut("# SLURM partition:", pad) + args.part, outfile);
@@ -120,7 +121,7 @@ with open(output_file, "w") as outfile:
         cur_outfile = os.path.join(args.output, base_input + "-prank-" + name + ".fa");
         cur_logfile = os.path.join(logdir, base_input + "-prank-" + name + ".log");
 
-        prank_cmd = args.path + " -d='" + cur_infile + "' -o='" + cur_outfile + "' iterate=" + str(args.iters);
+        prank_cmd = args.path + " -d='" + cur_infile + "' -o='" + cur_outfile + "' -iterate=" + str(args.iters);
         if args.codon:
             prank_cmd += " -codon";
         prank_cmd += " > " + cur_logfile + " 2>&1";

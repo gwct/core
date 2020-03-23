@@ -88,7 +88,7 @@ with open(output_file, "w") as outfile:
         core.PWS("# Creating logfile directory.", outfile);
         os.system("mkdir " + logdir);
     core.PWS(core.spacedOut("# Job file:", pad) + output_file, outfile);
-    core.PWS("# ----------");
+    core.PWS("# ----------", outfile);
     core.PWS("# SLURM OPTIONS", outfile);
     core.PWS(core.spacedOut("# Submit file:", pad) + submit_file, outfile);
     core.PWS(core.spacedOut("# SLURM partition:", pad) + args.part, outfile);
