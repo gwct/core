@@ -13,7 +13,7 @@ parser.add_argument("-i", dest="input", help="Directory of input FASTA files.", 
 parser.add_argument("-o", dest="output", help="Desired output directory for aligned files. Job name (-n) will be appended to output directory name.", default=False);
 parser.add_argument("-n", dest="name", help="A short name for all files associated with this job.", default=False);
 parser.add_argument("-p", dest="path", help="The path to MUSCLE. Default: muscle", default="muscle");
-parser.add_argument("--overwrite", dest="overwrite", help="If the output directory already exists and you wish to overwrite it, set this option.", default=False);
+parser.add_argument("--overwrite", dest="overwrite", help="If the output directory already exists and you wish to overwrite it, set this option.", action="store_true", default=False);
 # IO options
 
 parser.add_argument("-part", dest="part", help="SLURM partition option.", default=False);
