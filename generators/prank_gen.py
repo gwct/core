@@ -14,6 +14,7 @@ parser.add_argument("-o", dest="output", help="Desired output directory for alig
 parser.add_argument("-n", dest="name", help="A short name for all files associated with this job.", default=False);
 parser.add_argument("-p", dest="path", help="The path to PRANK. Default: prank", default="prank");
 parser.add_argument("--overwrite", dest="overwrite", help="If the output directory already exists and you wish to overwrite it, set this option.", action="store_true", default=False);
+parser.add_argument("--outname", dest="outname", help="Use the end of the output directory path as the job name.", action="store_true", default=False);
 # IO options
 
 parser.add_argument("--codon", dest="codon", help="If input alignments are codons, use PRANK's empirical codon model.", action="store_true", default=False);
@@ -40,7 +41,10 @@ if not args.output:
     sys.exit( " * Error 2: An output directory must be defined with -o.");
 
 args.output = os.path.abspath(args.output);
-args.output = args.output + "-" + name + "/";
+if args.outname:
+    name = os.path.basename(args.output);
+else:
+    args.output = args.output + "-" + name + "/";
 if os.path.isdir(args.output) and not args.overwrite:
     sys.exit( " * Error 3: Output directory (-o) already exists! Explicity specify --overwrite to overwrite it.");
 # IO option error checking
@@ -70,6 +74,8 @@ logdir = os.path.join(args.output, "logs");
 with open(output_file, "w") as outfile:
     core.runTime("#!/bin/bash\n# PRANK command generator", outfile);
     core.PWS(core.spacedOut("# Input directory:", pad) + args.input, outfile);
+    if args.outname:
+        core.PWS(core.spacedOut("# --outname:", pad) + "Using end of output directory path as job name.", outfile);
     if not args.name:
         core.PWS("# -n not specified --> Generating random string for job name", outfile);
     core.PWS(core.spacedOut("# Job name:", pad) + name, outfile);
@@ -103,7 +109,7 @@ with open(output_file, "w") as outfile:
         cur_outfile = os.path.join(args.output, base_input + "-prank-" + name + ".fa");
         cur_logfile = os.path.join(logdir, base_input + "-prank-" + name + ".log");
 
-        prank_cmd = args.path + " -d= '" + cur_infile + "' -o= '" + cur_outfile +"' -codon -F once > " + cur_logfile + " 2>&1";
+        prank_cmd = args.path + " -d='" + cur_infile + "' -o='" + cur_outfile +"' -codon -F once > " + cur_logfile + " 2>&1";
 
         outfile.write(prank_cmd + "\n");
 
