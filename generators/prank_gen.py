@@ -1,6 +1,6 @@
 #!/usr/bin/python
 ############################################################
-# Generates commands for the muscle alignment program
+# Generates commands for the prank alignment program
 ############################################################
 
 import sys, os, core, argparse
@@ -8,13 +8,16 @@ import sys, os, core, argparse
 ############################################################
 # Options
 
-parser = argparse.ArgumentParser(description="MUSCLE command generator");
+parser = argparse.ArgumentParser(description="PRANK command generator");
 parser.add_argument("-i", dest="input", help="Directory of input FASTA files.", default=False);
 parser.add_argument("-o", dest="output", help="Desired output directory for aligned files. Job name (-n) will be appended to output directory name.", default=False);
 parser.add_argument("-n", dest="name", help="A short name for all files associated with this job.", default=False);
-parser.add_argument("-p", dest="path", help="The path to MUSCLE. Default: muscle", default="muscle");
+parser.add_argument("-p", dest="path", help="The path to PRANK. Default: prank", default="prank");
 parser.add_argument("--overwrite", dest="overwrite", help="If the output directory already exists and you wish to overwrite it, set this option.", action="store_true", default=False);
 # IO options
+
+parser.add_argument("--codon", dest="codon", help="If input alignments are codons, use PRANK's empirical codon model.", action="store_true", default=False);
+# Program options
 
 parser.add_argument("-part", dest="part", help="SLURM partition option.", default=False);
 parser.add_argument("-tasks", dest="tasks", help="SLURM --ntasks option.", type=int, default=1);
@@ -56,8 +59,8 @@ pad = 26
 cwd = os.getcwd();
 # Job vars
 
-output_file = os.path.join(cwd, "jobs", "muscle_cmds_" + name + ".sh");
-submit_file = os.path.join(cwd, "submit", "muscle_submit_" + name + ".sh");
+output_file = os.path.join(cwd, "jobs", "prank_cmds_" + name + ".sh");
+submit_file = os.path.join(cwd, "submit", "prank_submit_" + name + ".sh");
 logdir = os.path.join(args.output, "logs");
 # Job files
 
@@ -65,7 +68,7 @@ logdir = os.path.join(args.output, "logs");
 # Reporting run-time info for records.
 
 with open(output_file, "w") as outfile:
-    core.runTime("#!/bin/bash\n# MUSCLE command generator", outfile);
+    core.runTime("#!/bin/bash\n# PRANK command generator", outfile);
     core.PWS(core.spacedOut("# Input directory:", pad) + args.input, outfile);
     if not args.name:
         core.PWS("# -n not specified --> Generating random string for job name", outfile);
@@ -81,6 +84,8 @@ with open(output_file, "w") as outfile:
         core.PWS("# Creating logfile directory.", outfile);
         os.system("mkdir " + logdir);
     core.PWS(core.spacedOut("# Job file:", pad) + output_file, outfile);
+    if args.codon:
+        core.PWS(core.spacedOut("# --codon:", pad) + "Using PRANK's empirical codon model.", outfile);
     core.PWS(core.spacedOut("# Submit file:", pad) + submit_file, outfile);
     core.PWS("# ----------");
     core.PWS(core.spacedOut("# SLURM partition:", pad) + args.part, outfile);
@@ -95,12 +100,12 @@ with open(output_file, "w") as outfile:
     for f in os.listdir(args.input):
         base_input = os.path.splitext(f)[0];
         cur_infile = os.path.join(args.input, f);
-        cur_outfile = os.path.join(args.output, base_input + "-muscle-" + name + ".fa");
-        cur_logfile = os.path.join(logdir, base_input + "-muscle-" + name + ".log");
+        cur_outfile = os.path.join(args.output, base_input + "-prank-" + name + ".fa");
+        cur_logfile = os.path.join(logdir, base_input + "-prank-" + name + ".log");
 
-        muscle_cmd = args.path + " -in '" + cur_infile + "' -out '" + cur_outfile +"' > " + cur_logfile + " 2>&1";
+        prank_cmd = args.path + " -d= '" + cur_infile + "' -o= '" + cur_outfile +"' -codon -F once > " + cur_logfile + " 2>&1";
 
-        outfile.write(muscle_cmd + "\n");
+        outfile.write(prank_cmd + "\n");
 
 ##########################
 # Generating the submit script.
