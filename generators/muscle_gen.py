@@ -70,6 +70,7 @@ logdir = os.path.join(args.output, "logs");
 
 with open(output_file, "w") as outfile:
     core.runTime("#!/bin/bash\n# MUSCLE command generator", outfile);
+    core.PWS("# IO OPTIONS", outfile);
     core.PWS(core.spacedOut("# Input directory:", pad) + args.input, outfile);
     if args.outname:
         core.PWS(core.spacedOut("# --outname:", pad) + "Using end of output directory path as job name.", outfile);
@@ -87,8 +88,9 @@ with open(output_file, "w") as outfile:
         core.PWS("# Creating logfile directory.", outfile);
         os.system("mkdir " + logdir);
     core.PWS(core.spacedOut("# Job file:", pad) + output_file, outfile);
-    core.PWS(core.spacedOut("# Submit file:", pad) + submit_file, outfile);
     core.PWS("# ----------");
+    core.PWS("# SLURM OPTIONS", outfile);
+    core.PWS(core.spacedOut("# Submit file:", pad) + submit_file, outfile);
     core.PWS(core.spacedOut("# SLURM partition:", pad) + args.part, outfile);
     core.PWS(core.spacedOut("# SLURM ntasks:", pad) + str(args.tasks), outfile);
     core.PWS(core.spacedOut("# SLURM cpus-per-task:", pad) + str(args.cpus), outfile);

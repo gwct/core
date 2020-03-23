@@ -17,6 +17,7 @@ parser.add_argument("--overwrite", dest="overwrite", help="If the output directo
 parser.add_argument("--outname", dest="outname", help="Use the end of the output directory path as the job name.", action="store_true", default=False);
 # IO options
 
+parser.add_argument("-iters", dest="iters", help="Number of iterations of PRANK's algorithm.", type=int, default=1);
 parser.add_argument("--codon", dest="codon", help="If input alignments are codons, use PRANK's empirical codon model.", action="store_true", default=False);
 # Program options
 
@@ -49,6 +50,12 @@ if os.path.isdir(args.output) and not args.overwrite:
     sys.exit( " * Error 3: Output directory (-o) already exists! Explicity specify --overwrite to overwrite it.");
 # IO option error checking
 
+if args.iters < 1:
+    sys.exit( " * Error PR1: -iters must be a positive integer.");
+else:
+    args.iters = str(args.iters);
+# PRANK error checking
+
 if not args.part:
     sys.exit( " * Error 4: -part must be defined as a valid node partition on your clutser.");
 if args.tasks < 1:
@@ -73,6 +80,7 @@ logdir = os.path.join(args.output, "logs");
 
 with open(output_file, "w") as outfile:
     core.runTime("#!/bin/bash\n# PRANK command generator", outfile);
+    core.PWS("# IO OPTIONS", outfile);
     core.PWS(core.spacedOut("# Input directory:", pad) + args.input, outfile);
     if args.outname:
         core.PWS(core.spacedOut("# --outname:", pad) + "Using end of output directory path as job name.", outfile);
@@ -90,10 +98,13 @@ with open(output_file, "w") as outfile:
         core.PWS("# Creating logfile directory.", outfile);
         os.system("mkdir " + logdir);
     core.PWS(core.spacedOut("# Job file:", pad) + output_file, outfile);
+    core.PWS("# PRANK OPTIONS", outfile);
+    core.PWS(core.spacedOut("# Num PRANK iters:", pad) + args.iters, outfile);
     if args.codon:
         core.PWS(core.spacedOut("# --codon:", pad) + "Using PRANK's empirical codon model.", outfile);
-    core.PWS(core.spacedOut("# Submit file:", pad) + submit_file, outfile);
     core.PWS("# ----------");
+    core.PWS("# SLURM OPTIONS", outfile);
+    core.PWS(core.spacedOut("# Submit file:", pad) + submit_file, outfile);
     core.PWS(core.spacedOut("# SLURM partition:", pad) + args.part, outfile);
     core.PWS(core.spacedOut("# SLURM ntasks:", pad) + str(args.tasks), outfile);
     core.PWS(core.spacedOut("# SLURM cpus-per-task:", pad) + str(args.cpus), outfile);
@@ -109,7 +120,10 @@ with open(output_file, "w") as outfile:
         cur_outfile = os.path.join(args.output, base_input + "-prank-" + name + ".fa");
         cur_logfile = os.path.join(logdir, base_input + "-prank-" + name + ".log");
 
-        prank_cmd = args.path + " -d='" + cur_infile + "' -o='" + cur_outfile +"' -codon -F once > " + cur_logfile + " 2>&1";
+        prank_cmd = args.path + " -d='" + cur_infile + "' -o='" + cur_outfile + "' iterate=" + str(args.iters);
+        if args.codon:
+            prank_cmd += " -codon";
+        prank_cmd += " > " + cur_logfile + " 2>&1";
 
         outfile.write(prank_cmd + "\n");
 
