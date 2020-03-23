@@ -26,10 +26,12 @@ args = parser.parse_args();
 
 if not args.input or not os.path.isdir(args.input):
     sys.exit( " * Error 1: An input directory must be defined with -i.");
+args.input = os.path.abspath(args.input);
 if not args.output:
     sys.exit( " * Error 2: An output directory must be defined with -o.");
 if os.path.isdir(args.output) and not args.overwrite:
     sys.exit( " * Error 3: Output directory (-o) already exists! Explicity specify --overwrite to overwrite it.");
+args.output = os.path.abspath(args.output);
 if not args.name:
     name = core.getRandStr();
 else:
@@ -69,6 +71,9 @@ with open(output_file, "w") as outfile:
     if not args.name:
         core.PWS("# -n not specified --> Generating random string for job name", outfile);
     core.PWS(core.spacedOut("# Logfile directory:", pad) + logdir, outfile);
+    if not os.path.isdir(logdir):
+        core.PWS("# Creating logfile directory.", outfile);
+        os.system("mkdir " + logdir);
     core.PWS(core.spacedOut("# Job name:", pad) + name, outfile);
     core.PWS(core.spacedOut("# Job file:", pad) + output_file, outfile);
     core.PWS(core.spacedOut("# Submit file:", pad) + submit_file, outfile);
