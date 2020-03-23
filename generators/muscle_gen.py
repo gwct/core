@@ -51,8 +51,8 @@ if args.tasks < 1:
 pad = 26
 cwd = os.getcwd();
 
-output_file = os.path.join(cwd, "jobs", "muscle_cmds_" + args.name + ".sh");
-submit_file = os.path.join(cwd, "submit", "muscle_submit_" + args.name + ".sh");
+output_file = os.path.join(cwd, "jobs", "muscle_cmds_" + name + ".sh");
+submit_file = os.path.join(cwd, "submit", "muscle_submit_" + name + ".sh");
 
 logdir = os.path.join(args.output, "logs");
 
