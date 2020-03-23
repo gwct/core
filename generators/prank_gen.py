@@ -76,7 +76,7 @@ with open(output_file, "w") as outfile:
     core.PWS(core.spacedOut("# Input directory:", pad) + args.input, outfile);
     if args.outname:
         core.PWS(core.spacedOut("# --outname:", pad) + "Using end of output directory path as job name.", outfile);
-    if not args.name:
+    if not args.name and not args.outname:
         core.PWS("# -n not specified --> Generating random string for job name", outfile);
     core.PWS(core.spacedOut("# Job name:", pad) + name, outfile);
     core.PWS(core.spacedOut("# Output directory:", pad) + args.output, outfile);
