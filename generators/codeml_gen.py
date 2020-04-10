@@ -145,9 +145,17 @@ with open(output_file, "w") as outfile:
 ##########################
 # Generating the commands in the job file.
 
+    num_skipped = 0;
     for f in os.listdir(args.input):
         base_input = os.path.splitext(f)[0];
         cur_infile = os.path.join(args.input, f);
+        titles, seqs = core.fastaGetLists(cur_infile);
+        seqs = [ s.lower() for s in seqs ];
+        
+        if seqs.count(seqs[0]) == len(seqs):
+            num_skipped += 1;
+            continue;
+
         cur_outdir = os.path.join(args.output, base_input);
         if not os.path.isdir(cur_outdir):
             os.system("mkdir " + cur_outdir);
@@ -162,6 +170,8 @@ with open(output_file, "w") as outfile:
         codeml_cmd = "cd " + cur_outdir + "; " + args.path + " codeml.ctl";
 
         outfile.write(codeml_cmd + "\n");
+
+    core.PWS("# Num skipped because all seqs identical: " + str(num_skipped));
 
 ##########################
 # Generating the submit script.
