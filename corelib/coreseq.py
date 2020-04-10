@@ -8,7 +8,7 @@ import sys
 
 ############################################################
 
-def premStopCheck(seq, frame=1):
+def premStopCheck(seq, frame=1, allowlastcodon=False):
     stop_codons = ["TAG", "TAA", "TGA", "UAG", "UAA", "UGA"];
     seq = seq.upper();
 
@@ -22,8 +22,9 @@ def premStopCheck(seq, frame=1):
 
     codon_list = [ seq[i:i+3] for i in range(0, len(seq), 3) ];
     for c in range(len(codon_list)):
-        if c+1 == len(codon_list):
-            continue;
+        if not allowlastcodon:
+            if c+1 == len(codon_list):
+                continue;
 
         if codon_list[c] in stop_codons:
             return True;

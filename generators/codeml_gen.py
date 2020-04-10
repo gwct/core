@@ -154,7 +154,7 @@ with open(output_file, "w") as outfile:
 
         prem_stop = False
         for seq in seqs:
-            if coreseq.premStopCheck(seq):
+            if coreseq.premStopCheck(seq, allowlastcodon=True):
                 prem_stop = True;
                 break;
 
@@ -170,7 +170,7 @@ with open(output_file, "w") as outfile:
             os.system("mkdir " + cur_outdir);
 
         cur_ctlfile = os.path.join(cur_outdir, "codeml.ctl");
-        cur_outfile = os.path.join(args.output, base_input + "-codeml-" + name + ".txt");
+        cur_outfile = os.path.join(cur_outdir, base_input + "-codeml-" + name + ".txt");
         cur_logfile = os.path.join(cur_outdir, base_input + "-codeml-" + name + ".log");
 
         with open(cur_ctlfile, "w") as ctlfile:
