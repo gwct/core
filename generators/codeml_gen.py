@@ -11,27 +11,33 @@ import sys, os, core, argparse, random
 ctlfile_template = '''seqfile = {infile}
 treefile = {treefile}
 outfile = {outfile}
+
 noisy = 3
 verbose = 0
-runmode = 0
+runmode = -2
+
 seqtype = 1
 CodonFreq = 2
 clock = 0
 aaDist = 0
-runmode = -2
-model = 1
+aaRatefile = codeml/dat/wag.dat
+model = 2
+
 NSsites = 0
+
 icode = 0
 fix_kappa = 0
+kappa = 3
 fix_omega = 0
-omega = 0
+omega = 1
+
 fix_alpha = 1
 alpha = 0
 Malpha = 0
-ncatG = 1
+ncatG = 10
 getSE = 0
 Small_Diff = .5e6
-cleandata = 1'''
+'''
 
 ############################################################
 # Options
@@ -141,10 +147,10 @@ with open(output_file, "w") as outfile:
 
     for f in os.listdir(args.input):
         base_input = os.path.splitext(f)[0];
-        cur_infile = os.path.join(args.input, f);
-        cur_ctlfile = os.path.join(logdir, base_input + "-codeml-" + name + ".ctl");
-        cur_outfile = os.path.join(args.output, base_input + "-codeml-" + name + ".fa");
-        cur_logfile = os.path.join(logdir, base_input + "-codeml-" + name + ".log");
+        cur_infile = os.path.relpath(os.path.join(args.input, f));
+        cur_ctlfile = os.path.relpath(os.path.join(logdir, base_input + "-codeml-" + name + ".ctl"));
+        cur_outfile = os.path.relpath(os.path.join(args.output, base_input + "-codeml-" + name + ".fa"));
+        cur_logfile = os.path.relpath(os.path.join(logdir, base_input + "-codeml-" + name + ".log"));
 
         with open(cur_ctlfile, "w") as ctlfile:
             ctlfile.write(ctlfile_template.format(infile=cur_infile, treefile=args.tree, outfile=cur_outfile));
