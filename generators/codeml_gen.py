@@ -3,7 +3,7 @@
 # Generates commands for codeml
 ############################################################
 
-import sys, os, core, argparse, random
+import sys, os, core, coreseq, argparse
 
 ############################################################
 # Control file template
@@ -151,10 +151,19 @@ with open(output_file, "w") as outfile:
         cur_infile = os.path.join(args.input, f);
         titles, seqs = core.fastaGetLists(cur_infile);
         seqs = [ s.lower() for s in seqs ];
-        
-        if seqs.count(seqs[0]) == len(seqs):
+
+        prem_stop = False
+        for seq in seqs:
+            if coreseq.premStopCheck(seq):
+                prem_stop = True;
+                break;
+
+        if prem_stop:
             num_skipped += 1;
             continue;
+        # if seqs.count(seqs[0]) == len(seqs):
+        #     num_skipped += 1;
+        #     continue;
 
         cur_outdir = os.path.join(args.output, base_input);
         if not os.path.isdir(cur_outdir):
@@ -171,7 +180,7 @@ with open(output_file, "w") as outfile:
 
         outfile.write(codeml_cmd + "\n");
 
-    core.PWS("# Num skipped because all seqs identical: " + str(num_skipped));
+    core.PWS("# Num skipped because of premature stop codons: " + str(num_skipped));
 
 ##########################
 # Generating the submit script.
