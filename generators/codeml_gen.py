@@ -104,7 +104,7 @@ cwd = os.getcwd();
 
 output_file = os.path.join(cwd, "jobs", "codeml_cmds_" + name + ".sh");
 submit_file = os.path.join(cwd, "submit", "codeml_submit_" + name + ".sh");
-logdir = os.path.join(args.output, "logs");
+#logdir = os.path.join(args.output, "logs");
 # Job files
 
 ##########################
@@ -125,10 +125,10 @@ with open(output_file, "w") as outfile:
     if not os.path.isdir(args.output):
         core.PWS("# Creating output directory.", outfile);
         os.system("mkdir " + args.output);
-    core.PWS(core.spacedOut("# Logfile directory:", pad) + logdir, outfile);
-    if not os.path.isdir(logdir):
-        core.PWS("# Creating logfile directory.", outfile);
-        os.system("mkdir " + logdir);
+    # core.PWS(core.spacedOut("# Logfile directory:", pad) + logdir, outfile);
+    # if not os.path.isdir(logdir):
+    #     core.PWS("# Creating logfile directory.", outfile);
+    #     os.system("mkdir " + logdir);
     core.PWS(core.spacedOut("# Job file:", pad) + output_file, outfile);
     core.PWS("# ----------", outfile);
     core.PWS("# codeml OPTIONS", outfile);
@@ -147,15 +147,19 @@ with open(output_file, "w") as outfile:
 
     for f in os.listdir(args.input):
         base_input = os.path.splitext(f)[0];
-        cur_infile = os.path.relpath(os.path.join(args.input, f));
-        cur_ctlfile = os.path.relpath(os.path.join(logdir, base_input + "-codeml-" + name + ".ctl"));
-        cur_outfile = os.path.relpath(os.path.join(args.output, base_input + "-codeml-" + name + ".fa"));
-        cur_logfile = os.path.relpath(os.path.join(logdir, base_input + "-codeml-" + name + ".log"));
+        cur_infile = os.path.join(args.input, f);
+        cur_outdir = os.path.join(args.output, base_input);
+        if not os.path.isdir(cur_outdir):
+            os.system("mkdir " + cur_outdir);
+
+        cur_ctlfile = os.path.join(cur_outdir, "codeml.ctl");
+        cur_outfile = os.path.join(args.output, base_input + "-codeml-" + name + ".txt");
+        cur_logfile = os.path.join(cur_outdir, base_input + "-codeml-" + name + ".log");
 
         with open(cur_ctlfile, "w") as ctlfile:
             ctlfile.write(ctlfile_template.format(infile=cur_infile, treefile=args.tree, outfile=cur_outfile));
 
-        codeml_cmd = args.path + " " + cur_ctlfile;
+        codeml_cmd = "cd " + cur_outdir + "; " + args.path + " codeml.ctl";
 
         outfile.write(codeml_cmd + "\n");
 
