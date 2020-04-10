@@ -22,9 +22,8 @@ def premStopCheck(seq, frame=1, allowlastcodon=False):
 
     codon_list = [ seq[i:i+3] for i in range(0, len(seq), 3) ];
     for c in range(len(codon_list)):
-        if not allowlastcodon:
-            if c+1 == len(codon_list):
-                continue;
+        if allowlastcodon and c+1 == len(codon_list):
+            continue;
 
         if codon_list[c] in stop_codons:
             return True;
