@@ -12,8 +12,9 @@ ctlfile_template = '''seqfile = {infile}
 treefile = {treefile}
 outfile = {outfile}
 
-noisy = 3
-verbose = 0
+model = 1
+NSsites = 0
+
 runmode = -2
 
 seqtype = 1
@@ -21,9 +22,6 @@ CodonFreq = 2
 clock = 0
 aaDist = 0
 aaRatefile = codeml/dat/wag.dat
-model = 2
-
-NSsites = 0
 
 icode = 0
 fix_kappa = 0
@@ -37,6 +35,9 @@ Malpha = 0
 ncatG = 10
 getSE = 0
 Small_Diff = .5e-6
+
+noisy = 3
+verbose = 0
 '''
 
 ############################################################
