@@ -442,9 +442,9 @@ def runTime(msg=False, writeout=False):
 		PWS(msg, writeout);
 
 	PWS("# PYTHON VERSION: " + ".".join(map(str, sys.version_info[:3])), writeout)
-	PWS("# Script call: " + " ".join(sys.argv), writeout)
-	PWS("# Runtime: " + datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S"), writeout);
-	PWS("# ----------", writeout);
+	PWS("# Script call:    " + " ".join(sys.argv), writeout)
+	PWS("# Runtime:        " + datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S"), writeout);
+	PWS("# ----------------", writeout);
 
 
 	# print("# PYTHON VERSION: " + ".".join(map(str, sys.version_info[:3])))
