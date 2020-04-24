@@ -447,6 +447,7 @@ def removeStarts(fasta_files, seqtype, file_flag, out_dest):
 		outfile = open(outfilename, "w");
 		for title in seqs:
 			seq = seqs[title];
+			total_seq += 1;
 			if seqtype[0] == 'p' and seq[0].upper() == "M":
 				total_start_rm += 1;
 				seq = seq[1:];
@@ -485,6 +486,7 @@ def removeStops(fasta_files, seqtype, file_flag, out_dest):
 		outfile = open(outfilename, "w");
 		for title in seqs:
 			seq = seqs[title];
+			total_seq += 1;
 			if seq[-3:] in stop_codons:
 				seq = seq[:-3];
 				total_stop_rm += 1;
