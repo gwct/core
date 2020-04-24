@@ -468,6 +468,41 @@ def removeStarts(fasta_files, seqtype, file_flag, out_dest):
 
 #############################################################################
 
+def removeStops(fasta_files, seqtype, file_flag, out_dest):
+# This function removes either start codons or start M's, depending on the
+# type of input sequence specified.
+	stop_codons = ["TAG", "TAA", "TGA", "UAG", "UAA", "UGA"];
+	total_files, total_seq, total_stop_rm = 0,0,0;
+	fa_skip = [];
+	for fasta_file in fasta_files:
+		seqs, skip = core.fastaReader(fasta_file);
+		if skip:
+			fa_skip.append(fasta_file);
+			continue;
+
+		total_files += 1;
+		outfilename = core.getOutFile(fasta_file, file_flag, out_dest, "rmstop");
+		outfile = open(outfilename, "w");
+		for title in seqs:
+			seq = seqs[title];
+			if seq[-3:] in stop_codons:
+				seq = seq[:-3];
+				total_stop_rm += 1;
+			outfile.write(title + "\n");
+			outfile.write(seq + "\n");
+		outfile.close();
+
+	print("\n" + core.getTime() + " Done!");
+	print("-----");
+	print("Total files read:\t", total_files);
+	print("Total sequences read:\t", total_seq);
+	print("Total starts removed:\t", total_stop_rm);
+	if fa_skip != []:
+		print("The following", len(fa_skip), "file(s) were skipped because they couldn't be read as fasta files: ", ",".join([os.path.basename(f) for f in fa_skip]));
+	print("=======================================================================");
+
+#############################################################################
+
 def replaceBase(fasta_files, replacements, file_flag, out_dest):
 # This function reads all sequences in the input and replaces a given state with
 # another given state.

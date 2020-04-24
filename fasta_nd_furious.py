@@ -27,6 +27,7 @@ parser.add_argument("-delim", dest="header_delim", help="A character at which th
 parser.add_argument("-newlabel", dest="new_label", help="The new label(s) to be added to the FASTA headers when -relabel is specified. If a single label is specified, this will be used for all sequences. If a dict like list of labels is specified (ie 'oldlabel1:newlabel1,oldlabel2:newlabel2') then the old headers will be searched for the old labels and new labels will be placed appropriately.", default=False);
 parser.add_argument("-rmseq", dest="label_rm", help="A comma delimited list of labels. Any sequence with any of those labels in their header will be removed.", default=False);
 parser.add_argument("-rmstart", dest="start_rm", help="This will remove the start M or ATG from input sequences. Enter sequence type: 'protein' or 'codon'", default=False);
+parser.add_argument("-rmstop", dest="stop_rm", help="This will remove the stop codons if they are the last codon in an input codon alignment. Enter sequence type must be 'codon'", default=False);
 parser.add_argument("-replace", dest="replace", help="This option will replace all characters in each sequence with another character. For example, AB will replace all As with Bs. If the input is an alignment and A: is entered, all As will be replaced with another base/aa that is not present in the column. For multiple replacements, enter as: AB,CD,EF", default=False);
 parser.add_argument("-outfile", dest="outfile", help="The output file for commands: --concat, --combine, -extract");
 parser.add_argument("-outdir", dest="outdir", help="The output directory for commands:");
@@ -176,6 +177,17 @@ if args.start_rm:
 	fa.removeStarts(filelist, args.start_rm.lower(), file_flag, output);
 	sys.exit();	
 ## -rmstart
+
+if args.stop_rm:
+	if args.stop_rm.lower() not in ['codon','c']:
+		sys.exit(core.errorOut(10, "Sequence types for removing stops (-rmstop) must be 'codon'. Enter -rmstop codon"));
+	print("=======================================================================");
+	print("\t\t\t" + core.getDateTime());
+	print(core.spacedOut("Removing all stops from:", 50), args.input);
+	print(core.spacedOut("Writing all sequences (.rmstop) to:", 50), output);
+	fa.removeStops(filelist, args.stop_rm.lower(), file_flag, output);
+	sys.exit();	
+## -rmstop
 
 if args.replace:
 	print("=======================================================================");
