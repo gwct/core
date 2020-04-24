@@ -60,8 +60,8 @@ pad = 26
 cwd = os.getcwd();
 # Job vars
 
-output_file = os.path.join(cwd, "jobs", "prank_cmds_" + name + ".sh");
-submit_file = os.path.join(cwd, "submit", "prank_submit_" + name + ".sh");
+output_file = os.path.join(cwd, "jobs", "macse_cmds_" + name + ".sh");
+submit_file = os.path.join(cwd, "submit", "macse_submit_" + name + ".sh");
 logdir = os.path.join(args.output, "logs");
 # Job files
 
