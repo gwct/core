@@ -181,7 +181,7 @@ with open(output_file, "w") as outfile:
 
         outfile.write(codeml_cmd + "\n");
 
-    core.PWS("# Num skipped because of premature stop codons: " + str(num_skipped));
+    core.PWS("# Num skipped because of premature stop codons: " + str(num_skipped), outfile);
 
 ##########################
 # Generating the submit script.
