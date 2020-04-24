@@ -50,7 +50,7 @@ else:
 		filelist = [os.path.abspath(os.path.join(args.input, f)) for f in filelist_init];
 # This checks if the input (-i) entered is valid. If so, it parses it as either a directory or a single file.
 
-if all(opt == False for opt in [args.count_pos, args.count_aln, args.concat, args.combine, args.split, args.trim, args.relabel, args.label_rm, args.start_rm, args.replace, args.extract]):
+if all(opt == False for opt in [args.count_pos, args.count_aln, args.concat, args.combine, args.split, args.trim, args.relabel, args.label_rm, args.start_rm, args.stop_rm, args.replace, args.extract]):
 	print("\n** Warning: No options specified! Just running --countpos.");
 	args.count_pos = True;
 
