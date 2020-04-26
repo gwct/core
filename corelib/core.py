@@ -566,6 +566,8 @@ def fastaGetDict(i_name):
 
 	seqdict = {};
 	for line in open(i_name, "r"):
+		if line == "\n":
+			continue;
 		line = line.replace("\n", "");
 		if line[0] == '>':
 			curkey = line;

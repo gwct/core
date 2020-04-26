@@ -150,6 +150,8 @@ with open(output_file, "w") as outfile:
     for f in os.listdir(args.input):
         base_input = os.path.splitext(f)[0];
         cur_infile = os.path.join(args.input, f);
+        if os.path.isdir(cur_infile):
+            continue;
         titles, seqs = core.fastaGetLists(cur_infile);
         seqs = [ s.lower() for s in seqs ];
 

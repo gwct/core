@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 ############################################################
 # For substitution rates, 03.19
 # Retrieves Ensembl orthologs for a given query species and
@@ -28,7 +28,9 @@ import xml.etree.ElementTree as ET
 sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
 import core, treeparse as tp
 
-print("Program call: " + " ".join(sys.argv) + "\n");
+############################################################
+
+start = core.getLogTime();
 
 parser = argparse.ArgumentParser(description="");
 parser.add_argument("-q", dest="query", help="The path to a FASTA file with sequences from the target species.", default=False);
@@ -52,29 +54,39 @@ if args.seqtype not in ['cds', 'prot']:
 if args.skipfile and not os.path.isfile(args.skipfile):
     sys.exit(" * ERROR 5: Invalid file path given for skip file (-f).");
 targets = args.targets.split(",");
-##############
 
-start = core.getLogTime();
-logfilename = args.output.replace(".txt","") + "-" + start + ".log";
+logfilename = args.output.replace(".txt",".log");
 
-skiplines = [];
-if args.skipfile:
-    skiplines = open(args.skipfile, "r").read().split("\n");
-# Read the skip file.
+##########################
+# Reporting run-time info for records.
 
-server = "http://rest.ensembl.org"
-# The Ensembl REST server.
+with open(logfilename, "w") as logfile, open(args.output, "w") as outfile:
+    core.runTime("# Getting ortholog lists from Ensembl", logfile);
+    core.PWS("# Query species:        " + args.query_name, logfile);
+    core.PWS("# Query input file:     " + args.query, logfile);
+    core.PWS("# Getting orths from:   " + args.targets, logfile);
+    core.PWS("# Type of orths to get: " + args.mode, logfile);
+    core.PWS("# Sequence type to get: " + args.seqtype, logfile);
+    if args.skipfile:
+        core.PWS("# Skipping IDs in file: " + args.skipfile, logfile);
+    core.PWS("# Output file:          " + args.output, logfile);
+    core.PWS("# ----------", logfile);
+    # Print input information.
 
-ordered_speclist = args.query_name.split() + targets
+    skiplines = [];
+    if args.skipfile:
+        skiplines = open(args.skipfile, "r").read().split("\n");
+    # Read the skip file.
 
-with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
-    logfile.write(start + "\n");
-    logfile.write("Program call: " + " ".join(sys.argv) + "\n\n");
+    server = "http://rest.ensembl.org"
+    # The Ensembl REST server.
 
-    outfile.write("\t".join(ordered_speclist) + "\n");
     query_seqs, read_flag = core.fastaReader(args.query);
-    num_orths = 0;
+    # Read the input file.
 
+    ordered_speclist = args.query_name.split() + targets;
+
+    num_orths = 0;
     numbars, donepercent, i, numseq, firstbar = 0, [], 0, len(query_seqs), True;
     for title in query_seqs:
         numbars, donepercent, firstbar = core.loadingBar(i, numseq, donepercent, numbars, firstbar, True);
@@ -88,14 +100,9 @@ with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
         gid = gid[gid.index(":")+1:gid.index(".")];
         # Get the gene ID to query.
 
-        #tid = title[title.index("_")+1:title.index(" ")];
-        #query_seq = query_seqs[title];
-
         orths[args.query_name].append(gid);
         # Add the query gene ID into the orth dict.
 
-        #gid = "ENSG00000188086";
-        #print gid;
         logfile.write(gid + "\n");
 
         if gid in skiplines:
@@ -109,9 +116,6 @@ with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
             ext = ext + "target_species=" + t + ";";
         ext = ext[:-1];
         # Add the target species to the query
-
-        #print(ext);
-        #sys.exit();
 
         attempt = 2;
         r = requests.get(server+ext, headers={ "Content-Type" : "text/xml"})
@@ -151,9 +155,6 @@ with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
             #     # Get the target
             # This chunk was for when I thought I could get sequences at the same time, but it only gets 1 transcript, often not the one I need (longest).
 
-        #print orths;
-        #print "----------";
-
         outline = "";
         if args.mode == 'oto':
             if all(len(orths[spec]) == 1 for spec in orths):
@@ -171,12 +172,9 @@ with open(args.output, "w") as outfile, open(logfilename, "w") as logfile:
                     outline += "\t";
             outfile.write(outline[:-1] + "\n");
 
-        #print "------------\n\n";
-        #sys.exit();
-    logfile.write("----------\n");
-    logfile.write(str(num_orths) + " orths written\n");
+    core.PWS("# ----------", logfile);
+    core.PWS("# " + str(num_orths) + " orths written", logfile);
 
 pstring = "100.0% complete.";
 sys.stderr.write('\b' * len(pstring) + pstring);
 print("\nDone!");
-print(num_orths, "orths written.");
