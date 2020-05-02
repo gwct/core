@@ -157,7 +157,7 @@ with open(output_file, "w") as outfile:
 
         prem_stop = False
         for seq in seqs:
-            if coreseq.premStopCheck(seq):
+            if coreseq.premStopCheck(seq, allowlastcodon=True):
                 prem_stop = True;
                 break;
 
