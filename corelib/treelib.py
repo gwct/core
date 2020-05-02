@@ -352,7 +352,7 @@ def flightOfTheConcordance(infiles, tree_flag, genefilename, count_tops):
 		# Check if each line in the genetrees file is a Newick string.
 
 		if count_tops:
-			gclade = [set(tp.getClade(node, ginfo)) for node in ginfo if ginfo[node][2] != 'tip'];
+			gclade = set([frozenset(tp.getClade(node, ginfo)) for node in ginfo if ginfo[node][2] != 'tip']);
 			if gclade in tops:
 				topind = tops.index(gclade);
 				top_counts[topind] += 1;
