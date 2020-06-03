@@ -38,10 +38,10 @@ if not args.output:
     sys.exit( " * Error 2: An output directory must be defined with -o.");
 
 args.output = os.path.abspath(args.output);
-if args.outname:
-    name = os.path.basename(args.output);
-else:
-    args.output = args.output + "-" + name + "/";
+# if args.outname:
+#     name = os.path.basename(args.output);
+# else:
+#     args.output = args.output + "-" + name + "/";
 if os.path.isdir(args.output) and not args.overwrite:
     sys.exit( " * Error 3: Output directory (-o) already exists! Explicity specify --overwrite to overwrite it.");
 # IO option error checking
@@ -96,6 +96,7 @@ with open(output_file, "w") as outfile:
     core.PWS(core.spacedOut("# SLURM cpus-per-task:", pad) + str(args.cpus), outfile);
     core.PWS(core.spacedOut("# SLURM mem:", pad) + str(args.mem), outfile);
     core.PWS("# ----------", outfile);
+    core.PWS("# BEGIN CMDS", outfile);
     
 ##########################
 # Generating the commands in the job file.
@@ -103,8 +104,8 @@ with open(output_file, "w") as outfile:
     for f in os.listdir(args.input):
         base_input = os.path.splitext(f)[0];
         cur_infile = os.path.join(args.input, f);
-        cur_outfile = os.path.join(args.output, base_input + "-muscle-" + name + ".fa");
-        cur_logfile = os.path.join(logdir, base_input + "-muscle-" + name + ".log");
+        cur_outfile = os.path.join(args.output, base_input + "-muscle.fa");
+        cur_logfile = os.path.join(logdir, base_input + "-muscle.log");
 
         muscle_cmd = args.path + " -in '" + cur_infile + "' -out '" + cur_outfile +"' > " + cur_logfile + " 2>&1";
 

@@ -12,10 +12,8 @@ ctlfile_template = '''seqfile = {infile}
 treefile = {treefile}
 outfile = {outfile}
 
-model = 1
+model = 0
 NSsites = 0
-
-runmode = -2
 
 seqtype = 1
 CodonFreq = 2
@@ -142,6 +140,7 @@ with open(output_file, "w") as outfile:
     core.PWS(core.spacedOut("# SLURM cpus-per-task:", pad) + str(args.cpus), outfile);
     core.PWS(core.spacedOut("# SLURM mem:", pad) + str(args.mem), outfile);
     core.PWS("# ----------", outfile);
+    core.PWS("# BEGIN CMDS", outfile);
     
 ##########################
 # Generating the commands in the job file.
@@ -152,16 +151,17 @@ with open(output_file, "w") as outfile:
         cur_infile = os.path.join(args.input, f);
         if os.path.isdir(cur_infile):
             continue;
-        titles, seqs = core.fastaGetLists(cur_infile);
-        seqs = [ s.lower() for s in seqs ];
+        seq_dict = core.fastaGetDict(cur_infile);
+        # seqs = [ s.lower() for s in seqs ];
 
-        prem_stop = False
-        for seq in seqs:
-            if coreseq.premStopCheck(seq, allowlastcodon=True):
-                prem_stop = True;
-                break;
+        prem_stop_flag = False
+        for title in seq_dict:
+            prem_stop, new_seq = coreseq.premStopCheck(seq_dict[title], allowlastcodon=True, rmlast=True);
+            if prem_stop:
+                prem_stop_flag = True;
+            seq_dict[title] = new_seq;
 
-        if prem_stop:
+        if prem_stop_flag:
             num_skipped += 1;
             continue;
         # if seqs.count(seqs[0]) == len(seqs):
@@ -172,12 +172,18 @@ with open(output_file, "w") as outfile:
         if not os.path.isdir(cur_outdir):
             os.system("mkdir " + cur_outdir);
 
+        new_seqfile = os.path.join(cur_outdir, "codeml.fa");
+        with open(new_seqfile, "w") as seqfile:
+            for title in seq_dict:
+                seqfile.write(title + "\n");
+                seqfile.write(seq_dict[title] + "\n");
+
         cur_ctlfile = os.path.join(cur_outdir, "codeml.ctl");
-        cur_outfile = os.path.join(cur_outdir, base_input + "-codeml-" + name + ".txt");
-        cur_logfile = os.path.join(cur_outdir, base_input + "-codeml-" + name + ".log");
+        cur_outfile = os.path.join(cur_outdir, base_input + "-codeml.txt");
+        cur_logfile = os.path.join(cur_outdir, base_input + "-codeml.log");
 
         with open(cur_ctlfile, "w") as ctlfile:
-            ctlfile.write(ctlfile_template.format(infile=cur_infile, treefile=args.tree, outfile=cur_outfile));
+            ctlfile.write(ctlfile_template.format(infile=new_seqfile, treefile=args.tree, outfile=cur_outfile));
 
         codeml_cmd = "cd " + cur_outdir + "; " + args.path + " codeml.ctl";
 

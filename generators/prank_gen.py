@@ -111,6 +111,7 @@ with open(output_file, "w") as outfile:
     core.PWS(core.spacedOut("# SLURM cpus-per-task:", pad) + str(args.cpus), outfile);
     core.PWS(core.spacedOut("# SLURM mem:", pad) + str(args.mem), outfile);
     core.PWS("# ----------", outfile);
+    core.PWS("# BEGIN CMDS", outfile);
     
 ##########################
 # Generating the commands in the job file.

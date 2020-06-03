@@ -89,7 +89,7 @@ with open(logfilename, "w") as logfile, open(args.output, "w") as outfile:
     num_orths = 0;
     numbars, donepercent, i, numseq, firstbar = 0, [], 0, len(query_seqs), True;
     for title in query_seqs:
-        numbars, donepercent, firstbar = core.loadingBar(i, numseq, donepercent, numbars, firstbar, True);
+        #numbars, donepercent, firstbar = core.loadingBar(i, numseq, donepercent, numbars, firstbar, True);
         i += 1;
         # Loading bar
 
@@ -125,7 +125,7 @@ with open(logfilename, "w") as logfile, open(args.output, "w") as outfile:
             r = requests.get(server+ext, headers={ "Content-Type" : "text/xml"});
             if attempt > 100:
                 #print r.raise_for_status()
-                logfile.write(" -> Coult not connect after 100 attempts... skipping...\n");
+                logfile.write(" -> Could not connect after 100 attempts... skipping...\n");
                 break;
                 #sys.exit()
         # Query as XML and retrieve from Ensembl
@@ -136,7 +136,7 @@ with open(logfilename, "w") as logfile, open(args.output, "w") as outfile:
         # Parse XML
 
         for homology in root.iter('homologies'):
-            #print homology.tag, homology.attrib;
+            #print(homology.tag, homology.attrib);
             orths[homology.attrib['species']].append(homology.attrib['id']);
         # Get all the gene IDs for every homologous gene.
 

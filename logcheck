@@ -1,12 +1,18 @@
 #!/bin/bash
 
-grep Error *.log
-grep ERROR *.log
-grep error *.log
-grep AssertionError *.log
-grep "java.lang.RuntimeException:" *.log
-grep "java.lang.AssertionError:" *.log
-grep "Can't read file" *.log
-grep Warning *.log
-grep WARNING *.log
-grep warning *.log
+if [[ $# -eq 0 ]] ; then
+    ext=".log"
+else
+    ext=".$1"
+fi
+
+grep Error *$ext
+grep ERROR *$ext
+grep error *$ext
+grep AssertionError *$ext
+grep "java.lang.RuntimeException:" *$ext
+grep "java.lang.AssertionError:" *$ext
+grep "Can't read file" *$ext
+grep Warning *$ext
+grep WARNING *$ext
+grep warning *$ext

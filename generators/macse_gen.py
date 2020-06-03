@@ -40,8 +40,6 @@ if not args.output:
 args.output = os.path.abspath(args.output);
 if args.outname:
     name = os.path.basename(args.output);
-else:
-    args.output = args.output + "-" + name + "/";
 if os.path.isdir(args.output) and not args.overwrite:
     sys.exit( " * Error 3: Output directory (-o) already exists! Explicity specify --overwrite to overwrite it.");
 # IO option error checking
@@ -96,6 +94,7 @@ with open(output_file, "w") as outfile:
     core.PWS(core.spacedOut("# SLURM cpus-per-task:", pad) + str(args.cpus), outfile);
     core.PWS(core.spacedOut("# SLURM mem:", pad) + str(args.mem), outfile);
     core.PWS("# ----------", outfile);
+    core.PWS("# BEGIN CMDS", outfile);
     
 ##########################
 # Generating the commands in the job file.
@@ -103,11 +102,14 @@ with open(output_file, "w") as outfile:
     for f in os.listdir(args.input):
         base_input = os.path.splitext(f)[0];
         cur_infile = os.path.join(args.input, f);
-        cur_outfile_nt = os.path.join(args.output, base_input + "-macse-" + name + "-NT.fa");
-        cut_outfile_aa = os.path.join(args.output, base_input + "-macse-" + name + "-AA.fa");
-        cur_logfile = os.path.join(logdir, base_input + "-macse-" + name + ".log");
+        cur_outfile_nt = os.path.join(args.output, base_input + "-macse-NT.fa");
+        cut_outfile_aa = os.path.join(args.output, base_input + "-macse-AA.fa");
+        cur_logfile = os.path.join(logdir, base_input + "-macse.log");
 
         macse_cmd = args.path + " -prog alignSequences -seq '" + cur_infile + "' -out_NT '" + cur_outfile_nt + "' -out_AA '" + cut_outfile_aa + "' > " + cur_logfile + " 2>&1";
+        
+        #macse_cmd = args.path + " -prog alignSequences -seq '" + cur_infile + "' -stop 200 -out_NT '" + cur_outfile_nt + "' -out_AA '" + cut_outfile_aa + "' > " + cur_logfile + " 2>&1";
+        # Do not allow stop codons
 
         outfile.write(macse_cmd + "\n");
 
