@@ -1,6 +1,6 @@
 #!/usr/bin/python
 ############################################################
-# Generates commands for the MACSE alignment program
+# Generates commands for the TrimAl alignment trimming program
 ############################################################
 
 import sys, os, core, argparse
@@ -8,11 +8,11 @@ import sys, os, core, argparse
 ############################################################
 # Options
 
-parser = argparse.ArgumentParser(description="MACSE command generator");
-parser.add_argument("-i", dest="input", help="Directory of input FASTA files.", default=False);
-parser.add_argument("-o", dest="output", help="Desired output directory for aligned files. Job name (-n) will be appended to output directory name.", default=False);
+parser = argparse.ArgumentParser(description="TrimAl command generator");
+parser.add_argument("-i", dest="input", help="Directory of input aligned FASTA files.", default=False);
+parser.add_argument("-o", dest="output", help="Desired output directory for flitered files.", default=False);
 parser.add_argument("-n", dest="name", help="A short name for all files associated with this job.", default=False);
-parser.add_argument("-p", dest="path", help="The path to MACSE. Default: java -jar ~/bin/macse_v2.03.jar", default="java -jar ~/bin/macse_v2.03.jar");
+parser.add_argument("-p", dest="path", help="The path to TrimAl. Default: trimal", default="trimal");
 parser.add_argument("--overwrite", dest="overwrite", help="If the output directory already exists and you wish to overwrite it, set this option.", action="store_true", default=False);
 parser.add_argument("--outname", dest="outname", help="Use the end of the output directory path as the job name.", action="store_true", default=False);
 # IO options
@@ -67,7 +67,7 @@ logdir = os.path.join(args.output, "logs");
 # Reporting run-time info for records.
 
 with open(output_file, "w") as outfile:
-    core.runTime("#!/bin/bash\n# MACSE command generator", outfile);
+    core.runTime("#!/bin/bash\n# TrimAl command generator", outfile);
     core.PWS("# IO OPTIONS", outfile);
     core.PWS(core.spacedOut("# Input directory:", pad) + args.input, outfile);
     if args.outname:
@@ -100,18 +100,17 @@ with open(output_file, "w") as outfile:
 # Generating the commands in the job file.
 
     for f in os.listdir(args.input):
+        if not f.endswith(".fa"):
+            continue;
+
         base_input = os.path.splitext(f)[0];
         cur_infile = os.path.join(args.input, f);
-        cur_outfile_nt = os.path.join(args.output, base_input + "-macse-NT.fa");
-        cut_outfile_aa = os.path.join(args.output, base_input + "-macse-AA.fa");
-        cur_logfile = os.path.join(logdir, base_input + "-macse.log");
+        cur_outfile = os.path.join(args.output, base_input + "-trimal.fa");
+        cur_logfile = os.path.join(logdir, base_input + "-trimal.log");
 
-        #macse_cmd = args.path + " -prog alignSequences -seq '" + cur_infile + "' -out_NT '" + cur_outfile_nt + "' -out_AA '" + cut_outfile_aa + "' > " + cur_logfile + " 2>&1";
-        
-        macse_cmd = args.path + " -prog alignSequences -seq '" + cur_infile + "' -stop 200 -out_NT '" + cur_outfile_nt + "' -out_AA '" + cut_outfile_aa + "' > " + cur_logfile + " 2>&1";
-        # Do not allow stop codons
+        trimal_cmd = args.path + " -in " + cur_infile + " -out " + cur_outfile + " -gt 0.5 > " + cur_logfile + " 2>&1";
 
-        outfile.write(macse_cmd + "\n");
+        outfile.write(trimal_cmd + "\n");
 
 ##########################
 # Generating the submit script.
