@@ -39,7 +39,7 @@ def getBranchLength(bltree, spec_label):
 def remBranchLength(treestring):
 # Removes branch lengths from a tree.
 
-	treestring = re.sub('[)][\d\w<>.eE_:-]+', ')', treestring);
+	treestring = re.sub('[)][\d\w<>/.eE_:-]+', ')', treestring);
 	treestring = re.sub(':[\d.eE-]+', '', treestring);
 	#treestring = re.sub('[)][_\d\w<>.eE-]+:[\d.eE-]+', ')', treestring);
 	#treestring = re.sub(':[\d.eE-]+', '', treestring);
@@ -431,7 +431,7 @@ def treeParse(tree, debug=0):
 				bl[node] = cur_bl;								
 
 			else:
-				cur_bsl = re.findall(node + "[\d\w<>_*+.Ee-]+:[\d.Ee-]+", new_tree);
+				cur_bsl = re.findall(node + "[\d\w<>_*+.Ee/-]+:[\d.Ee-]+", new_tree);
 				if cur_bsl:
 				# If the pattern above is found then the node has both support and branch length
 					cur_bs = cur_bsl[0].replace(node, "");

@@ -209,12 +209,19 @@ def newbioTranslator(seq):
 
 #############################################################################
 
+def mean(data):
+#Calculates and returns the mean of a list of numbers.
+	return sum(data) / len(data);
+
+#############################################################################
+
 def variance(data):
 #Calculates and returns the variance of a list of numbers.
-	mean = 0.0;
-	for d in data:
-		mean = mean + float(d);
-	mean = mean / float(len(data));
+	mean = mean(data);
+	# mean = 0.0;
+	# for d in data:
+	# 	mean = mean + float(d);
+	# mean = mean / float(len(data));
 	var = 0.0;
 	for d in data:
 		var = var + (float(d) - mean)**2;
