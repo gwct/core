@@ -21,6 +21,29 @@ bartheme <- function () {
     )
 }
 
+#############################################################
+
+dottheme <- function () {  
+  theme_linedraw() %+replace% 
+    theme(axis.text=element_text(size=8), 
+          axis.title=element_text(size=16), 
+          axis.title.y=element_text(margin=margin(t=0,r=5,b=0,l=0),color="black",angle=90), 
+          axis.title.x=element_text(margin=margin(t=0,r=0,b=10,l=0),color="black"),
+          #axis.line=element_blank(),#element_line(colour='#595959',size=0.75),
+          axis.ticks=element_line(colour="#595959", size=0.25),
+          axis.ticks.length=unit(0.1,"cm"),
+          panel.grid.major = element_line(color="#999999"),
+          panel.grid.minor = element_line(color="#bfbfbf"),
+          legend.position="right",
+          legend.key.width = unit(0.75,  unit = "cm"),
+          legend.spacing.x = unit(0.25, 'cm'),
+          legend.title = element_text(size=12),
+          legend.text=element_text(size=10),
+          plot.title = element_text(hjust=0.5, size=20),
+          plot.margin = unit(c(1,1,1,1), "cm")
+    )
+}
+
 ############################################################
 
 
