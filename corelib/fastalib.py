@@ -38,7 +38,10 @@ def countPos(fasta_files, disp_file=0):
 
 def countAln(fasta_files, spec_opt):
 # This function counts a bunch of stats in a given set of alignments.
-	total_aln, total_seq, total_pos, total_col, invariant_sites, variant_sites, sites_with_gaps, sites_all_gaps, total_gaps  = 0,0,0,0,0,0,0,0,0;
+	total_aa, total_aln, total_seq, total_pos, total_col, invariant_sites, variant_sites, variant_sites_gap, sites_with_gaps, sites_all_gaps, total_gaps = 0,0,0,0,0,0,0,0,0,0,0;
+	site_patterns_gap, site_patterns_no_gap = [], [];
+	all_site_patterns = [];
+	all_site_patterns_no_gaps = [];
 
 	if spec_opt:
 		spec_aln = {};
@@ -71,6 +74,7 @@ def countAln(fasta_files, spec_opt):
 
 		for i in range(seqlen):
 		# For each column in the alignment...
+
 			total_col += 1;
 			site = [];
 			for title in seqs:
@@ -82,6 +86,9 @@ def countAln(fasta_files, spec_opt):
 				if base == "-":
 					total_gaps += 1;
 				# Converts N to - to be counted as a gap.
+
+				if base != "-":
+					total_aa += 1;
 
 				if spec_opt:
 				## WILL NEED TO ADD TITLE DELIMITER STUFF.
@@ -96,31 +103,51 @@ def countAln(fasta_files, spec_opt):
 
 				site.append(seqs[title][i]);
 
+			site = "".join(site);
+
 			if "-" in site:
 				sites_with_gaps += 1;
-			site = [base for base in site if base != "-"];
-			if site == []:
-				sites_all_gaps += 1;
-				continue;
-			# This filters gaps out of the site before determining if the
-			# site is variant or invariant.
+
+			all_site_patterns.append(site);
+			if "-" not in site:
+				all_site_patterns_no_gaps.append(site);
 
 			if site.count(site[0]) == len(site):
-				invariant_sites += 1;
-			else:
-				variant_sites += 1;
+				if site[0] == "-":
+					sites_all_gaps += 1;
+				else:
+					invariant_sites += 1;
 
+			else:
+				if "-" in site and site not in site_patterns_gap:
+					site_patterns_gap.append(site);
+					variant_sites_gap += 1;
+
+
+				if site not in site_patterns_no_gap:
+					site_patterns_no_gap.append(site);
+					variant_sites += 1;
+
+	pad = 40;
 	print("\n" + core.getTime() + " Done!");
 	print("-----");
-	print("Total # Seqs\t", total_seq);
-	print("Total # Positions\t", total_pos);
-	print("Total # Aligns\t", total_aln);
-	print("Total # Columns\t", total_col);
-	print("# Invariant Sites\t", invariant_sites);
-	print("# Variant Sites\t", variant_sites);
-	print("Total # Gaps\t", total_gaps);
-	print("# Sites with Gaps\t", sites_with_gaps);
-	print("# of Sites that are all Gap\t", sites_all_gaps);
+	print( core.spacedOut("Total # Seqs", pad) + str(total_seq) );
+	print( core.spacedOut("Total # Positions", pad) + str(total_pos) );
+	print( core.spacedOut("Total # Residues", pad) + str(total_aa) );
+	print( core.spacedOut("Total # Aligns", pad) + str(total_aln) );
+	print( core.spacedOut("Total # Columns", pad) + str(total_col) );
+	print( core.spacedOut("# Invariant Sites", pad) + str(invariant_sites) );
+	print( core.spacedOut("# Variant Sites (with gaps)", pad) + str(variant_sites_gap) );
+	print( core.spacedOut("# Site patterns (with gaps)", pad) + str(len(site_patterns_gap)) );
+	print( core.spacedOut("# Variant Sites (no gaps)", pad) + str(variant_sites) );
+	print( core.spacedOut("# Site patterns (no gaps)", pad) + str(len(site_patterns_no_gap)) );
+
+	print( core.spacedOut("# All site patterns (with gaps)", pad) + str(len(list(set(all_site_patterns)))) );
+	print( core.spacedOut("# All site patterns (no gaps)", pad) + str(len(list(set(all_site_patterns_no_gaps)))) );
+
+	print( core.spacedOut("Total # Gaps", pad) + str(total_gaps) );
+	print( core.spacedOut("# Sites with Gaps", pad) + str(sites_with_gaps) );
+	print( core.spacedOut("# of Sites that are all Gap", pad) + str(sites_all_gaps) );
 	print("-----");
 	if spec_opt:
 		print("Species counts:");

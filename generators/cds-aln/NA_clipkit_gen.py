@@ -1,6 +1,6 @@
 #!/usr/bin/python
 ############################################################
-# Generates commands for the MAFFT alignment program
+# Generates commands for the clipkit alignment filtering program
 ############################################################
 
 import sys, os, core, argparse
@@ -8,11 +8,11 @@ import sys, os, core, argparse
 ############################################################
 # Options
 
-parser = argparse.ArgumentParser(description="MAFFT command generator");
+parser = argparse.ArgumentParser(description="ClipKit command generator");
 parser.add_argument("-i", dest="input", help="Directory of input FASTA files.", default=False);
 parser.add_argument("-o", dest="output", help="Desired output directory for aligned files. Job name (-n) will be appended to output directory name.", default=False);
 parser.add_argument("-n", dest="name", help="A short name for all files associated with this job.", default=False);
-parser.add_argument("-p", dest="path", help="The path to MAFFT. Default: mafft", default="mafft");
+parser.add_argument("-p", dest="path", help="The path to ClipKit. Default: clipkit", default="clipkit");
 parser.add_argument("--overwrite", dest="overwrite", help="If the output directory already exists and you wish to overwrite it, set this option.", action="store_true", default=False);
 parser.add_argument("--outname", dest="outname", help="Use the end of the output directory path as the job name.", action="store_true", default=False);
 # IO options
@@ -24,7 +24,7 @@ parser.add_argument("-mem", dest="mem", help="SLURM --mem option.", type=int, de
 # SLURM options
 
 args = parser.parse_args();
-print(args.input);
+
 if not args.input or not os.path.isdir(args.input):
     sys.exit( " * Error 1: An input directory must be defined with -i.");
 args.input = os.path.abspath(args.input);
@@ -38,10 +38,8 @@ if not args.output:
     sys.exit( " * Error 2: An output directory must be defined with -o.");
 
 args.output = os.path.abspath(args.output);
-# if args.outname:
-#     name = os.path.basename(args.output);
-# else:
-#     args.output = args.output + "-" + name + "/";
+if args.outname:
+    name = os.path.basename(args.output);
 if os.path.isdir(args.output) and not args.overwrite:
     sys.exit( " * Error 3: Output directory (-o) already exists! Explicity specify --overwrite to overwrite it.");
 # IO option error checking
@@ -69,12 +67,12 @@ logdir = os.path.join(args.output, "logs");
 # Reporting run-time info for records.
 
 with open(output_file, "w") as outfile:
-    core.runTime("#!/bin/bash\n# MUSCLE command generator", outfile);
+    core.runTime("#!/bin/bash\n# MACSE command generator", outfile);
     core.PWS("# IO OPTIONS", outfile);
     core.PWS(core.spacedOut("# Input directory:", pad) + args.input, outfile);
     if args.outname:
         core.PWS(core.spacedOut("# --outname:", pad) + "Using end of output directory path as job name.", outfile);
-    if not args.name:
+    if not args.name and not args.outname:
         core.PWS("# -n not specified --> Generating random string for job name", outfile);
     core.PWS(core.spacedOut("# Job name:", pad) + name, outfile);
     core.PWS(core.spacedOut("# Output directory:", pad) + args.output, outfile);
@@ -102,14 +100,17 @@ with open(output_file, "w") as outfile:
 # Generating the commands in the job file.
 
     for f in os.listdir(args.input):
+        if not f.endswith(".fa"):
+            continue;
+            
         base_input = os.path.splitext(f)[0];
         cur_infile = os.path.join(args.input, f);
-        cur_outfile = os.path.join(args.output, base_input + "-mafft.fa");
-        cur_logfile = os.path.join(logdir, base_input + "-mafft.log");
+        cur_outfile = os.path.join(args.output, base_input + ".clipkit.fa")
+        cur_logfile = os.path.join(logdir, base_input + "-clipkit.log");
 
-        mafft_cmd = args.path + " --preservecase " + cur_infile + " 2> " + cur_logfile + " 1> " + cur_outfile;
+        clipkit_cmd = "clipkit " + cur_infile + " -o " + cur_outfile + " -m kpic-gappy -l > " + cur_logfile + " 2>&1";
 
-        outfile.write(mafft_cmd + "\n");
+        outfile.write(clipkit_cmd + "\n");
 
 ##########################
 # Generating the submit script.

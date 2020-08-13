@@ -32,9 +32,7 @@ def premStopCheck(seq, frame=1, allowlastcodon=False, rmlast=False):
             if c+1 == len(codon_list):
                 if rmlast:
                     codon_list_orig[c] = "NNN"; 
-                if allowlastcodon:
-                    is_stop = False;
-                else:
+                if not allowlastcodon:
                     is_stop = True;
             else:
                 is_stop = True;

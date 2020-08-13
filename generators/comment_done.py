@@ -74,7 +74,7 @@ if args.repl:
 # Parse the replace option.
 
 modlines = list(filter(None, open(args.modfile, "r").read().split("\n")));
-print(modlines);
+#print(modlines);
 
 outlines = [];
 begin_cmds = False;

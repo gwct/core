@@ -57,7 +57,7 @@ if all(opt == False for opt in [args.count_pos, args.count_aln, args.concat, arg
 if args.count_pos:
 	print("=======================================================================");
 	print("\t\t\t" + core.getDateTime());
-	print("Counting the total number of positions (AAs or NTs) in:\t", args.input);
+	print("Counting the total number of positions (AAs or NTs) in:\t" + args.input);
 	fa.countPos(filelist);
 	sys.exit();
 # --countpos
@@ -65,7 +65,7 @@ if args.count_pos:
 if args.count_aln:
 	print("=======================================================================");
 	print("\t\t\t" + core.getDateTime());
-	print("Counting stats from all alignments in:\t", args.input);
+	print("Counting stats from all alignments in:\t" + args.input);
 	if args.spec_opt:
 		print("--specsites set: counting species sites.");
 	fa.countAln(filelist, args.spec_opt);
