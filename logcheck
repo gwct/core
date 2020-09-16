@@ -9,6 +9,7 @@ fi
 grep Error *$ext
 grep ERROR *$ext
 grep error *$ext
+grep Exception *$ext
 grep AssertionError *$ext
 grep "java.lang.RuntimeException:" *$ext
 grep "java.lang.AssertionError:" *$ext
