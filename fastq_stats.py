@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 ########################################################################################
 # A general purpose batch FASTQ parsing script.
 #
