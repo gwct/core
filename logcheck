@@ -1,19 +1,62 @@
 #!/bin/bash
 
-if [[ $# -eq 0 ]] ; then
-    ext=".log"
-else
-    ext=".$1"
-fi
+############################################################
+# Command line tool to check log files for common error flags
+# September, 2020, gwct
+############################################################
 
-grep Error *$ext
-grep ERROR *$ext
-grep error *$ext
-grep Exception *$ext
-grep AssertionError *$ext
-grep "java.lang.RuntimeException:" *$ext
-grep "java.lang.AssertionError:" *$ext
-grep "Can't read file" *$ext
-grep Warning *$ext
-grep WARNING *$ext
-grep warning *$ext
+display_usage() {
+# Usage message for -h
+    echo
+    echo " Usage:"
+    echo
+    echo "     logcheck -e <extension> -w"
+    echo
+    echo " Options:"
+    echo "     -p: The extension of log files in the directory. Default: log"
+    echo "     -w: Set to exclude warning flags."
+    echo "     -h: Display this help message."
+    echo
+    exit 0
+}
+
+##########
+# Invalid input option message
+invalid_opt() {
+    echo "    Error 1: Invalid option: -$1"
+    echo
+    exit 1
+}
+
+############################################################
+
+ext="log"
+warn=true
+# Defaults
+
+while getopts ":e:wh" arg; do
+    case $arg in
+        h) display_usage;;
+        e) ext=$OPTARG;;
+        w) warn=false;;
+        \?) invalid_opt $OPTARG ;;
+    esac
+done
+# Parse input options
+
+echo
+echo " logcheck -- Checking logfiles with extension .$ext"
+
+grep Error *.$ext
+grep ERROR *.$ext
+grep error *.$ext
+grep Exception *.$ext
+grep AssertionError *.$ext
+grep "java.lang.RuntimeException:" *.$ext
+grep "java.lang.AssertionError:" *.$ext
+grep "Can't read file" *.$ext
+if [ "$warn" = true ] ; then
+    grep Warning *.$ext
+    grep WARNING *.$ext
+    grep warning *.$ext
+fi
