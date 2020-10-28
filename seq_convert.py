@@ -109,9 +109,11 @@ elif to == "p":
 elif to == "n":
 	suffix = ".nex";
 
+firstbar = True
+
 for each in filelist:
 	if fileflag == 0:
-		numbars, donepercent = core.loadingBar(i, numfiles, donepercent, numbars);
+		numbars, donepercent, firstbar = core.loadingBar(i, numfiles, donepercent, numbars, firstbar=firstbar, disperc=True);
 		i = i + 1;
 
 	if fr == "f" and each.find(".fa") == -1:

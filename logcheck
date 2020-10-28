@@ -46,6 +46,7 @@ done
 
 echo
 echo " logcheck -- Checking logfiles with extension .$ext"
+echo
 
 grep Error *.$ext
 grep ERROR *.$ext
@@ -60,3 +61,5 @@ if [ "$warn" = true ] ; then
     grep WARNING *.$ext
     grep warning *.$ext
 fi
+
+echo

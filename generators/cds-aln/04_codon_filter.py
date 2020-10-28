@@ -15,6 +15,7 @@ parser.add_argument("-i", dest="input", help="Directory of CDS alignments.", def
 #parser.add_argument("-w", dest="wsize", help="Codon window size. Default: 3", type=int, default=3);
 parser.add_argument("-o", dest="output", help="Desired output directory for filtered CDS alignments.", default=False);
 parser.add_argument("-n", dest="name", help="A short name for all files associated with this job.", default=False);
+parser.add_argument("-e", dest="expected", help="The expected number of species in each alignment file. Check for one-to-one alignments to only align sequences that retained all species after trimming.", default=False);
 parser.add_argument("--noncoding", dest="noncoding", help="Set this option to check non-coding data. Will not check for stop codons.", action="store_true", default=False);
 parser.add_argument("--protein", dest="protein", help="Set this option to check amino acid data.", action="store_true", default=False);
 parser.add_argument("--count", dest="count_only", help="Set this option to just provide the log file with counts/stats. Will not write new sequences", action="store_true", default=False);
@@ -50,6 +51,16 @@ elif args.protein:
     mode = "aa";
 else:
     mode = "codon";
+
+expected = False;
+if args.expected:
+    eflag = False;
+    try:
+        expected = int(args.expected);
+    except:
+        eflag = True;
+    if eflag or expected < 1:
+        sys.exit(" * Error 4: -e must be a positive integer.");
 # IO option error checking
 
 pad = 26
@@ -107,7 +118,7 @@ with open(log_file, "w") as logfile:
     spec_high = {};
     # The dictionary to keep track of species count variables
 
-    first_aln, counter = True, 0;
+    first_aln, counter, skipped = True, 0, 0;
     # Loop tracking variables
 
     for f in fa_files:
@@ -125,16 +136,18 @@ with open(log_file, "w") as logfile:
         # Get the current in and output files
 
         # Make sure all files exist
-        # print(f);
-        # print(base_input);
-        # print(clip_log);
-        # print(cds_aln);
-        # print(cur_outfile);
-        # sys.exit();
+        #print(f);
+        #print(cur_outfile);
+        #sys.exit();
 
         seqs = core.fastaGetDict(cur_infile);
         num_seqs = float(len(seqs));
         # Read the sequences
+
+        if expected and num_seqs != expected:
+            print("# Expected number of species not found... skipping: " + cur_infile + "\n");
+            skipped += 1;
+            continue;
 
         if first_aln:
         # Initialize some things on the first alignment
@@ -277,6 +290,7 @@ with open(log_file, "w") as logfile:
 
     core.PWS("# ----------------", logfile);
     core.PWS(core.spacedOut("# Total aligns", 55) + str(num_alns), logfile);
+    core.PWS(core.spacedOut("# Files skipped: ", pad) + str(skipped), logfile);
     core.PWS(core.spacedOut("# Aligns written", 55) + str(written), logfile);
     core.PWS(core.spacedOut("# Aligns shorter than 100bp", 55) + str(num_short), logfile);
     core.PWS(core.spacedOut("# Aligns with >50% identical sequences", 55) + str(num_high_ident), logfile);

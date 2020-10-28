@@ -416,6 +416,14 @@ def getFileReader(i_name):
 	return reader;
 
 #############################################################################
+# The two line reader functions based on whether the input file is gzipped or not
+def readLine(line):
+	return line.strip().split("\t");
+
+def readGzipLine(line):
+	return line.decode().strip().split("\t");
+
+#############################################################################
 
 def getFileLenRead(i_name):
 # Gets the number of lines in a file.
@@ -442,16 +450,16 @@ def chunks(l, n):
 
 #############################################################################
 
-def runTime(msg=False, writeout=False):
+def runTime(msg=False, writeout=False, printout=True):
 	if msg:
 		if not msg.startswith("#"):
 			msg = "# " + msg;
-		PWS(msg, writeout);
+		PWS(msg, writeout, printout);
 
-	PWS("# PYTHON VERSION: " + ".".join(map(str, sys.version_info[:3])), writeout)
-	PWS("# Script call:    " + " ".join(sys.argv), writeout)
-	PWS("# Runtime:        " + datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S"), writeout);
-	PWS("# ----------------", writeout);
+	PWS("# PYTHON VERSION: " + ".".join(map(str, sys.version_info[:3])), writeout, printout)
+	PWS("# Script call:    " + " ".join(sys.argv), writeout, printout)
+	PWS("# Runtime:        " + datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S"), writeout, printout);
+	PWS("# ----------------", writeout, printout);
 
 
 	# print("# PYTHON VERSION: " + ".".join(map(str, sys.version_info[:3])))

@@ -66,15 +66,23 @@ pad = 26
 cwd = os.getcwd();
 # Job vars
 
-output_file = os.path.join(cwd, "jobs", name + ".sh");
-submit_file = os.path.join(cwd, "submit", name + "_submit.sh");
-logdir = os.path.join(args.output, "logs");
+locitree_dir = os.path.join(args.output, "loci");
+locitree_file = os.path.join(args.output, "loci.treefile");
+concat_dir = os.path.join(args.output, "concat");
+concord_dir = os.path.join(args.output, "concord");
+# Output sub-directories
+
+loci_output_file = os.path.join(cwd, "jobs", name + "_loci.sh");
+loci_submit_file = os.path.join(cwd, "submit", name + "_loci_submit.sh");
+loci_logdir = os.path.join(args.output, "logs");
+
+concat_submit_file = os.path.join(cwd, "submit", name + "_concat_submit.sh");
 # Job files
 
 ##########################
 # Reporting run-time info for records.
 
-with open(output_file, "w") as outfile:
+with open(loci_output_file, "w") as outfile:
     core.runTime("#!/bin/bash\n# IQtree command generator", outfile);
     core.PWS("# IO OPTIONS", outfile);
     core.PWS(core.spacedOut("# Input directory:", pad) + args.input, outfile);
@@ -89,14 +97,28 @@ with open(output_file, "w") as outfile:
     if not os.path.isdir(args.output):
         core.PWS("# Creating output directory.", outfile);
         os.system("mkdir " + args.output);
-    core.PWS(core.spacedOut("# Logfile directory:", pad) + logdir, outfile);
-    if not os.path.isdir(logdir):
+    core.PWS(core.spacedOut("# Loci tree directory:", pad) + locitree_dir, outfile);
+    if not os.path.isdir(locitree_dir):
+        core.PWS("# Creating output directory.", outfile);
+        os.system("mkdir " + locitree_dir);
+    core.PWS(core.spacedOut("# Loci tree file:", pad) + locitree_file, outfile);
+    core.PWS(core.spacedOut("# Concatenation directory:", pad) + concat_dir, outfile);
+    if not os.path.isdir(concat_dir):
+        core.PWS("# Creating output directory.", outfile);
+        os.system("mkdir " + concat_dir);
+    core.PWS(core.spacedOut("# Concordance directory:", pad) + concord_dir, outfile);
+    if not os.path.isdir(concord_dir):
+        core.PWS("# Creating output directory.", outfile);
+        os.system("mkdir " + concord_dir);
+    core.PWS(core.spacedOut("# Logfile directory:", pad) + loci_logdir, outfile);
+    if not os.path.isdir(loci_logdir):
         core.PWS("# Creating logfile directory.", outfile);
-        os.system("mkdir " + logdir);
-    core.PWS(core.spacedOut("# Job file:", pad) + output_file, outfile);
+        os.system("mkdir " + loci_logdir);
+    core.PWS(core.spacedOut("# Job file:", pad) + loci_output_file, outfile);
     core.PWS("# ----------", outfile);
     core.PWS("# SLURM OPTIONS", outfile);
-    core.PWS(core.spacedOut("# Submit file:", pad) + submit_file, outfile);
+    core.PWS(core.spacedOut("# Loci submit file:", pad) + loci_submit_file, outfile);
+    core.PWS(core.spacedOut("# Concat submit file:", pad) + concat_submit_file, outfile);
     core.PWS(core.spacedOut("# SLURM partition:", pad) + args.part, outfile);
     core.PWS(core.spacedOut("# SLURM nodes:", pad) + str(args.nodes), outfile);
     core.PWS(core.spacedOut("# SLURM ntasks:", pad) + str(args.tasks), outfile);
@@ -115,12 +137,12 @@ with open(output_file, "w") as outfile:
         base_input = os.path.splitext(f)[0];
         cur_infile = os.path.join(args.input, f);
 
-        cur_outdir = os.path.join(args.output, base_input);
+        cur_outdir = os.path.join(locitree_dir, base_input);
         if not os.path.isdir(cur_outdir):
             os.makedirs(cur_outdir);
 
         cur_out_prefix = os.path.join(cur_outdir, base_input);
-        cur_logfile = os.path.join(logdir, base_input + "-iqtree.log");
+        cur_logfile = os.path.join(loci_logdir, base_input + "-iqtree.log");
 
         iqtree_cmd = args.path + " -s " + cur_infile + " --prefix " + cur_out_prefix;
         if args.bootstrap > 0:
@@ -129,13 +151,31 @@ with open(output_file, "w") as outfile:
 
         outfile.write(iqtree_cmd + "\n");
 
+    cat_cmd = "cat " + locitree_dir + "/*/*.treefile > " + locitree_file;
+    outfile.write(cat_cmd + "\n");
+    # Loci commands
+
+    concat_log = os.path.join(concat_dir, "concat-terminal.log");
+    concat_prefix = os.path.join(concat_dir, args.name);
+    concat_cmd = "iqtree -p " + args.input + " --prefix " + concat_prefix + " -B 1000 -T " + str(args.cpus) + " &> " + concat_log;
+    # Concatenation command
+
+    concord_log = os.path.join(concord_dir, "concord-terminal.log");
+    concat_file = os.path.join(concat_dir, args.name + ".treefile");
+    concord_prefix = os.path.join(concord_dir, args.name);
+    concord_cmd = "iqtree -t " + concat_file + " --gcf " + locitree_file + " -p " + args.input + " --scf 100 --cf-verbose --prefix " + concord_prefix + " -T 1";
+    # Concordance command
+
     core.PWS("# ----------", outfile);
-    #core.PWS(core.spacedOut("# Files skipped: ", pad) + str(skipped), outfile);
+    core.PWS(core.spacedOut("# Files skipped: ", pad) + str(skipped), outfile);
+    core.PWS("# Writing concat commands to " + concat_submit_file, outfile);
+    core.PWS("# " + concat_cmd, outfile);
+    core.PWS("# " + concord_cmd, outfile);
 
 ##########################
-# Generating the submit script.
+# Generating the loci submit script.
 
-with open(submit_file, "w") as sfile:
+with open(loci_submit_file, "w") as sfile:
     submit = '''#!/bin/bash
 #SBATCH --job-name={name}
 #SBATCH --output={name}-%j.out
@@ -149,6 +189,28 @@ with open(submit_file, "w") as sfile:
 
 parallel -j {tasks} < {output_file}'''
 
-    sfile.write(submit.format(name=name, partition=args.part, nodes=args.nodes, tasks=args.tasks, cpus=args.cpus, mem=args.mem, output_file=output_file));
+    sfile.write(submit.format(name=name, partition=args.part, nodes=args.nodes, tasks=args.tasks, cpus=args.cpus, mem=args.mem, output_file=loci_output_file));
+
+##########################
+
+##########################
+# Generating the concat submit script.
+
+with open(concat_submit_file, "w") as sfile:
+    submit = '''#!/bin/bash
+#SBATCH --job-name={name}
+#SBATCH --output={name}-%j.out
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=gregg.thomas@umontana.edu
+#SBATCH --partition={partition}
+#SBATCH --nodes={nodes}
+#SBATCH --ntasks={tasks}
+#SBATCH --cpus-per-task={cpus}
+#SBATCH --mem={mem}
+
+{concat_cmd}
+{concord_cmd}'''
+
+    sfile.write(submit.format(name=name, partition=args.part, nodes=args.nodes, tasks=1, cpus=args.tasks, mem=args.mem, concat_cmd=concat_cmd, concord_cmd=concord_cmd));
 
 ##########################
