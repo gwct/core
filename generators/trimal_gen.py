@@ -18,6 +18,7 @@ parser.add_argument("--outname", dest="outname", help="Use the end of the output
 # IO options
 
 parser.add_argument("-part", dest="part", help="SLURM partition option.", default=False);
+parser.add_argument("-nodes", dest="nodes", help="SLURM --nodes option.", default="1");
 parser.add_argument("-tasks", dest="tasks", help="SLURM --ntasks option.", type=int, default=1);
 parser.add_argument("-cpus", dest="cpus", help="SLURM --cpus-per-task option.", type=int, default=1);
 parser.add_argument("-mem", dest="mem", help="SLURM --mem option.", type=int, default=0);
@@ -122,13 +123,13 @@ with open(submit_file, "w") as sfile:
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=gregg.thomas@umontana.edu
 #SBATCH --partition={partition}
-#SBATCH --nodes=1
+#SBATCH --nodes={nodes}
 #SBATCH --ntasks={tasks}
 #SBATCH --cpus-per-task={cpus}
 #SBATCH --mem={mem}
 
 parallel -j {tasks} < {output_file}'''
 
-    sfile.write(submit.format(name=name, partition=args.part, tasks=args.tasks, cpus=args.cpus, mem=args.mem, output_file=output_file));
+    sfile.write(submit.format(name=name, partition=args.part, nodes=args.nodes, tasks=args.tasks, cpus=args.cpus, mem=args.mem, output_file=output_file));
 
 ##########################

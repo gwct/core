@@ -18,6 +18,7 @@ parser.add_argument("--outname", dest="outname", help="Use the end of the output
 # IO options
 
 parser.add_argument("-part", dest="part", help="SLURM partition option.", default=False);
+parser.add_argument("-nodes", dest="nodes", help="SLURM --nodes option.", default="1");
 parser.add_argument("-tasks", dest="tasks", help="SLURM --ntasks option.", type=int, default=1);
 parser.add_argument("-cpus", dest="cpus", help="SLURM --cpus-per-task option.", type=int, default=1);
 parser.add_argument("-mem", dest="mem", help="SLURM --mem option.", type=int, default=0);
@@ -108,6 +109,7 @@ with open(output_file, "w") as outfile:
         cur_logfile = os.path.join(logdir, base_input + "-mafft.log");
 
         mafft_cmd = args.path + " --preservecase " + cur_infile + " 2> " + cur_logfile + " 1> " + cur_outfile;
+        #mafft_cmd = args.path + " --adjustdirection --preservecase " + cur_infile + " 2> " + cur_logfile + " 1> " + cur_outfile;
 
         outfile.write(mafft_cmd + "\n");
 
@@ -121,13 +123,13 @@ with open(submit_file, "w") as sfile:
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=gregg.thomas@umontana.edu
 #SBATCH --partition={partition}
-#SBATCH --nodes=1
+#SBATCH --nodes={nodes}
 #SBATCH --ntasks={tasks}
 #SBATCH --cpus-per-task={cpus}
 #SBATCH --mem={mem}
 
 parallel -j {tasks} < {output_file}'''
 
-    sfile.write(submit.format(name=name, partition=args.part, tasks=args.tasks, cpus=args.cpus, mem=args.mem, output_file=output_file));
+    sfile.write(submit.format(name=name, partition=args.part, nodes=args.nodes, tasks=args.tasks, cpus=args.cpus, mem=args.mem, output_file=output_file));
 
 ##########################

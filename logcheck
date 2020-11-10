@@ -13,7 +13,8 @@ display_usage() {
     echo "     logcheck -e <extension> -w"
     echo
     echo " Options:"
-    echo "     -p: The extension of log files in the directory. Default: log"
+    echo "     -e: The extension of log files in the directory. Default: log"
+    echo "     -p: The prefix for files to search."
     echo "     -w: Set to exclude warning flags."
     echo "     -h: Display this help message."
     echo
@@ -31,13 +32,15 @@ invalid_opt() {
 ############################################################
 
 ext="log"
+prefix=""
 warn=true
 # Defaults
 
-while getopts ":e:wh" arg; do
+while getopts ":e:p:wh" arg; do
     case $arg in
         h) display_usage;;
         e) ext=$OPTARG;;
+        p) prefix=$OPTARG;;
         w) warn=false;;
         \?) invalid_opt $OPTARG ;;
     esac
@@ -45,21 +48,21 @@ done
 # Parse input options
 
 echo
-echo " logcheck -- Checking logfiles with extension .$ext"
+echo " logcheck -- Checking: $prefix logfiles with extension .$ext"
 echo
 
-grep Error *.$ext
-grep ERROR *.$ext
-grep error *.$ext
-grep Exception *.$ext
-grep AssertionError *.$ext
-grep "java.lang.RuntimeException:" *.$ext
-grep "java.lang.AssertionError:" *.$ext
-grep "Can't read file" *.$ext
+grep Error $prefix*.$ext
+grep ERROR $prefix*.$ext
+grep error $prefix*.$ext
+grep Exception $prefix*.$ext
+grep AssertionError $prefix*.$ext
+grep "java.lang.RuntimeException:" $prefix*.$ext
+grep "java.lang.AssertionError:" $prefix*.$ext
+grep "Can't read file" $prefix*.$ext
 if [ "$warn" = true ] ; then
-    grep Warning *.$ext
-    grep WARNING *.$ext
-    grep warning *.$ext
+    grep Warning $prefix*.$ext
+    grep WARNING $prefix*.$ext
+    grep warning $prefix*.$ext
 fi
 
 echo

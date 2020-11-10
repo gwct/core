@@ -52,8 +52,10 @@ if args.source not in ["maker", "ensembl"]:
 
 if args.source == "maker":
     transcript_str = "mRNA";
+    exon_str = "CDS";
 elif args.source == "ensembl":
     transcript_str = "transcript";
+    exon_str = "exon";
 
 pad = 25;
 with open(args.output, "w") as outfile:
@@ -145,7 +147,7 @@ with open(args.output, "w") as outfile:
                 continue;
             feature_type, chrome, start, end, strand, feature_info = line[2], line[0], line[3], line[4], line[6], line[8];
 
-            if feature_type == "exon":
+            if feature_type == exon_str:
                 if args.source == "maker":
                     #gid = re.findall(args.prefix + '[\d_G]+', feature_info)[0];
                     tid = re.findall(args.prefix + '_T[\d]+_mRNA-[\d]+', feature_info)[0];
