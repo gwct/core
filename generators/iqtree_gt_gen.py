@@ -20,7 +20,7 @@ parser.add_argument("--outname", dest="outname", help="Use the end of the output
 # IO options
 
 parser.add_argument("-part", dest="part", help="SLURM partition option.", default=False);
-parser.add_argument("-nodes", dest="nodes", help="SLURM --nodes option.", type=int, default=1);
+parser.add_argument("-nodes", dest="nodes", help="SLURM --nodes option.", default="1");
 parser.add_argument("-tasks", dest="tasks", help="SLURM --ntasks option.", type=int, default=1);
 parser.add_argument("-cpus", dest="cpus", help="SLURM --cpus-per-task option.", type=int, default=1);
 parser.add_argument("-mem", dest="mem", help="SLURM --mem option.", type=int, default=0);
@@ -52,8 +52,8 @@ if args.bootstrap < 1000:
 
 if not args.part:
     sys.exit( " * Error 5: -part must be defined as a valid node partition on your clutser.");
-if args.nodes < 1:
-    sys.exit( " * Error 6: -nodes must be a positive integer.");
+# if args.nodes < 1:
+#     sys.exit( " * Error 6: -nodes must be a positive integer.");
 if args.tasks < 1:
     sys.exit( " * Error 7: -tasks must be a positive integer.");
 if args.tasks < 1:
