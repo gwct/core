@@ -9,6 +9,7 @@ import sys
 ############################################################
 
 def premStopCheck(seq, frame=1, allowlastcodon=False, rmlast=False):
+# Checks a coding sequence for premature stop codons. Default is first frame.
     stop_codons = ["TAG", "TAA", "TGA", "UAG", "UAA", "UGA"];
     seq = seq.upper();
 
@@ -38,5 +39,16 @@ def premStopCheck(seq, frame=1, allowlastcodon=False, rmlast=False):
                 is_stop = True;
 
     return is_stop, "".join(codon_list_orig);
+
+############################################################
+
+def revComp(seq, iupac=True):
+# Returns the reverse complement of a nucleotide sequence.
+    if iupac:
+        complement = { 'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A', 'Y' : 'R', 'R' : 'Y', 'S' : 'S', 'W' : 'W', 'K' : 'M', 'M' : 'K', 'B' : 'V', 'V' : 'B', 'D' : 'H', 'H' : 'D', 'N' : 'N' };
+    else:
+        complement = { 'A': 'T', 'C': 'G', 'G': 'C', 'T': 'C', 'N' : 'N' };
+
+    return "".join(complement.get(base, base) for base in reversed(seq.upper()));
 
 ############################################################

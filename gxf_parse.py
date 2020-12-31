@@ -55,7 +55,7 @@ if args.source == "maker":
     exon_str = "CDS";
 elif args.source == "ensembl":
     transcript_str = "transcript";
-    exon_str = "exon";
+    exon_str = "CDS";
 
 pad = 25;
 with open(args.output, "w") as outfile:

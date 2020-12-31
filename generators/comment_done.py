@@ -37,6 +37,7 @@ parser = argparse.ArgumentParser(description="Job script modifications");
 parser.add_argument("-j", dest="jobfile", help="The job script you wish to modify.", default=False);
 parser.add_argument("-m", dest="modfile", help="The file containing log files for the lines you want to modify. All other lines will be commented out.", default=False);
 parser.add_argument("-r", dest="repl", help="A modification you wish to make to the commands. Format: 'old cmd,new cmd'", default=False);
+parser.add_argument("--anti", dest="anti", help="Set to comment all lines IN the modfile (-m)", action="store_true", default=False);
 parser.add_argument("--uncomment", dest="uncomment", help="Set this option to simply uncomment every line in the job file.", action="store_true", default=False);
 args = parser.parse_args();
 
@@ -80,13 +81,23 @@ outlines = [];
 begin_cmds = False;
 for line in open(args.jobfile):
     if begin_cmds:
-        comment_current = True;
-        for modline in modlines:
-            if modline in line:
-                comment_current = False;
+        if not args.anti:
+            comment_current = True;
+            for modline in modlines:
+                if modline in line:
+                    comment_current = False;
 
-                if args.repl and repl[0] in line:
-                    line = line.replace(repl[0], repl[1]);
+                    if args.repl and repl[0] in line:
+                        line = line.replace(repl[0], repl[1]);
+
+        elif args.anti:
+            comment_current = False;
+            for modline in modlines:
+                if modline in line:
+                    comment_current = True;
+
+                    if args.repl and repl[0] in line:
+                        line = line.replace(repl[0], repl[1]);
 
         if comment_current and line[0] != "#":
             line = "# " + line;

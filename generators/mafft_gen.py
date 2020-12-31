@@ -70,7 +70,7 @@ logdir = os.path.join(args.output, "logs");
 # Reporting run-time info for records.
 
 with open(output_file, "w") as outfile:
-    core.runTime("#!/bin/bash\n# MUSCLE command generator", outfile);
+    core.runTime("#!/bin/bash\n# MAFFT command generator", outfile);
     core.PWS("# IO OPTIONS", outfile);
     core.PWS(core.spacedOut("# Input directory:", pad) + args.input, outfile);
     if args.outname:
@@ -108,8 +108,8 @@ with open(output_file, "w") as outfile:
         cur_outfile = os.path.join(args.output, base_input + "-mafft.fa");
         cur_logfile = os.path.join(logdir, base_input + "-mafft.log");
 
-        mafft_cmd = args.path + " --preservecase " + cur_infile + " 2> " + cur_logfile + " 1> " + cur_outfile;
-        #mafft_cmd = args.path + " --adjustdirection --preservecase " + cur_infile + " 2> " + cur_logfile + " 1> " + cur_outfile;
+        #mafft_cmd = args.path + " --preservecase " + cur_infile + " 2> " + cur_logfile + " 1> " + cur_outfile;
+        mafft_cmd = args.path + " --adjustdirection --preservecase " + cur_infile + " 2> " + cur_logfile + " 1> " + cur_outfile;
 
         outfile.write(mafft_cmd + "\n");
 

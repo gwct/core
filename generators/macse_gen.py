@@ -21,6 +21,7 @@ parser.add_argument("--outname", dest="outname", help="Use the end of the output
 parser.add_argument("-part", dest="part", help="SLURM partition option.", default=False);
 parser.add_argument("-nodes", dest="nodes", help="SLURM --nodes option.", type=int, default=1);
 parser.add_argument("-tasks", dest="tasks", help="SLURM --ntasks option.", type=int, default=1);
+parser.add_argument("-taskspernode", dest="taskspernode", help="SLURM --ntasks-per-node option.", type=int, default=1);
 parser.add_argument("-cpus", dest="cpus", help="SLURM --cpus-per-task option.", type=int, default=1);
 parser.add_argument("-mem", dest="mem", help="SLURM --mem option.", type=int, default=0);
 # SLURM options
@@ -62,10 +63,12 @@ if args.nodes < 1:
     sys.exit( " * Error 6: -nodes must be a positive integer.");
 if args.tasks < 1:
     sys.exit( " * Error 7: -tasks must be a positive integer.");
+if args.taskspernode < 1:
+    sys.exit( " * Error 8: -taskspernode must be a positive integer.");
 if args.tasks < 1:
-    sys.exit( " * Error 8: -cpus must be a positive integer.");
+    sys.exit( " * Error 9: -cpus must be a positive integer.");
 if args.tasks < 1:
-    sys.exit( " * Error 9: -mem must be a positive integer.");
+    sys.exit( " * Error 10: -mem must be a positive integer.");
 # SLURM option error checking
 
 pad = 26
@@ -167,11 +170,12 @@ with open(submit_file, "w") as sfile:
 #SBATCH --partition={partition}
 #SBATCH --nodes={nodes}
 #SBATCH --ntasks={tasks}
+#SBATCH --ntasks-per-node={ntaskspernode}
 #SBATCH --cpus-per-task={cpus}
 #SBATCH --mem={mem}
 
 parallel -j {tasks} < {output_file}'''
 
-    sfile.write(submit.format(name=name, partition=args.part, nodes=args.nodes, tasks=args.tasks, cpus=args.cpus, mem=args.mem, output_file=output_file));
+    sfile.write(submit.format(name=name, partition=args.part, nodes=args.nodes, tasks=args.tasks, ntaskspernode=args.taskspernode, cpus=args.cpus, mem=args.mem, output_file=output_file));
 
 ##########################
