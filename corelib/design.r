@@ -1,8 +1,9 @@
 ############################################################
-# For macaque revisions, 03.20
+# General R functions for figure development,, 03.20
 #############################################################
 
 bartheme <- function () {  
+# My standard theme for most plots.
   theme_classic() %+replace% 
     theme(axis.text=element_text(size=12), 
           axis.title=element_text(size=16), 
@@ -23,7 +24,8 @@ bartheme <- function () {
 
 #############################################################
 
-dottheme <- function () {  
+dottheme <- function () {
+# A theme for dotplots.
   theme_linedraw() %+replace% 
     theme(axis.text=element_text(size=8), 
           axis.title=element_text(size=16), 
@@ -46,8 +48,8 @@ dottheme <- function () {
 
 ############################################################
 
-
 corecol <- function (pal="default", numcol=4, offset=0, info=FALSE) {
+# Custom color palettes.
     palette_list = c("default", "trek", "trekdark", "wilke")
 
     if(!pal %in% palette_list){
@@ -104,7 +106,30 @@ corecol <- function (pal="default", numcol=4, offset=0, info=FALSE) {
     }
 
     return(return_col)
-
-
 }
 
+############################################################
+
+nodecheck <- function (tree, tree_type="object", xmax=1) {
+# A function to check ggtree's internal node labels.
+
+  if(!tree_type %in% c("object", "string", "file")){
+      cat("\n# nodecheck: Invalid tree_type specified:    ", tree_type, "\n")
+      cat("\n# nodecheck: tree_type must be one of:       object, string, file\n")
+      cat("# ------------------\n")     
+  }
+
+  if(tree_type == "string"){
+      tree = read.tree(text=tree_str)
+  }else if(tree_type == "file"){
+      tree = read.tree(tree_file)
+  }
+
+  node_test = ggtree(tree, size=2, ladderize=F) +
+    ggplot2::xlim(0, xmax) +
+    geom_tiplab(color="#333333", fontface='italic', size=5) +
+    geom_text(aes(label=node), hjust=-.3, vjust=-.3, color="#ff6db6") +
+    geom_nodepoint(color="#666666", alpha=0.85, size=4) +
+    ggtitle("NODECHECK (if no tree is visible, try changing xmax from default of 1)")
+  print(node_test)
+}
