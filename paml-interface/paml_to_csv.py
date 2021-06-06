@@ -20,8 +20,8 @@ args = parser.parse_args();
 if not args.input or not os.path.isdir(args.input):
     sys.exit(" * Error 1: Please provide a valid input directory (-i).");
 
-if args.model not in ["m1", "m2", "cmc"]:
-    sys.exit(" * Error 2: Model (-m) must be one of: m1, m2, cmc");
+if args.model not in ["m1", "m1a", "m2", "m2a", "cmc"]:
+    sys.exit(" * Error 2: Model (-m) must be one of: m1, m1a, m2, m2a, cmc");
 
 if args.meta and not os.path.isfile(args.meta):
     sys.exit(" * Error 3: Cannot find meta data file: " + args.meta);
@@ -66,6 +66,14 @@ with open(args.output, "w") as outfile:
     if args.model == "m2":
         import lib.m2 as m2;
         m2.parse(args.input, features, outfile, pad);
+
+    if args.model == "m1a":
+        import lib.m1a as m1a;
+        m1a.parse(args.input, features, outfile, pad);
+
+    if args.model == "m2a":
+        import lib.m2a as m2a;
+        m2a.parse(args.input, features, outfile, pad);
     # Load the library for the model used and pass everything to it.
 
 

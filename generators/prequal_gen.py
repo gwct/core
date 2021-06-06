@@ -8,19 +8,18 @@ import sys, os, core, argparse
 ############################################################
 # Options
 
-parser = argparse.ArgumentParser(description="MAFFT command generator");
+parser = argparse.ArgumentParser(description="Prequal command generator");
 parser.add_argument("-i", dest="input", help="Directory of input FASTA files.", default=False);
-parser.add_argument("-o", dest="output", help="Desired output directory for aligned files. Job name (-n) will be appended to output directory name.", default=False);
+#parser.add_argument("-o", dest="output", help="Desired output directory for aligned files. Job name (-n) will be appended to output directory name.", default=False);
 parser.add_argument("-n", dest="name", help="A short name for all files associated with this job.", default=False);
-parser.add_argument("-p", dest="path", help="The path to MAFFT. Default: mafft", default="mafft");
-parser.add_argument("--overwrite", dest="overwrite", help="If the output directory already exists and you wish to overwrite it, set this option.", action="store_true", default=False);
+parser.add_argument("-p", dest="path", help="The path to Prequal. Default: prequal", default="prequal");
+#parser.add_argument("--overwrite", dest="overwrite", help="If the output directory already exists and you wish to overwrite it, set this option.", action="store_true", default=False);
 parser.add_argument("--outname", dest="outname", help="Use the end of the output directory path as the job name.", action="store_true", default=False);
 # IO options
 
 parser.add_argument("-part", dest="part", help="SLURM partition option.", default=False);
 parser.add_argument("-nodes", dest="nodes", help="SLURM --nodes option.", default="1");
 parser.add_argument("-tasks", dest="tasks", help="SLURM --ntasks option.", type=int, default=1);
-parser.add_argument("-tpn", dest="tpn", help="SLURM --ntasks-per-node-option option.", default=False);
 parser.add_argument("-cpus", dest="cpus", help="SLURM --cpus-per-task option.", type=int, default=1);
 parser.add_argument("-mem", dest="mem", help="SLURM --mem option.", type=int, default=0);
 # SLURM options
@@ -36,24 +35,22 @@ if not args.name:
 else:
     name = args.name;
 
-if not args.output:
-    sys.exit( " * Error 2: An output directory must be defined with -o.");
+# if not args.output:
+#     sys.exit( " * Error 2: An output directory must be defined with -o.");
 
-args.output = os.path.abspath(args.output);
+#args.output = os.path.abspath(args.output);
 # if args.outname:
 #     name = os.path.basename(args.output);
 # else:
 #     args.output = args.output + "-" + name + "/";
-if os.path.isdir(args.output) and not args.overwrite:
-    sys.exit( " * Error 3: Output directory (-o) already exists! Explicity specify --overwrite to overwrite it.");
+# if os.path.isdir(args.output) and not args.overwrite:
+#     sys.exit( " * Error 3: Output directory (-o) already exists! Explicity specify --overwrite to overwrite it.");
 # IO option error checking
 
 if not args.part:
     sys.exit( " * Error 4: -part must be defined as a valid node partition on your clutser.");
 if args.tasks < 1:
     sys.exit( " * Error 5: -tasks must be a positive integer.");
-if not args.tpn:
-    args.tpn = args.tasks;
 if args.tasks < 1:
     sys.exit( " * Error 6: -cpus must be a positive integer.");
 if args.tasks < 1:
@@ -66,7 +63,7 @@ cwd = os.getcwd();
 
 output_file = os.path.join(cwd, "jobs", name + ".sh");
 submit_file = os.path.join(cwd, "submit", name + ".sh");
-logdir = os.path.join(args.output, "logs");
+logdir = os.path.join(args.input, "logs");
 # Job files
 
 ##########################
@@ -81,12 +78,10 @@ with open(output_file, "w") as outfile:
     if not args.name:
         core.PWS("# -n not specified --> Generating random string for job name", outfile);
     core.PWS(core.spacedOut("# Job name:", pad) + name, outfile);
-    core.PWS(core.spacedOut("# Output directory:", pad) + args.output, outfile);
-    if args.overwrite:
-        core.PWS(core.spacedOut("# --overwrite set:", pad) + "Overwriting previous files in output directory.", outfile);
-    if not os.path.isdir(args.output):
-        core.PWS("# Creating output directory.", outfile);
-        os.system("mkdir " + args.output);
+    core.PWS(core.spacedOut("# Output directory:", pad) + "Same as input directory", outfile);
+    # if not os.path.isdir(args.output):
+    #     core.PWS("# Creating output directory.", outfile);
+    #     os.system("mkdir " + args.output);
     core.PWS(core.spacedOut("# Logfile directory:", pad) + logdir, outfile);
     if not os.path.isdir(logdir):
         core.PWS("# Creating logfile directory.", outfile);
@@ -97,7 +92,6 @@ with open(output_file, "w") as outfile:
     core.PWS(core.spacedOut("# Submit file:", pad) + submit_file, outfile);
     core.PWS(core.spacedOut("# SLURM partition:", pad) + args.part, outfile);
     core.PWS(core.spacedOut("# SLURM ntasks:", pad) + str(args.tasks), outfile);
-    core.PWS(core.spacedOut("# SLURM ntasks-per-node:", pad) + str(args.tpn), outfile);
     core.PWS(core.spacedOut("# SLURM cpus-per-task:", pad) + str(args.cpus), outfile);
     core.PWS(core.spacedOut("# SLURM mem:", pad) + str(args.mem), outfile);
     core.PWS("# ----------", outfile);
@@ -107,18 +101,13 @@ with open(output_file, "w") as outfile:
 # Generating the commands in the job file.
 
     for f in os.listdir(args.input):
-        if f.endswith(".fa") or f.endswith(".fa.filtered"):
+        base_input = os.path.splitext(f)[0];
+        cur_infile = os.path.join(args.input, f);
+        cur_logfile = os.path.join(logdir, base_input + "-prequal.log");
 
+        prequal_cmd = args.path + " -dodetail -noPP " + cur_infile + " &> " + cur_logfile;
 
-            base_input = os.path.splitext(f)[0];
-            cur_infile = os.path.join(args.input, f);
-            cur_outfile = os.path.join(args.output, base_input + "-mafft.fa");
-            cur_logfile = os.path.join(logdir, base_input + "-mafft.log");
-
-            #mafft_cmd = args.path + " --preservecase " + cur_infile + " 2> " + cur_logfile + " 1> " + cur_outfile;
-            mafft_cmd = args.path + " --adjustdirection --preservecase " + cur_infile + " 2> " + cur_logfile + " 1> " + cur_outfile;
-
-            outfile.write(mafft_cmd + "\n");
+        outfile.write(prequal_cmd + "\n");
 
 ##########################
 # Generating the submit script.
@@ -132,12 +121,11 @@ with open(submit_file, "w") as sfile:
 #SBATCH --partition={partition}
 #SBATCH --nodes={nodes}
 #SBATCH --ntasks={tasks}
-#SBATCH --ntasks-per-node={tpn}
 #SBATCH --cpus-per-task={cpus}
 #SBATCH --mem={mem}
 
 parallel -j {tasks} < {output_file}'''
 
-    sfile.write(submit.format(name=name, partition=args.part, nodes=args.nodes, tasks=args.tasks, tpn=args.tpn, cpus=args.cpus, mem=args.mem, output_file=output_file));
+    sfile.write(submit.format(name=name, partition=args.part, nodes=args.nodes, tasks=args.tasks, cpus=args.cpus, mem=args.mem, output_file=output_file));
 
 ##########################

@@ -1,7 +1,10 @@
 #!/usr/bin/python
 ############################################################
 # Generates commands for the IQtree to make 1 gene tree at
-# a time (since I can't get the -T option to work)
+# a time (since I can't get the -T option to work),
+# parallelized with GNU Parallel.
+# Also makes SLURM script for concatenation and concordance
+# analysis.
 ############################################################
 
 import sys, os, core, argparse
@@ -22,6 +25,7 @@ parser.add_argument("--outname", dest="outname", help="Use the end of the output
 parser.add_argument("-part", dest="part", help="SLURM partition option.", default=False);
 parser.add_argument("-nodes", dest="nodes", help="SLURM --nodes option.", default="1");
 parser.add_argument("-tasks", dest="tasks", help="SLURM --ntasks option.", type=int, default=1);
+parser.add_argument("-tpn", dest="tpn", help="SLURM --ntasks-per-node-option option.", default=False);
 parser.add_argument("-cpus", dest="cpus", help="SLURM --cpus-per-task option.", type=int, default=1);
 parser.add_argument("-mem", dest="mem", help="SLURM --mem option.", type=int, default=0);
 # SLURM options
@@ -122,6 +126,7 @@ with open(loci_output_file, "w") as outfile:
     core.PWS(core.spacedOut("# SLURM partition:", pad) + args.part, outfile);
     core.PWS(core.spacedOut("# SLURM nodes:", pad) + str(args.nodes), outfile);
     core.PWS(core.spacedOut("# SLURM ntasks:", pad) + str(args.tasks), outfile);
+    core.PWS(core.spacedOut("# SLURM ntasks-per-node:", pad) + str(args.tpn), outfile);
     core.PWS(core.spacedOut("# SLURM cpus-per-task:", pad) + str(args.cpus), outfile);
     core.PWS(core.spacedOut("# SLURM mem:", pad) + str(args.mem), outfile);
     core.PWS("# ----------", outfile);
@@ -131,7 +136,7 @@ with open(loci_output_file, "w") as outfile:
 # Generating the commands in the job file.
     skipped = 0;
     for f in sorted(os.listdir(args.input)):
-        if not f.endswith(".fa"):
+        if not f.endswith(".fa") and not f.endswith(".phy"):
             continue;
 
         base_input = os.path.splitext(f)[0];
@@ -184,12 +189,13 @@ with open(loci_submit_file, "w") as sfile:
 #SBATCH --partition={partition}
 #SBATCH --nodes={nodes}
 #SBATCH --ntasks={tasks}
+#SBATCH --ntasks-per-node={tpn}
 #SBATCH --cpus-per-task={cpus}
 #SBATCH --mem={mem}
 
 parallel -j {tasks} < {output_file}'''
 
-    sfile.write(submit.format(name=name, partition=args.part, nodes=args.nodes, tasks=args.tasks, cpus=args.cpus, mem=args.mem, output_file=loci_output_file));
+    sfile.write(submit.format(name=name, partition=args.part, nodes=args.nodes, tasks=args.tasks, tpn=args.tpn, cpus=args.cpus, mem=args.mem, output_file=loci_output_file));
 
 ##########################
 

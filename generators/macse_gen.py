@@ -143,7 +143,6 @@ with open(output_file, "w") as outfile:
                 skipped += 1;
                 continue;
 
-
         cur_outfile_nt = os.path.join(ntdir, base_input + ".NT.macse.fa");
         cut_outfile_aa = os.path.join(aadir, base_input + ".AA.macse.fa");
         cur_logfile = os.path.join(logdir, base_input + "-macse.log");

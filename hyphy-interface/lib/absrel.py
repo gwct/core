@@ -11,12 +11,12 @@ from collections import defaultdict
 def assignTargetClade(tree_str, targs):
 # Function that reads a tree into a dictionary and determines the target branch from a set of tip labels
 
-    tinfo, t, root = hptree.treeParse(tree_str);
+    tinfo, t, root = tp.treeParse(tree_str);
     # Parse tree into dictionary
 
     target_found, repl_nodes = False, [];
     for n in tinfo:
-        cur_clade = hptree.getClade(n, tinfo);
+        cur_clade = tp.getClade(n, tinfo);
         # Get the clade that defines each node
 
         if all(c_nodes in targs for c_nodes in cur_clade):
@@ -34,6 +34,213 @@ def assignTargetClade(tree_str, targs):
 
 ############################################################
 
+def generate(indir, tree_input, gt_opt, aln_id_delim, hyphy_path, outdir, logdir, outfile):
+    if aln_id_delim:
+        aligns = { os.path.splitext(f)[0] : { "aln-file" : os.path.join(indir, f), "id" : f.split(aln_id_delim)[0], "tree" : False } for f in os.listdir(indir) if f.endswith(".fa") };
+    else:
+        aligns = { os.path.splitext(f)[0] : { "aln-file" : os.path.join(indir, f), "id" : "NA", "tree" : False } for f in os.listdir(indir) if f.endswith(".fa") };
+    # Read and sort the alignment file names
+
+    for aln in aligns:
+        if gt_opt:
+            if aln_id_delim:
+                tree_dir = os.path.join(tree_input, aln);
+                if os.path.isdir(tree_dir):
+                    tree_dir_files = os.listdir(tree_dir);
+                    tree_file = "".join([ f for f in tree_dir_files if re.findall(aligns[aln]['id'] + '(.*).treefile', f) != [] and "rooted" not in f ]);
+                    tree_file = os.path.join(tree_dir, tree_file);
+                else:
+                    tree_file = False;
+            else:
+                tree_file = os.path.join(tree_input, aln, aln + ".treefile");
+        else:
+            tree_file = tree_input;
+
+        if os.path.isfile(tree_file):
+            aligns[aln]['tree'] = tree_file;
+        # Read the tree and remove any bootstrap node labels.1
+    # Read the appropriate tree depending on the -tree and -genetree options.
+
+    tree_skipped, stop_skipped = 0, 0;
+    for aln in aligns:
+        if not aligns[aln]['tree']:
+            outfile.write(" # Tree file not found. Skipping: " + aln + "\n");
+            tree_skipped += 1;
+            continue;
+        # Check the tree file.          
+
+        seq_dict = hpseq.fastaGetDict(aligns[aln]['aln-file']);
+        prem_stop_flag = False
+        for title in seq_dict:
+            prem_stop, new_seq = hpseq.premStopCheck(seq_dict[title], allowlastcodon=True, rmlast=True);
+            if prem_stop:
+                prem_stop_flag = True;
+            seq_dict[title] = new_seq;
+        # Read the sequence and check for premature stop codons.
+
+        if prem_stop_flag:
+            outfile.write(" # Premature stop found. Skipping: " + aln + "\n");
+            stop_skipped += 1;
+            continue;
+        # Check the alignment for premature stop codons (which PAML hangs on)
+
+        # cur_outdir = os.path.join(outdir, aln);
+        # if not os.path.isdir(cur_outdir):
+        #     os.system("mkdir " + cur_outdir);
+        # Make the output directory for this alignment
+
+        cur_jsonfile = os.path.join(outdir, aln + ".json");
+        #cur_outfile = os.path.join(cur_outdir, align + "-out.txt");
+        cur_logfile = os.path.join(logdir, aln + ".log");
+        # Get the control and output file names
+
+        hyphy_cmd = "hyphy absrel --alignment " + aligns[aln]['aln-file'] + " --tree " +  aligns[aln]['tree'] + " --output " + cur_jsonfile + " &> " + cur_logfile 
+        outfile.write(hyphy_cmd + "\n");
+        # Construct and write the hyphy command
+
+    hpcore.PWS("# Num skipped because tree file not found     : " + str(tree_skipped), outfile);
+    hpcore.PWS("# Num skipped because of premature stop codons: " + str(stop_skipped), outfile);
+
+############################################################
+
+def parse(indir, features, outfile, pad):
+
+    if features:
+        headers = ["file","id","chr","start","end","num ps branches", "ps pvals"];
+    else:
+        headers = ["file","branch","num ps branches"];
+    outfile.write(",".join(headers) + "\n");
+    # Write the output headers 
+
+    hyphy_files = os.listdir(indir);
+    num_files = len(hyphy_files);
+    num_files_str = str(num_files);
+    num_files_len = len(num_files_str);
+    # Read align file names from input directory
+
+    num_unfinished = 0;
+    # A count of the number of unfinished hyphy runs as determined by empty output files
+
+    counter = 0;
+    for f in os.listdir(indir):
+        if counter % 500 == 0:
+            counter_str = str(counter);
+            while len(counter_str) != num_files_len:
+                counter_str = "0" + counter_str;
+            print ("> " + hpcore.getDateTime() + " " + counter_str + " / " + num_files_str);
+        counter += 1;
+        # Track progress
+
+        cur_json_file = os.path.join(indir, f);
+        if not os.path.isfile(cur_json_file) or not cur_json_file.endswith(".json"):
+            continue;
+        if os.stat(cur_json_file).st_size == 0:
+            num_unfinished +=1 ;
+            continue;
+        # Get the current output file.
+
+        #print(f);
+        if features:
+            if "-" in f:
+                fid = f.split("-")[0];
+            elif "." in f:
+                fid = f.split(".")[0];
+            else:
+                fid = f;
+            cur_feature = features[fid];
+            # Look up transcript/gene info for current gene to save in output, if metadata is provided.
+
+        with open(cur_json_file) as json_data:
+            cur_data = json.load(json_data);
+        # Read the Hyphy json file.
+
+        #print(cur_data)
+
+        if features:
+            gene_info = { 'id' : fid, 'chr' : cur_feature['chrome'], 'start' : cur_feature['start'], 'end' : cur_feature['end'],
+                "num ps branches" : 0, "ps pvals" : [] };
+        else:
+            gene_info = { "num ps branches" : 0, "ps pvals" : [] };   
+        # Initialize the output dictionary for the current branch.
+
+        #gene_info["dn/ds"] = str(cur_data["fits"]["Standard MG94"]["Rate Distributions"]["non-synonymous/synonymous rate ratio"]);
+        for node in cur_data["branch attributes"]["0"]:
+            if float(cur_data["branch attributes"]["0"][node]["Corrected P-value"]) < 0.01:
+                gene_info["num ps branches"] += 1;
+                gene_info["ps pvals"].append(str(cur_data["branch attributes"]["0"][node]["Corrected P-value"]));
+        # Retrieve the rate estimates from the json data.
+
+        gene_info["ps pvals"] = ";".join(gene_info["ps pvals"]);
+        gene_info["num ps branches"] = str(gene_info["num ps branches"]);
+        gene_outline = [f] + [ gene_info[h] for h in headers if h not in ["file"] ];
+        outfile.write(",".join(gene_outline) + "\n");
+        # Ouput rate estimates for both the gene.
+
+    hpcore.PWS("# ----------------", outfile);
+    #hpcore.PWS(hpcore.spacedOut("# Number unfinished:", pad) + str(num_unfinished), outfile);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''
 def generate(indir, tree_input, gt_opt, targets, aln_id_delim, hyphy_path, outdir, logdir, outfile):
 
     if aln_id_delim:
@@ -386,3 +593,4 @@ def parse(indir, features, outfile, pad):
 
     pcore.PWS("# ----------------", outfile);
     pcore.PWS(pcore.spacedOut("# Number unfinished:", pad) + str(num_unfinished), outfile);
+'''

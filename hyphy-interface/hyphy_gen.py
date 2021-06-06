@@ -10,7 +10,7 @@ import sys, os, re, argparse, lib.hpcore as hpcore
 
 parser = argparse.ArgumentParser(description="codeml command generator");
 parser.add_argument("-i", dest="input", help="Directory of input FASTA alignments .", default=False);
-parser.add_argument("-m", dest="model", help="The PAML model that was used to generate the files in -i. Options: mg94, mg94-local, fel, busted. Default: mg94", default="mg94");
+parser.add_argument("-m", dest="model", help="The PAML model that was used to generate the files in -i. Options: mg94, mg94-local, fel, busted, fubar, absrel. Default: mg94", default="mg94");
 parser.add_argument("-s", dest="sep", help="The character to split the alignment filename on to obtain the gene ID. Default: none, use whole file name.", default=False);
 parser.add_argument("-o", dest="output", help="Desired output directory for aligned files. Job name (-n) will be appended to output directory name.", default=False);
 parser.add_argument("-n", dest="name", help="A short name for all files associated with this job.", default=False);
@@ -36,8 +36,8 @@ if not args.input or not os.path.isdir(args.input):
     sys.exit( " * Error 1: An input directory must be defined with -i.");
 args.input = os.path.abspath(args.input);
 
-if args.model not in ["mg94", "mg94-local", "fel", "busted"]:
-    sys.exit(" * Error 2: Model (-m) must be one of: mg94, mg94-local");
+if args.model not in ["mg94", "mg94-local", "fel", "busted", "fubar", "absrel"]:
+    sys.exit(" * Error 2: Model (-m) must be one of: mg94, mg94-local, fel, busted, fubar, absrel");
 
 # if args.model in ["m2", "cmc"]:
 #     if not args.target_clade:
@@ -142,18 +142,27 @@ with open(output_file, "w") as outfile:
 ##########################
 # Generating the commands in the job file.
 
+    file_dir = os.path.dirname(os.path.abspath(__file__));
     if args.model == "mg94":
-        import lib.mg94 as mg94;
-        mg94.generate(args.input, tree_input, args.genetrees, args.sep, args.path, args.output, logdir, outfile);
+        import lib.mg94 as mg94; 
+        model_file = os.path.join(file_dir, "hyphy-analyses/FitMG94/FitMG94.bf");
+        mg94.generate(args.input, tree_input, model_file, args.genetrees, args.sep, args.path, args.output, logdir, outfile);
     if args.model == "mg94-local":   
         import lib.mg94local as mg94local;
-        mg94local.generate(args.input, tree_input, args.genetrees, args.path, args.output, logdir, outfile);
+        model_file = os.path.join(file_dir, "hyphy-analyses/FitMG94/FitMG94.bf");
+        mg94local.generate(args.input, tree_input, model_file, args.genetrees, args.path, args.output, logdir, outfile);
     if args.model == "fel":
         import lib.fel as fel;
         fel.generate(args.input, tree_input, args.genetrees, args.sep, args.path, args.output, logdir, outfile);
     if args.model == "busted":
         import lib.busted as busted;
         busted.generate(args.input, tree_input, args.genetrees, args.sep, args.path, args.output, logdir, outfile);
+    if args.model == "fubar":
+        import lib.fubar as fubar;
+        fubar.generate(args.input, tree_input, args.genetrees, args.sep, args.path, args.output, logdir, outfile);
+    if args.model == "absrel":
+        import lib.absrel as absrel;
+        absrel.generate(args.input, tree_input, args.genetrees, args.sep, args.path, args.output, logdir, outfile);
     # if args.model == "cmc":
     #     import lib.cmc as cmc;
     #     cmc.generate(args.input, tree_input, args.genetrees, targets, args.path, args.output, outfile);
@@ -176,6 +185,8 @@ with open(submit_file, "w") as sfile:
 #SBATCH --ntasks={tasks}
 #SBATCH --cpus-per-task={cpus}
 #SBATCH --mem={mem}
+
+conda activate hyphyenv
 
 parallel -j {tasks} < {output_file}'''
 

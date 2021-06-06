@@ -1,5 +1,5 @@
 ############################################################
-# Functions for the free-ratio (MG94) model from Hyphy.
+# Functions for the BUSTED model from Hyphy.
 # 11.2020
 ############################################################
 
@@ -8,13 +8,25 @@ from collections import defaultdict
 
 ############################################################
 
-def generate(indir, tree_input, model_file, gt_opt, hyphy_path, outdir, logdir, outfile):
-    aligns = { os.path.splitext(f)[0] : { "aln-file" : os.path.join(indir, f), "tree" : False } for f in os.listdir(indir) if f.endswith(".fa") };
+def generate(indir, tree_input, gt_opt, aln_id_delim, hyphy_path, outdir, logdir, outfile):
+    if aln_id_delim:
+        aligns = { os.path.splitext(f)[0] : { "aln-file" : os.path.join(indir, f), "id" : f.split(aln_id_delim)[0], "tree" : False } for f in os.listdir(indir) if f.endswith(".fa") };
+    else:
+        aligns = { os.path.splitext(f)[0] : { "aln-file" : os.path.join(indir, f), "id" : "NA", "tree" : False } for f in os.listdir(indir) if f.endswith(".fa") };
     # Read and sort the alignment file names
 
     for aln in aligns:
         if gt_opt:
-            tree_file = os.path.join(tree_input, aln, aln + ".treefile");
+            if aln_id_delim:
+                tree_dir = os.path.join(tree_input, aln);
+                if os.path.isdir(tree_dir):
+                    tree_dir_files = os.listdir(tree_dir);
+                    tree_file = "".join([ f for f in tree_dir_files if re.findall(aligns[aln]['id'] + '(.*).treefile', f) != [] and "rooted" not in f ]);
+                    tree_file = os.path.join(tree_dir, tree_file);
+                else:
+                    tree_file = False;
+            else:
+                tree_file = os.path.join(tree_input, aln, aln + ".treefile");
         else:
             tree_file = tree_input;
 
@@ -52,11 +64,13 @@ def generate(indir, tree_input, model_file, gt_opt, hyphy_path, outdir, logdir, 
         # Make the output directory for this alignment
 
         cur_jsonfile = os.path.join(outdir, aln + ".json");
+        cur_cachefile = os.path.join(outdir, aln + ".cache");
         #cur_outfile = os.path.join(cur_outdir, align + "-out.txt");
         cur_logfile = os.path.join(logdir, aln + ".log");
         # Get the control and output file names
 
-        hyphy_cmd = "hyphy " + model_file + " --alignment " + aligns[aln]['aln-file'] + " --tree " +  aligns[aln]['tree'] + " --type local --output " + cur_jsonfile + " &> " + cur_logfile 
+        hyphy_cmd = "hyphy fubar --alignment " + aligns[aln]['aln-file'] + " --tree " +  aligns[aln]['tree'] + " &> " + cur_logfile 
+        #+ " --output " + cur_jsonfile + " --cache " + cur_cachefile
         outfile.write(hyphy_cmd + "\n");
         # Construct and write the hyphy command
 
@@ -65,16 +79,20 @@ def generate(indir, tree_input, model_file, gt_opt, hyphy_path, outdir, logdir, 
 
 ############################################################
 
-def parse(indir, features, outfile, pad):
+def parse(indir, features, outfile, sitesfile, pad):
 
     if features:
-        headers = ["file","id","chr","start","end","branch","clade","dn","ds","dn/ds"];
+        headers = ["file","id","chr","start","end","num ps sites","num ns sites"];
+        site_headers = ["file", "id", "site", "site key"];
     else:
-        headers = ["file","branch","clade","dn","ds","dn/ds"];
+        headers = ["file","num ps sites","num ns sites"];
+        site_headers = ["file", "site", "site key"];
     outfile.write(",".join(headers) + "\n");
+    sitesfile.write(",".join(site_headers) + "\n");
     # Write the output headers 
 
     hyphy_files = os.listdir(indir);
+    hyphy_files = [ f for f in hyphy_files if f.endswith(".json") ];
     num_files = len(hyphy_files);
     num_files_str = str(num_files);
     num_files_len = len(num_files_str);
@@ -84,7 +102,7 @@ def parse(indir, features, outfile, pad):
     # A count of the number of unfinished hyphy runs as determined by empty output files
 
     counter = 0;
-    for f in os.listdir(indir):
+    for f in hyphy_files:
         if counter % 500 == 0:
             counter_str = str(counter);
             while len(counter_str) != num_files_len:
@@ -116,43 +134,45 @@ def parse(indir, features, outfile, pad):
             cur_data = json.load(json_data);
         # Read the Hyphy json file.
 
-        cur_tree = cur_data['input']['trees']['0'];
-        tinfo, tree, root = tp.treeParse(cur_tree);
-        # Read the tree from the json data.
+        #print(cur_data)
 
-        clades = defaultdict(list);
-        for n in tinfo:
-            if tinfo[n][2] == 'root':
-                continue;
-            if tinfo[n][2] == 'tip':
-                node_label = n;
-            else:
-                node_label = tinfo[n][3];
+        if features:
+            gene_info = { 'id' : fid, 'chr' : cur_feature['chrome'], 'start' : cur_feature['start'], 'end' : cur_feature['end'],
+                            "num ps sites" : 0, "ps sites" : [], "num ns sites" : 0, "ns sites" : [] };
+        else:
+            gene_info = { "num ps sites" : 0, "ps sites" : [], "num ns sites" : 0, "ns sites" : [] };   
+        # Initialize the output dictionary for the current branch.
 
-            cur_clade = tp.getClade(n, tinfo);
-            cur_anti_clade = [ n2 for n2 in tinfo if tinfo[n2][2] == 'tip' and n2 not in cur_clade ];
-            clades[node_label].append(";".join(cur_clade));
-            clades[node_label].append(";".join(cur_anti_clade));
-            # For unrooted trees there is no directionality, so get clades from both sides of each branch.
-        # For each node/branch in the tree, save the tip species that make up the clade.
+        #gene_info["dn/ds"] = str(cur_data["fits"]["Standard MG94"]["Rate Distributions"]["non-synonymous/synonymous rate ratio"]);
 
-        for node in clades:
-            if features:
-                branch_info = { 'id' : fid, 'chr' : cur_feature['chrome'], 'start' : cur_feature['start'], 'end' : cur_feature['end'],
-                    "branch" : node, "clade" : "NA" ,"dn" : "NA" ,"ds" : "NA" ,"dn/ds" : "NA" };
-            else:
-                branch_info = { "branch" : node ,"clade" : "NA" ,"dn" : "NA" ,"ds" : "NA" ,"dn/ds" : "NA" };   
-            # Initialize the output dictionary for the current branch.
+        site_mat = cur_data["MLE"]["content"]["0"];
+        site_ind = 1;
+        for site in site_mat:
+            if site[3] > 0.9:
+                gene_info["num ns sites"] += 1;
+                gene_info["ns sites"].append(site_ind);
+            # Negative selection
 
-            branch_info["dn/ds"] = str(cur_data["branch attributes"]["0"][node]["Confidence Intervals"]["MLE"]);
-            branch_info["dn"] = str(cur_data["branch attributes"]["0"][node]["dN"]);
-            branch_info["ds"] = str(cur_data["branch attributes"]["0"][node]["dS"]);
-            # Retrieve the rate estimates from the json data.
+            if site[4] > 0.9:
+                gene_info["num ps sites"] += 1;
+                gene_info["ps sites"].append(site_ind);
 
-            for clade in clades[node]:
-                branch_info["clade"] = clade;
-                branch_outline = [f] + [ branch_info[h] for h in headers if h not in ["file"] ];
-                outfile.write(",".join(branch_outline) + "\n");
-            # Ouput rate estimates for both clades of the current branch.
+                site_str = str(site_ind);
+                if features:
+                    site_info = { 'file' : f, 'id' : fid, 'site' : site_str, 'site key' : fid + ":" + site_str };
+                else:
+                    site_info = { 'file' : f, 'site' : site_str, 'site key' : f + ":" + site_str };
+                site_outline = [ site_info[h] for h in site_headers ];
+                sitesfile.write(",".join(site_outline) + "\n");
+            # Positive selection
+
+            site_ind += 1;
+        # Retrieve the positively and negatively selected sites from the json data.
+
+        gene_outline = [f] + [ str(gene_info[h]) for h in headers if h not in ["file"] ];
+        #gene_outline = [ ";".join(c) if type(c) == list else c for c in gene_outline ];
+        outfile.write(",".join(gene_outline) + "\n");
+        # Ouput rate estimates for both the gene.
+
     hpcore.PWS("# ----------------", outfile);
-    hpcore.PWS(hpcore.spacedOut("# Number unfinished:", pad) + str(num_unfinished), outfile);
+    #hpcore.PWS(hpcore.spacedOut("# Number unfinished:", pad) + str(num_unfinished), outfile);

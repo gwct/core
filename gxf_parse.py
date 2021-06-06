@@ -27,6 +27,7 @@ parser.add_argument("-o", dest="output", help="The output tab delmited file.", d
 parser.add_argument("--nogenes", dest="no_genes", help="Set to count the number of reads in each file.", default=False, action="store_true");
 parser.add_argument("--notranscripts", dest="no_transcripts", help="Set to calculate the average read length in each file.", default=False, action="store_true");
 parser.add_argument("--noexons", dest="no_exons", help="Set to count the base compositions in each file.", default=False, action="store_true");
+parser.add_argument("--cds", dest="cds_flag", help="Set to grab only coding exons, rather than all exons.", default=False, action="store_true");
 parser.add_argument("--overwrite", dest="overwrite", help="Set this to indicate you wish to overwrite files specified by -outcsv and -outtxt if they already exist. WARNING: This means the original contents of the file will be deleted.", default=False, action="store_true");
 #parser.add_argument("--header", dest="header", help="Set to extract the header info for each file.", default=False, action="store_true");
 args = parser.parse_args();
@@ -50,12 +51,14 @@ elif os.path.isfile(args.output) and not args.overwrite:
 if args.source not in ["maker", "ensembl"]:
     sys.exit(core.errorOut(6, "Source (-s) of file must be: 'maker' or 'ensembl'"));
 
+exon_str = "exon";
+if args.cds_flag:
+    exon_str = "CDS";
+
 if args.source == "maker":
     transcript_str = "mRNA";
-    exon_str = "CDS";
 elif args.source == "ensembl":
     transcript_str = "transcript";
-    exon_str = "CDS";
 
 pad = 25;
 with open(args.output, "w") as outfile:
@@ -72,6 +75,8 @@ with open(args.output, "w") as outfile:
         core.PWS(core.spacedOut("# --notranscripts set:", pad) + "Not writing transcript coordinates and IDs.", outfile);
     if args.no_exons:
         core.PWS(core.spacedOut("# --noexons set:", pad) + "Not writing exon coordinates and IDs.", outfile);
+    if args.cds_flag:
+        core.PWS(core.spacedOut("# --cds set:", pad) + "Only parsing coding exons.", outfile);
     core.PWS("# ----------------", outfile);
 
     core.PWS("# " + core.getDateTime() + " Detecting compression...", outfile);
@@ -127,16 +132,16 @@ with open(args.output, "w") as outfile:
                     tid = re.findall(args.prefix + 'T[\d]+', feature_info)[0];
                     transcript_type = re.findall('transcript_biotype "[\w]+"', feature_info)[0].replace("transcript_biotype ", "").replace("\"", "") + " ";
 
-                genes[gid]['transcripts'][tid] = { 'chr' : chrome, 'start' : start, 'end' : end, 'strand' : strand, 'type' : transcript_type, 'cds' : {} };
+                genes[gid]['transcripts'][tid] = { 'chr' : chrome, 'start' : start, 'end' : end, 'strand' : strand, 'type' : transcript_type, 'exons' : {} };
                 num_transcripts += 1;
         core.PWS(core.spacedOut("# Transcripts read:", pad) + str(num_transcripts), outfile);
         core.PWS("# ----------------", outfile);
         # Read transcripts.
 
     #if not args.no_exons:
-        core.PWS("# " + core.getDateTime() + " Reading CDS...", outfile);
+        core.PWS("# " + core.getDateTime() + " Reading exons...", outfile);
 
-        num_cds = 0;
+        num_exons = 0;
         exon_counts = defaultdict(int);
         for line in reader(args.input, read_mode):
             #print(line);
@@ -154,7 +159,7 @@ with open(args.output, "w") as outfile:
                     for gid in genes:
                         if tid in genes[gid]['transcripts']:
                             break; 
-                    exon_num = str(len(genes[gid]['transcripts'][tid]['cds']) + 1);
+                    exon_num = str(len(genes[gid]['transcripts'][tid]['exons']) + 1);
                     eid = tid + "-" + exon_num
                     exon_type = "";
                 elif args.source == "ensembl":
@@ -169,9 +174,9 @@ with open(args.output, "w") as outfile:
                         eid = eid[0];
                     exon_type = re.findall('transcript_biotype "[\w]+"', feature_info)[0].replace("transcript_biotype ", "").replace("\"", "") + " ";
                     
-                genes[gid]['transcripts'][tid]['cds'][eid] = { 'chr' : chrome, 'start' : start, 'end' : end, 'strand' : strand, 'type' : exon_type };
-                num_cds += 1;
-        core.PWS(core.spacedOut("# CDS read:", pad) + str(num_cds), outfile);
+                genes[gid]['transcripts'][tid]['exons'][eid] = { 'chr' : chrome, 'start' : start, 'end' : end, 'strand' : strand, 'type' : exon_type };
+                num_exons += 1;
+        core.PWS(core.spacedOut("# Exons read:", pad) + str(num_exons), outfile);
         core.PWS("# ----------------", outfile);
         # Read exons.
 
@@ -193,13 +198,13 @@ with open(args.output, "w") as outfile:
             for tid in genes[gid]['transcripts']:
                 cur_transcript = genes[gid]['transcripts'][tid];
                 if not args.no_transcripts:
-                    outline = [tid, cur_transcript['type'] + "transcript", cur_transcript['chr'], cur_transcript['start'], cur_transcript['end'], cur_transcript['strand'], gid, str(len(cur_transcript['cds']))];
+                    outline = [tid, cur_transcript['type'] + "transcript", cur_transcript['chr'], cur_transcript['start'], cur_transcript['end'], cur_transcript['strand'], gid, str(len(cur_transcript['exons']))];
                     outfile.write("\t".join(outline) + "\n");
                     num_transcripts += 1
             # Transcript output.
 
                 if not args.no_exons:
-                    cds_starts = { eid : int(cur_transcript['cds'][eid]['start']) for eid in cur_transcript['cds'] };
+                    cds_starts = { eid : int(cur_transcript['exons'][eid]['start']) for eid in cur_transcript['exons'] };
                     cds_starts = {k: v for k, v in sorted(cds_starts.items(), key=lambda item: item[1])};
                     # Sort the starting coordinates of the CDS.
 
@@ -209,7 +214,7 @@ with open(args.output, "w") as outfile:
                     # Reverse the order if the strand is -.
 
                     for eid in cds_ids:
-                        cur_exon = cur_transcript['cds'][eid];
+                        cur_exon = cur_transcript['exons'][eid];
                         outline = [eid, cur_exon['type'] + "exon", cur_exon['chr'], cur_exon['start'], cur_exon['end'], cur_exon['strand'], gid + ";" + tid, "NA"];
                         outfile.write("\t".join(outline) + "\n");
                         num_exons += 1;
