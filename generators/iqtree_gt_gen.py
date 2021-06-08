@@ -12,12 +12,12 @@ import sys, os, core, argparse
 ############################################################
 # Options
 
-parser = argparse.ArgumentParser(description="MACSE command generator");
+parser = argparse.ArgumentParser(description="iqtree command generator");
 parser.add_argument("-i", dest="input", help="Directory of input FASTA alignment files.", default=False);
 parser.add_argument("-o", dest="output", help="Desired output directory for aligned files. Job name (-n) will be appended to output directory name.", default=False);
 parser.add_argument("-b", dest="bootstrap", help="The number of bootstrap replicates to perform. Default: 0", default="0");
 parser.add_argument("-n", dest="name", help="A short name for all files associated with this job.", default=False);
-parser.add_argument("-p", dest="path", help="The path to MACSE. Default: iqtree", default="iqtree");
+parser.add_argument("-p", dest="path", help="The path to iqtree. Default: iqtree", default="iqtree");
 parser.add_argument("--overwrite", dest="overwrite", help="If the output directory already exists and you wish to overwrite it, set this option.", action="store_true", default=False);
 parser.add_argument("--outname", dest="outname", help="Use the end of the output directory path as the job name.", action="store_true", default=False);
 # IO options
