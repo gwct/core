@@ -5,6 +5,7 @@
 library(optparse)
 library(phytools)
 library(ape)
+library(stringr)
 
 #############################################################
 
@@ -20,9 +21,9 @@ treeToDF <- function (tree, tree_type="object") {
   # Make sure a valid tree type has been passed.
   
   if(tree_type == "string"){
-    tree = read.tree(text=tree_str)
+    tree = read.tree(text=tree)
   }else if(tree_type == "file"){
-    tree = read.tree(tree_file)
+    tree = read.tree(tree)
   }
   # If the tree type is a string or a file, read it as a phy object here
   
@@ -31,6 +32,7 @@ treeToDF <- function (tree, tree_type="object") {
   # descend from the node.
   
   done = c()
+  i = 1
   for(n in tree[["edge"]][,1]){
   # Go through every internal node in the tree (including the root)
     
@@ -60,6 +62,14 @@ treeToDF <- function (tree, tree_type="object") {
       
       clades = rbind(clades, data.frame("node"=n, "clade"=paste(sort(clade), collapse=";"), "node.type"=node_type))
       # Add the current clade to the clades data frame
+      
+      #print(n)
+      #print(tree[["node.label"]][i])
+      tree[["node.label"]][i] = n
+      # This replaces the node label in the phylo object with the ape node label so the tree can be
+      # written with these nodes later.
+      
+      i = i + 1
     }
   }
   
@@ -90,7 +100,8 @@ treeToDF <- function (tree, tree_type="object") {
     }
   }
 
-  return(tree_info)
+  tree_list = list("info" = tree_info, "labeled.tree" = tree)
+  return(tree_list)
 }
 
 option_list = list(
@@ -119,19 +130,24 @@ read_tinfo = FALSE
 if(opt[["treefile"]] != "FALSE"){
   cat(as.character(Sys.time()), " | Reading tree in file: ", opt[["treefile"]], "\n")
   tree = read.tree(opt[["treefile"]])
-  tinfo = treeToDF(tree)
+  tree_to_df_list = treeToDF(tree)
+  #tinfo = treeToDF(tree)
   read_tinfo = TRUE
 }
 
 if(read_tinfo && !opt[["quiet"]]){
   cat("-------------------------------------\n")
-  print(tinfo)
+  print(tree_to_df_list[["info"]])
   cat("-------------------------------------\n")
 }
 
 if(opt[["outfile"]] != "FALSE"){
   cat(as.character(Sys.time()), " | Writing tree info to file: ", opt[["outfile"]], "\n")
-  write.csv(tinfo, file=opt[["outfile"]], row.names=F)
+  write.csv(tree_to_df_list[["info"]], file=opt[["outfile"]], row.names=F)
+  
+  tree_outfile = str_replace(opt[["outfile"]], ".csv", ".tre")
+  cat(as.character(Sys.time()), " | Writing tree with node labels: ", tree_outfile, "\n")
+  write.tree(tree_to_df_list[["labeled.tree"]], tree_outfile)
 }
 
 
