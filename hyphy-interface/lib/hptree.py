@@ -8,8 +8,8 @@ import re
 ############################################################
 
 def getDesc(d_spec, d_treedict):
-# This function takes a species in the current tree and the dictionary of the current tree
-# returned by treeparse and finds the direct descendants of the species.
+# This function takes a node in the current tree and the dictionary of the current tree
+# returned by treeparse and finds the direct descendants of the node.
 	d_list = [];
 	for node in d_treedict:
 		if d_treedict[node][1] == d_spec:
@@ -23,7 +23,7 @@ def getDesc(d_spec, d_treedict):
 ############################################################
 
 def getClade(c_spec, c_treedict):
-# This function takes a species in the current tree and the dictionary of the current tree
+# This function takes a node in the current tree and the dictionary of the current tree
 # returned by treeparse and finds all tip labels that are descendants of the current node.
 # This is done by getting the direct descendants of the current node with getDesc and then
 # recursively calling itself on those descendants.

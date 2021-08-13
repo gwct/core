@@ -1,4 +1,4 @@
-#!/home/gt156213e/anaconda3/envs/main/bin/python
+#!/usr/bin/env python3
 ########################################################################################
 # This script converts GFF or GTF files to a more sensible tab delimited file.
 #
@@ -77,7 +77,7 @@ with open(args.output, "w") as outfile:
 
     core.PWS("# " + core.getDateTime() + " Writing output...", outfile);
     core.PWS("# ----------------", outfile);
-    headers = "feature type\tcount\tavg length";
+    headers = "feature type,count,avg length";
     outfile.write(headers + "\n");
     # Output headers.
 

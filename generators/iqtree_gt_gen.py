@@ -60,10 +60,14 @@ if not args.part:
 #     sys.exit( " * Error 6: -nodes must be a positive integer.");
 if args.tasks < 1:
     sys.exit( " * Error 7: -tasks must be a positive integer.");
-if args.tasks < 1:
-    sys.exit( " * Error 8: -cpus must be a positive integer.");
-if args.tasks < 1:
-    sys.exit( " * Error 9: -mem must be a positive integer.");
+if not args.tpn:
+    args.tpn = args.tasks;
+elif args.tpn < 1:
+    sys.exit( " * Error 8: -tpn must be a positive integer.");
+if args.cpus < 1:
+    sys.exit( " * Error 9: -cpus must be a positive integer.");
+if args.mem < 1:
+    sys.exit( " * Error 10: -mem must be a positive integer.");
 # SLURM option error checking
 
 pad = 26
