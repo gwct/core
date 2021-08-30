@@ -123,7 +123,7 @@ def parse(indir, features, outfile, pad):
         with open(gene_outfile, "w") as goutfile:
             goutfile.write(",".join(headers) + "\n");
 
-            #print(f);
+            print(f);
             if features:
                 if "-" in f:
                     fid = f.split("-")[0];
