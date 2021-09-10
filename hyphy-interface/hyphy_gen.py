@@ -10,7 +10,7 @@ import sys, os, re, argparse, lib.hpcore as hpcore
 
 parser = argparse.ArgumentParser(description="codeml command generator");
 parser.add_argument("-i", dest="input", help="Directory of input FASTA alignments. Note: for -model anc-recon this should be a directory of Hyphy .json files.", default=False);
-parser.add_argument("-m", dest="model", help="The model to run. Options: mg94, mg94-local, fel, busted, fubar, absrel, anc-recon. Default: mg94", default="mg94");
+parser.add_argument("-m", dest="model", help="The model to run. Options: mg94, mg94-local, fel, busted, fubar, absrel, anc-recon, slac, relax. Default: mg94", default="mg94");
 parser.add_argument("-s", dest="sep", help="The character to split the alignment filename on to obtain the gene ID. Default: none, use whole file name.", default=False);
 parser.add_argument("-o", dest="output", help="Desired output directory for aligned files. Job name (-n) will be appended to output directory name.", default=False);
 parser.add_argument("-n", dest="name", help="A short name for all files associated with this job.", default=False);
@@ -23,6 +23,8 @@ parser.add_argument("-tree", dest="tree", help="The species tree to use.", defau
 parser.add_argument("-genetrees", dest="genetrees", help="A directory containing gene trees for each locus (from iqtree_gt_gen.py).", default=False);
 parser.add_argument("-targetclade", dest="target_clade", help="A comma delimited list of species that make up the clade descending from the target branch. Only alignments and gene trees with the target clade will be used.", default=False);
 #parser.add_argument("-target", dest="target", help="A single or pair of species. The MRCA of the given species will be determined as the target lineage. Pairs should be separated by semi-colons and multiple targets separated by commas, e.g. 'targ1s1;targ1s2,targ2s1;targ2s2", default=False);
+parser.add_argument("-tb", dest="testbranches", help="File containing a list of test branches for RELAX.", default=False);
+parser.add_argument("-rb", dest="refbranches", help="File containing a list of references branches for RELAX.", default=False);
 # Program options
 
 parser.add_argument("-part", dest="part", help="SLURM partition option.", default=False);
@@ -39,8 +41,8 @@ if not args.input or not os.path.isdir(args.input):
     sys.exit( " * Error 1: An input directory must be defined with -i.");
 args.input = os.path.abspath(args.input);
 
-if args.model not in ["mg94", "mg94-local", "fel", "busted", "fubar", "absrel", "anc-recon"]:
-    sys.exit(" * Error 2: Model (-m) must be one of: mg94, mg94-local, fel, busted, fubar, absrel");
+if args.model not in ["mg94", "mg94-local", "fel", "busted", "fubar", "absrel", "anc-recon", "slac", "relax"]:
+    sys.exit(" * Error 2: Model (-m) must be one of: mg94, mg94-local, fel, busted, fubar, absrel, slac, relax");
 
 if args.target_clade:
     targets = args.target_clade.replace(", ", ",").split(",");
@@ -78,18 +80,24 @@ if args.model != "anc-recon":
         tree_input = os.path.abspath(args.genetrees);
     else:
         sys.exit(" * Error 9: At least one of -tree or -genetrees must be provided.");
+
+if args.model == "relax":
+    if not args.testbranches:
+        sys.exit(" * Error 10: If running RELAX, -tb must be provided.");
+    if not args.refbranches:
+        sys.exit(" * Error 11: If running RELAX, -rb must be provided.");
 # error checking
 
 if not args.part:
-    sys.exit( " * Error 10: -part must be defined as a valid node partition on your clutser.");
+    sys.exit( " * Error 12: -part must be defined as a valid node partition on your clutser.");
 if args.tasks < 1:
-    sys.exit( " * Error 11: -tasks must be a positive integer.");
+    sys.exit( " * Error 13: -tasks must be a positive integer.");
 if not args.tpn:
     args.tpn = args.tasks;
 if args.cpus < 1:
-    sys.exit( " * Error 12: -cpus must be a positive integer.");
+    sys.exit( " * Error 14: -cpus must be a positive integer.");
 if args.mem < 0:
-    sys.exit( " * Error 13: -mem must be an integer >= 0.");
+    sys.exit( " * Error 15: -mem must be an integer >= 0.");
 # SLURM option error checking
 
 pad = 26
@@ -179,6 +187,13 @@ with open(output_file, "w") as outfile:
         import lib.ancrecon as ancrecon;
         model_file = os.path.join(file_dir, "hyphy-analyses/AncestralSequences/AncestralSequences.bf");
         ancrecon.generate(args.input, model_file, args.path, args.output, logdir, outfile);
+    if args.model == "slac":
+        import lib.slac as slac;
+        slac.generate(args.input, tree_input, args.genetrees, args.path, args.output, logdir, outfile);
+    if args.model == "relax":
+        import lib.relax as relax;
+        relax.generate(args.input, tree_input, args.testbranches, args.refbranches, args.genetrees, args.path, args.output, logdir, outfile)
+
 
 ##########################
 # Generating the submit script.

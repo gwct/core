@@ -7,8 +7,7 @@ import sys, os, json, re, lib.hpcore as hpcore, lib.hpseq as hpseq, lib.hptree a
 from collections import defaultdict
 
 ############################################################
-
-def generate(indir, tree_input, gt_opt, hyphy_path, outdir, logdir, outfile):
+def generate(indir, tree_input, testbranch_file, refbranch_file, gt_opt, hyphy_path, outdir, logdir, outfile):
     aligns = { os.path.splitext(f)[0] : { "aln-file" : os.path.join(indir, f), "tree" : False } for f in os.listdir(indir) if f.endswith(".fa") };
     # Read and sort the alignment file names
 
@@ -56,7 +55,7 @@ def generate(indir, tree_input, gt_opt, hyphy_path, outdir, logdir, outfile):
         cur_logfile = os.path.join(logdir, aln + ".log");
         # Get the control and output file names
 
-        hyphy_cmd = "hyphy slac --alignment " + aligns[aln]['aln-file'] + " --tree " +  aligns[aln]['tree'] + " --output " + cur_jsonfile + " &> " + cur_logfile 
+        hyphy_cmd = "hyphy relax --alignment " + aligns[aln]['aln-file'] + " --tree " +  aligns[aln]['tree'] + " --test " + testbranch_file + " --reference " + refbranch_file + " --output " + cur_jsonfile + " &> " + cur_logfile 
         outfile.write(hyphy_cmd + "\n");
         # Construct and write the hyphy command
 
@@ -67,7 +66,7 @@ def generate(indir, tree_input, gt_opt, hyphy_path, outdir, logdir, outfile):
 
 def parse(indir, features, outfile, pad):
 
-    out_mode = "splits";
+    out_mode = "clades";
     print("out mode: " + out_mode);
     # clades or splits
 

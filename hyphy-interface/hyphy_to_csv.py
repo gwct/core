@@ -87,4 +87,8 @@ with open(args.output, "w") as outfile:
     if args.model == "slac":
         import lib.slac as slac;
         slac.parse(args.input, features, outfile, pad);
+
+    if args.model == "relax":
+        import lib.relax as relax;
+        relax.parse(args.input, features, outfile, pad);
     # Load the library for the model used and pass everything to it.
