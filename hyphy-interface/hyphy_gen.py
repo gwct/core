@@ -23,8 +23,8 @@ parser.add_argument("-tree", dest="tree", help="The species tree to use.", defau
 parser.add_argument("-genetrees", dest="genetrees", help="A directory containing gene trees for each locus (from iqtree_gt_gen.py).", default=False);
 parser.add_argument("-targetclade", dest="target_clade", help="A comma delimited list of species that make up the clade descending from the target branch. Only alignments and gene trees with the target clade will be used.", default=False);
 #parser.add_argument("-target", dest="target", help="A single or pair of species. The MRCA of the given species will be determined as the target lineage. Pairs should be separated by semi-colons and multiple targets separated by commas, e.g. 'targ1s1;targ1s2,targ2s1;targ2s2", default=False);
-parser.add_argument("-tb", dest="testbranches", help="File containing a list of test branches for RELAX.", default=False);
-parser.add_argument("-rb", dest="refbranches", help="File containing a list of references branches for RELAX.", default=False);
+parser.add_argument("-tb", dest="testbranches", help="A comma delimited list of species or branches that make up the test branches for RELAX.", default=False);
+parser.add_argument("-rb", dest="refbranches", help="A comma delimited list of species or branches that make up the reference branches for RELAX.", default=False);
 # Program options
 
 parser.add_argument("-part", dest="part", help="SLURM partition option.", default=False);
@@ -51,6 +51,22 @@ if args.target_clade:
 else:
     targets = False;
 # Parse the targets.
+
+if args.testbranches:
+    tests = args.testbranches.replace(", ", ",").split(",");
+    tests = list(set(tests));
+    tests.sort();
+else:
+    tests = False;
+# Parse the test branches.
+
+if args.refbranches:
+    refs = args.refbranches.replace(", ", ",").split(",");
+    refs = list(set(refs));
+    refs.sort();
+else:
+    refs = False;
+# Parse the reference branches.
 
 if not args.name:
     name = hpcore.getRandStr();
@@ -82,9 +98,9 @@ if args.model != "anc-recon":
         sys.exit(" * Error 9: At least one of -tree or -genetrees must be provided.");
 
 if args.model == "relax":
-    if not args.testbranches:
+    if not tests:
         sys.exit(" * Error 10: If running RELAX, -tb must be provided.");
-    if not args.refbranches:
+    if not refs:
         sys.exit(" * Error 11: If running RELAX, -rb must be provided.");
 # error checking
 
@@ -143,6 +159,10 @@ with open(output_file, "w") as outfile:
         hpcore.PWS(hpcore.spacedOut("# Using gene trees:", pad) + tree_input, outfile);
     if args.target_clade:
         hpcore.PWS(hpcore.spacedOut("# Target clade:", pad) + ",".join(targets), outfile);
+    if args.testbranches:
+        hpcore.PWS(hpcore.spacedOut("# Test branches:", pad) + ",".join(tests), outfile);
+    if args.refbranches:
+        hpcore.PWS(hpcore.spacedOut("# Reference branches:", pad) + ",".join(refs), outfile);
         if not os.path.isdir(treedir):
             hpcore.PWS("# Creating tree directory.", outfile);
             os.system("mkdir " + treedir);
@@ -192,7 +212,7 @@ with open(output_file, "w") as outfile:
         slac.generate(args.input, tree_input, args.genetrees, args.path, args.output, logdir, outfile);
     if args.model == "relax":
         import lib.relax as relax;
-        relax.generate(args.input, tree_input, args.testbranches, args.refbranches, args.genetrees, args.path, args.output, logdir, outfile)
+        relax.generate(args.input, tree_input, tests, refs, args.genetrees, args.path, args.output, logdir, outfile)
 
 
 ##########################

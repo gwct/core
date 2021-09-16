@@ -22,8 +22,8 @@ parser.add_argument("-t", dest="tree_type", help="Tree type. Options: astral, co
 parser.add_argument("-n", dest="num_cores", help="The number of cores to use. Default: 64", default=64);
 parser.add_argument("-i", dest="tree_info_file", help="csv file with species tree info, including clades for each node.", default=False);
 parser.add_argument("-r", dest="ratesdir", help="The directory of csv files from a hyphy run.", default=False);
-parser.add_argument("-f", dest="filter_file", help="The file with the genes to filter based on dS. Default: blank.csv", default="blank.csv");
-parser.add_argument("-s", dest="subset_file", help="Subset of genes to include in the analysis. Default: prot_list_all.txt", default="prot_list_all.txt");
+parser.add_argument("-f", dest="filter_file", help="The file with the genes to filter based on dS.", default=False);
+parser.add_argument("-s", dest="subset_file", help="Subset of genes to include in the analysis.", default=False);
 parser.add_argument("-o", dest="outfilename", help="The name of the output file.", default=False);
 parser.add_argument("--overwrite", dest="overwrite", help="If the output file already exists and you wish to overwrite it, set this option.", action="store_true", default=False);
 
@@ -45,6 +45,12 @@ args.outfilename = os.path.abspath(args.outfilename)
 
 if os.path.isfile(args.outfilename) and not args.overwrite:
     sys.exit( " * Error 5: Output file (-o) already exists! Explicity specify --overwrite to overwrite it.");
+
+if not args.filter_file:
+    sys.exit( " * Error 6: Must provide a csv of loci to filter out based on dS defined with -f. If you do not want to filter any loci, you can make an empty csv file for this input option (not recommended!)")
+
+if not args.subset_file:
+    sys.exit( " * Error 7: Must provide a text file of loci to include defined with -s. If you want to include all loci in the dataset instead of a gene subset, provide a text file that lists all loci")
 #Check arguments
 
 
@@ -203,19 +209,19 @@ def branchSum(branches_dict, cur_branch, rates_dir, num_branches, filtered, gene
 
 ############################################################
 
-core.PWS("# " + core.getDateTime() + " Reading dS filter genes: " + filter_file);
-filter_files = [ line.replace(".json", ".csv") for line in open(filter_file) ];
+core.PWS("# " + core.getDateTime() + " Reading dS filter genes: " + args.filter_file);
+filter_files = [ line.replace(".json", ".csv") for line in open(args.filter_file) ];
 core.PWS("# " + core.getDateTime() + " Read " + str(len(filter_files)) + " genes to filter based on dS.");
 # Read the dS filtered genes to skip them for averaging
 ##########################
 
-core.PWS("# " + core.getDateTime() + " Reading subset genes: " + subset_file);
-subset_files = [ line.replace("\n","-mafft-cds.filter.csv") for line in open(subset_file) ];
+core.PWS("# " + core.getDateTime() + " Reading subset genes: " + args.subset_file);
+subset_files = [ line.replace("\n","-mafft-cds.filter.csv") for line in open(args.subset_file) ];
 core.PWS("# " + core.getDateTime() + " Read " + str(len(subset_files)) + " genes in subset.");
 #Read in a subset of genes to include in analysis
 ########################## 
 
-core.PWS("# " + core.getDateTime() + " Reading tree information: " + tree_info_file);
+core.PWS("# " + core.getDateTime() + " Reading tree information: " + args.tree_info_file);
 
 branches = {};
 # The main dictionary for the tree info
@@ -225,7 +231,7 @@ clade_index = 1;
 
 first = True;
 branch_num = 1;
-for line in open(tree_info_file):
+for line in open(args.tree_info_file):
     line = line.strip().replace("\"", "").split(",");
     # Parse the line of the file
 
@@ -274,7 +280,7 @@ headers = headers + new_headers;
 # Compile the headers for the new columns
 ##########################
 
-core.PWS("# " + core.getDateTime() + " Counting branches from each gene: " + ratesdir);
+core.PWS("# " + core.getDateTime() + " Counting branches from each gene: " + args.ratesdir);
 branch_num = str(branch_num);
 
 counter = 1;
@@ -284,8 +290,8 @@ counter = 1;
 #     if counter > 5:
 #         break;
 new_branches = {}
-with mp.Pool(processes=num_cores) as pool:
-    for result in pool.starmap(branchSum, ((branches, branch, ratesdir, branch_num, filter_files, subset_files) for branch in branches)):
+with mp.Pool(processes=args.num_cores) as pool:
+    for result in pool.starmap(branchSum, ((branches, branch, args.ratesdir, branch_num, filter_files, subset_files) for branch in branches)):
         core.PWS("# " + core.getDateTime() + " Finished branch " + str(counter) + " / " + branch_num);
         #print(result[0], result[1]);
         
@@ -297,7 +303,7 @@ with mp.Pool(processes=num_cores) as pool:
 
 ##########################
 
-core.PWS("# " + core.getDateTime() + " Writing out new tree table: " + outfilename);
+core.PWS("# " + core.getDateTime() + " Writing out new tree table: " + args.outfilename);
 
 avg_headers = ["avg.ES", "avg.EN", "avg.S", "avg.N", "avg.dS", "avg.dN", "avg.dNdS"];
 headers += avg_headers;
@@ -312,7 +318,7 @@ for clade in new_branches:
             new_branches[clade][nh] = 0;
     # Add in the new headers and initialize at 0, except for the root node
 
-with open(outfilename, "w") as outfile:
+with open(args.outfilename, "w") as outfile:
     outfile.write(",".join(headers) + "\n")
     # Open the output file and write the headers, which now contain the new columns
 
