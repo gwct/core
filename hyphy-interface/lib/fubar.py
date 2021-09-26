@@ -69,8 +69,10 @@ def generate(indir, tree_input, gt_opt, aln_id_delim, hyphy_path, outdir, logdir
         cur_logfile = os.path.join(logdir, aln + ".log");
         # Get the control and output file names
 
-        hyphy_cmd = "hyphy fubar --alignment " + aligns[aln]['aln-file'] + " --tree " +  aligns[aln]['tree'] + " &> " + cur_logfile 
-        #+ " --output " + cur_jsonfile + " --cache " + cur_cachefile
+        #hyphy_cmd = "hyphy fubar --alignment " + aligns[aln]['aln-file'] + " --tree " +  aligns[aln]['tree'] + " --cache " + cur_cachefile + " --output " + cur_jsonfile " &> " + cur_logfile 
+        #Call hyphy from conda install
+        hyphy_cmd = "/home/ek112884/software/hyphy/hyphy /home/ek112884/software/hyphy/res/TemplateBatchFiles/SelectionAnalyses/FUBAR.bf --alignment " + aligns[aln]['aln-file'] + " --tree " +  aligns[aln]['tree'] + " --cache " + cur_cachefile + " --output " + cur_jsonfile + " &> " + cur_logfile;
+        #Call hyphy from develop branch with FUBAR output file bug fixed
         outfile.write(hyphy_cmd + "\n");
         # Construct and write the hyphy command
 
@@ -81,6 +83,8 @@ def generate(indir, tree_input, gt_opt, aln_id_delim, hyphy_path, outdir, logdir
 
 def parse(indir, features, outfile, sitesfile, pad):
 
+    sf = open(sitesfile, "w");
+
     if features:
         headers = ["file","id","chr","start","end","num ps sites","num ns sites"];
         site_headers = ["file", "id", "site", "site key"];
@@ -88,7 +92,8 @@ def parse(indir, features, outfile, sitesfile, pad):
         headers = ["file","num ps sites","num ns sites"];
         site_headers = ["file", "site", "site key"];
     outfile.write(",".join(headers) + "\n");
-    sitesfile.write(",".join(site_headers) + "\n");
+    #sitesfile.write(",".join(site_headers) + "\n");
+    sf.write(",".join(site_headers) + "\n");
     # Write the output headers 
 
     hyphy_files = os.listdir(indir);
@@ -163,7 +168,8 @@ def parse(indir, features, outfile, sitesfile, pad):
                 else:
                     site_info = { 'file' : f, 'site' : site_str, 'site key' : f + ":" + site_str };
                 site_outline = [ site_info[h] for h in site_headers ];
-                sitesfile.write(",".join(site_outline) + "\n");
+                #sitesfile.write(",".join(site_outline) + "\n");
+                sf.write(",".join(site_outline) + "\n");
             # Positive selection
 
             site_ind += 1;
@@ -176,3 +182,4 @@ def parse(indir, features, outfile, sitesfile, pad):
 
     hpcore.PWS("# ----------------", outfile);
     #hpcore.PWS(hpcore.spacedOut("# Number unfinished:", pad) + str(num_unfinished), outfile);
+    sf.close()
