@@ -149,6 +149,9 @@ with open(output_file, "w") as outfile:
     if not os.path.isdir(logdir):
         hpcore.PWS("# Creating log directory.", outfile);
         os.system("mkdir " + logdir);
+    if not os.path.isdir(treedir):
+        hpcore.PWS("# Creating labeled tree directory.", outfile);
+        os.system("mkdir " + treedir);
     hpcore.PWS(hpcore.spacedOut("# Job file:", pad) + output_file, outfile);
     hpcore.PWS("# ----------------", outfile);
 

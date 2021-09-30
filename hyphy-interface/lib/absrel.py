@@ -15,8 +15,8 @@ def assignTargetClade(tree_file, targets):
     tinfo, t, root = tp.treeParse(tree_str);
     # Parse tree into dictionary
     
-    # print(tinfo);
-    # print(t);
+    #print(tinfo);
+    #print(t);
     target_label = "NA";
     target_found = True;
 
@@ -61,6 +61,7 @@ def assignTargetClade(tree_file, targets):
 
     else:
         target_label = max_node;
+        print(target_label)
     # Otherwise save the node as the target label
 
         # if tinfo[max_node][2] == 'tip':
@@ -80,6 +81,22 @@ def generate(indir, tree_input, gt_opt, aln_id_delim, target_clade, hyphy_path, 
         aligns = { os.path.splitext(f)[0] : { "aln-file" : os.path.join(indir, f), "id" : "NA", "tree" : False, "target" : False } for f in os.listdir(indir) if f.endswith(".fa") };
     # Read and sort the alignment file names
 
+    #tree_skipped, stop_skipped = 0, 0;
+    #for aln in aligns:
+    #    if not aligns[aln]['tree']:
+    #        outfile.write(" # Tree file not found. Skipping: " + aln + "\n");
+    #        tree_skipped += 1;
+    #        continue;
+        # Check the tree file.
+   
+    #tree_skipped, stop_skipped = 0, 0;
+    #if not os.path.exists(tree_input):    
+    #    for aln in aligns:    
+    #        outfile.write(" # Tree file not found. Skipping: " + aln + "\n");
+    #        tree_skipped += 1;
+    #        continue;
+        # Check the tree file.
+
     if target_clade and not gt_opt:
         target_tree, target_label, target_found,  = assignTargetClade(tree_input, target_clade);
         # Assign the target label for the input tree
@@ -95,7 +112,17 @@ def generate(indir, tree_input, gt_opt, aln_id_delim, target_clade, hyphy_path, 
     no_target_trees = 0;
     # A count of the number of trees that don't have the target branch, for gene tree input
 
+    #tree_skipped, stop_skipped = 0, 0;
+    #for aln in aligns:
+    #    if not aligns[aln]['tree']:
+    #        outfile.write(" # Tree file not found. Skipping: " + aln + "\n");
+    #        tree_skipped += 1;
+    #        continue;
+    #    # Check the tree file.
+
+    tree_skipped, stop_skipped = 0, 0;
     for aln in aligns:
+        print(aln)
         if gt_opt:
             if aln_id_delim:
                 tree_dir = os.path.join(tree_input, aln);
@@ -111,6 +138,16 @@ def generate(indir, tree_input, gt_opt, aln_id_delim, target_clade, hyphy_path, 
             else:
                 tree_file = os.path.join(tree_input, aln, aln + ".treefile");
             # Get the tree file name
+            
+            if os.path.isfile(tree_file):
+                aligns[aln]['tree'] = tree_file;
+            # Assign the current tree file to the alignment
+            if not aligns[aln]['tree']:
+                print(aligns[aln]['tree'])
+                outfile.write(" # Tree file not found. Skipping: " + aln + "\n");
+                tree_skipped += 1;
+                continue;
+            # Check the tree file.
 
             if target_clade:
                 target_tree, target_label, target_found = assignTargetClade(tree_file, target_clade);
@@ -135,31 +172,31 @@ def generate(indir, tree_input, gt_opt, aln_id_delim, target_clade, hyphy_path, 
         if os.path.isfile(tree_file):
             aligns[aln]['tree'] = tree_file;
             aligns[aln]['target'] = target_label;
-        # Assign the current tree file and target label to the alignment
-    # Read the appropriate tree depending on the -tree and -genetree options.
+            # Assign the current tree file and target label to the alignment
+	    # Read the appropriate tree depending on the -tree and -genetree options.
 
-    tree_skipped, stop_skipped = 0, 0;
-    for aln in aligns:
-        if not aligns[aln]['tree']:
-            outfile.write(" # Tree file not found. Skipping: " + aln + "\n");
-            tree_skipped += 1;
-            continue;
-        # Check the tree file.          
+	    #tree_skipped, stop_skipped = 0, 0;
+	    #for aln in aligns:
+	    #    if not aligns[aln]['tree']:
+	    #        outfile.write(" # Tree file not found. Skipping: " + aln + "\n");
+	    #        tree_skipped += 1;
+	    #        continue;
+	    #    # Check the tree file.          
 
-        seq_dict = hpseq.fastaGetDict(aligns[aln]['aln-file']);
-        prem_stop_flag = False
-        for title in seq_dict:
-            prem_stop, new_seq = hpseq.premStopCheck(seq_dict[title], allowlastcodon=True, rmlast=True);
-            if prem_stop:
-                prem_stop_flag = True;
-            seq_dict[title] = new_seq;
-        # Read the sequence and check for premature stop codons.
+            seq_dict = hpseq.fastaGetDict(aligns[aln]['aln-file']);
+            prem_stop_flag = False
+            for title in seq_dict:
+                prem_stop, new_seq = hpseq.premStopCheck(seq_dict[title], allowlastcodon=True, rmlast=True);
+                if prem_stop:
+                    prem_stop_flag = True;
+                    seq_dict[title] = new_seq;
+                # Read the sequence and check for premature stop codons.
 
-        if prem_stop_flag:
-            outfile.write(" # Premature stop found. Skipping: " + aln + "\n");
-            stop_skipped += 1;
-            continue;
-        # Check the alignment for premature stop codons (which PAML hangs on)
+                if prem_stop_flag:
+                    outfile.write(" # Premature stop found. Skipping: " + aln + "\n");
+                    stop_skipped += 1;
+                    continue;
+                # Check the alignment for premature stop codons (which PAML hangs on)
 
         # cur_outdir = os.path.join(outdir, aln);
         # if not os.path.isdir(cur_outdir):
@@ -194,7 +231,7 @@ def parse(indir, features, outfile, pad):
     if features:
         headers = ["file","id","chr","start","end","num ps branches", "ps pvals"];
     else:
-        headers = ["file","branch","num ps branches"];
+        headers = ["file","branches","num ps branches","ps pvals"];
     outfile.write(",".join(headers) + "\n");
     # Write the output headers 
 
@@ -246,16 +283,18 @@ def parse(indir, features, outfile, pad):
             gene_info = { 'id' : fid, 'chr' : cur_feature['chrome'], 'start' : cur_feature['start'], 'end' : cur_feature['end'],
                 "num ps branches" : 0, "ps pvals" : [] };
         else:
-            gene_info = { "num ps branches" : 0, "ps pvals" : [] };   
+            gene_info = { "branches" : [], "num ps branches" : 0, "ps pvals" : [] };   
         # Initialize the output dictionary for the current branch.
 
         #gene_info["dn/ds"] = str(cur_data["fits"]["Standard MG94"]["Rate Distributions"]["non-synonymous/synonymous rate ratio"]);
         for node in cur_data["branch attributes"]["0"]:
             if float(cur_data["branch attributes"]["0"][node]["Corrected P-value"]) < 0.01:
+                gene_info["branches"].append(str(node)); 
                 gene_info["num ps branches"] += 1;
                 gene_info["ps pvals"].append(str(cur_data["branch attributes"]["0"][node]["Corrected P-value"]));
         # Retrieve the rate estimates from the json data.
 
+        gene_info["branches"] = ";".join(gene_info["branches"]);
         gene_info["ps pvals"] = ";".join(gene_info["ps pvals"]);
         gene_info["num ps branches"] = str(gene_info["num ps branches"]);
         gene_outline = [f] + [ gene_info[h] for h in headers if h not in ["file"] ];

@@ -69,8 +69,10 @@ def generate(indir, tree_input, gt_opt, aln_id_delim, hyphy_path, outdir, logdir
         cur_logfile = os.path.join(logdir, aln + ".log");
         # Get the control and output file names
 
-        hyphy_cmd = "hyphy fubar --alignment " + aligns[aln]['aln-file'] + " --tree " +  aligns[aln]['tree'] + " &> " + cur_logfile 
-        #+ " --output " + cur_jsonfile + " --cache " + cur_cachefile
+        #hyphy_cmd = "hyphy fubar --alignment " + aligns[aln]['aln-file'] + " --tree " +  aligns[aln]['tree'] + " --cache " + cur_cachefile + " --output " + cur_jsonfile " &> " + cur_logfile 
+        #Call hyphy from conda install
+        hyphy_cmd = "/home/ek112884/software/hyphy/hyphy /home/ek112884/software/hyphy/res/TemplateBatchFiles/SelectionAnalyses/FUBAR.bf --alignment " + aligns[aln]['aln-file'] + " --tree " +  aligns[aln]['tree'] + " --cache " + cur_cachefile + " --output " + cur_jsonfile + " &> " + cur_logfile;
+        #Call hyphy from develop branch with FUBAR output file bug fixed
         outfile.write(hyphy_cmd + "\n");
         # Construct and write the hyphy command
 
@@ -81,14 +83,16 @@ def generate(indir, tree_input, gt_opt, aln_id_delim, hyphy_path, outdir, logdir
 
 def parse(indir, features, outfile, sitesfile, pad):
 
+    sf = open(sitesfile, "w");
+
     if features:
-        headers = ["file","id","chr","start","end","num ps sites","num ns sites"];
+        headers = ["file","id","chr","start","end","num ps sites","num ns sites","total num sites"];
         site_headers = ["file", "id", "site", "site key"];
     else:
-        headers = ["file","num ps sites","num ns sites"];
+        headers = ["file","num ps sites","num ns sites","total num sites"];
         site_headers = ["file", "site", "site key"];
     outfile.write(",".join(headers) + "\n");
-    sitesfile.write(",".join(site_headers) + "\n");
+    sf.write(",".join(site_headers) + "\n");
     # Write the output headers 
 
     hyphy_files = os.listdir(indir);
@@ -138,9 +142,9 @@ def parse(indir, features, outfile, sitesfile, pad):
 
         if features:
             gene_info = { 'id' : fid, 'chr' : cur_feature['chrome'], 'start' : cur_feature['start'], 'end' : cur_feature['end'],
-                            "num ps sites" : 0, "ps sites" : [], "num ns sites" : 0, "ns sites" : [] };
+                            "num ps sites" : 0, "ps sites" : [], "num ns sites" : 0, "ns sites" : [], "total num sites" : 0};
         else:
-            gene_info = { "num ps sites" : 0, "ps sites" : [], "num ns sites" : 0, "ns sites" : [] };   
+            gene_info = { "num ps sites" : 0, "ps sites" : [], "num ns sites" : 0, "ns sites" : [], "total num sites" : 0};   
         # Initialize the output dictionary for the current branch.
 
         #gene_info["dn/ds"] = str(cur_data["fits"]["Standard MG94"]["Rate Distributions"]["non-synonymous/synonymous rate ratio"]);
@@ -163,12 +167,13 @@ def parse(indir, features, outfile, sitesfile, pad):
                 else:
                     site_info = { 'file' : f, 'site' : site_str, 'site key' : f + ":" + site_str };
                 site_outline = [ site_info[h] for h in site_headers ];
-                sitesfile.write(",".join(site_outline) + "\n");
+                sf.write(",".join(site_outline) + "\n");
             # Positive selection
 
             site_ind += 1;
         # Retrieve the positively and negatively selected sites from the json data.
 
+        gene_info["total num sites"] = cur_data["input"]["number of sites"];
         gene_outline = [f] + [ str(gene_info[h]) for h in headers if h not in ["file"] ];
         #gene_outline = [ ";".join(c) if type(c) == list else c for c in gene_outline ];
         outfile.write(",".join(gene_outline) + "\n");
@@ -176,3 +181,4 @@ def parse(indir, features, outfile, sitesfile, pad):
 
     hpcore.PWS("# ----------------", outfile);
     #hpcore.PWS(hpcore.spacedOut("# Number unfinished:", pad) + str(num_unfinished), outfile);
+    sf.close()
