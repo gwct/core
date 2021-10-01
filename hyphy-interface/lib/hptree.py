@@ -264,3 +264,12 @@ def treeParse(tree, debug=0):
 	return nofo, topo, rootnode;
 
 ############################################################
+
+def readTips(tree_file):
+# Reads a tree and returns the tip labels
+	info, tree, root = treeParse(open(tree_file, "r").read());
+	#print(info);
+	#sys.exit();
+	return sorted([ n.replace(":NaN", "") for n in info if info[n][2] == 'tip' ]);
+
+############################################################

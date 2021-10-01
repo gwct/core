@@ -3,14 +3,14 @@
 # Generates commands and shell scripts for various PAML models
 ############################################################
 
-import sys, os, re, argparse, lib.hpcore as hpcore
+import sys, os, re, argparse, lib.hpcore as hpcore, lib.hptree as hptree
 
 ############################################################
 # Options
 
 parser = argparse.ArgumentParser(description="codeml command generator");
 parser.add_argument("-i", dest="input", help="Directory of input FASTA alignments. Note: for -model anc-recon this should be a directory of Hyphy .json files.", default=False);
-parser.add_argument("-m", dest="model", help="The model to run. Options: mg94, mg94-local, fel, busted, fubar, absrel, anc-recon, slac, relax. Default: mg94", default="mg94");
+parser.add_argument("-m", dest="model", help="The model to run. Options: mg94, mg94-local, rm-dup, fel, busted, fubar, absrel, anc-recon, slac, relax. Default: mg94", default="mg94");
 parser.add_argument("-s", dest="sep", help="The character to split the alignment filename on to obtain the gene ID. Default: none, use whole file name.", default=False);
 parser.add_argument("-o", dest="output", help="Desired output directory for aligned files. Job name (-n) will be appended to output directory name.", default=False);
 parser.add_argument("-n", dest="name", help="A short name for all files associated with this job.", default=False);
@@ -21,7 +21,7 @@ parser.add_argument("--outname", dest="outname", help="Use the end of the output
 
 parser.add_argument("-tree", dest="tree", help="The species tree to use.", default=False);
 parser.add_argument("-genetrees", dest="genetrees", help="A directory containing gene trees for each locus (from iqtree_gt_gen.py).", default=False);
-parser.add_argument("-targetclade", dest="target_clade", help="A comma delimited list of species that make up the clade descending from the target branch. Only alignments and gene trees with the target clade will be used.", default=False);
+parser.add_argument("-targetclades", dest="target_clades", help="A file or directory of files containing subtrees of target clades.", default=False);
 #parser.add_argument("-target", dest="target", help="A single or pair of species. The MRCA of the given species will be determined as the target lineage. Pairs should be separated by semi-colons and multiple targets separated by commas, e.g. 'targ1s1;targ1s2,targ2s1;targ2s2", default=False);
 parser.add_argument("-tb", dest="testbranches", help="A comma delimited list of species or branches that make up the test branches for RELAX.", default=False);
 parser.add_argument("-rb", dest="refbranches", help="A comma delimited list of species or branches that make up the reference branches for RELAX.", default=False);
@@ -41,13 +41,18 @@ if not args.input or not os.path.isdir(args.input):
     sys.exit( " * Error 1: An input directory must be defined with -i.");
 args.input = os.path.abspath(args.input);
 
-if args.model not in ["mg94", "mg94-local", "fel", "busted", "fubar", "absrel", "anc-recon", "slac", "relax"]:
-    sys.exit(" * Error 2: Model (-m) must be one of: mg94, mg94-local, fel, busted, fubar, absrel, slac, relax");
+if args.model not in ["mg94", "mg94-local", "rm-dup", "fel", "busted", "fubar", "absrel", "anc-recon", "slac", "relax"]:
+    sys.exit(" * Error 2: Model (-m) must be one of: mg94, mg94-local, rm-dup, fel, busted, fubar, absrel, slac, relax");
 
-if args.target_clade:
-    targets = args.target_clade.replace(", ", ",").split(",");
-    targets = list(set(targets));
-    targets.sort();
+if args.target_clades:
+    targets = {};
+    if os.path.isfile(args.target_clades):
+        targets.append(hptree.readTips(args.target_clades));
+    elif os.path.isdir(args.target_clades):
+        for target_file in os.listdir(args.target_clades):
+            targets[target_file] = hptree.readTips(os.path.join(args.target_clades, target_file));
+    else:
+        sys.exit(" * Error 3: Target file/directory (-targetclades) not found!");
 else:
     targets = False;
 # Parse the targets.
@@ -160,8 +165,9 @@ with open(output_file, "w") as outfile:
         hpcore.PWS(hpcore.spacedOut("# Using single species tree:", pad) + tree_input, outfile);
     elif args.genetrees:
         hpcore.PWS(hpcore.spacedOut("# Using gene trees:", pad) + tree_input, outfile);
-    if args.target_clade:
-        hpcore.PWS(hpcore.spacedOut("# Target clade:", pad) + ",".join(targets), outfile);
+    if args.target_clades:
+        hpcore.PWS(hpcore.spacedOut("# Target clade file/dir:", pad) + args.target_clades, outfile);
+        hpcore.PWS(hpcore.spacedOut("# Num of target branches:", pad) + str(len(targets)), outfile);
     if args.testbranches:
         hpcore.PWS(hpcore.spacedOut("# Test branches:", pad) + ",".join(tests), outfile);
     if args.refbranches:
@@ -194,6 +200,11 @@ with open(output_file, "w") as outfile:
         import lib.mg94local as mg94local;
         model_file = os.path.join(file_dir, "hyphy-analyses/FitMG94/FitMG94.bf");
         mg94local.generate(args.input, tree_input, model_file, args.genetrees, args.path, args.output, logdir, outfile);
+    if args.model == "rm-dup":   
+        import lib.rmdup as rmdup;
+        model_file = os.path.join(file_dir, "hyphy-analyses/remove-duplicates/remove-duplicates.bf");
+        rmdup.generate(args.input, tree_input, model_file, args.genetrees, args.sep, args.path, args.output, logdir, outfile);
+
     if args.model == "fel":
         import lib.fel as fel;
         fel.generate(args.input, tree_input, args.genetrees, args.sep, args.path, args.output, logdir, outfile);
