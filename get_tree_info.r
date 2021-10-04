@@ -63,8 +63,13 @@ treeToDF <- function (tree, tree_type="object") {
       clades = rbind(clades, data.frame("node"=n, "clade"=paste(sort(clade), collapse=";"), "node.type"=node_type))
       # Add the current clade to the clades data frame
       
-      #print(n)
-      #print(tree[["node.label"]][i])
+      # print(n)
+      # print(tree[["node.label"]][i])
+      # if(n == 207){
+      #   tree[["node.label"]][i]
+      # }
+      
+      tree[["orig.label"]][i] = tree[["node.label"]][i]
       tree[["node.label"]][i] = n
       # This replaces the node label in the phylo object with the ape node label so the tree can be
       # written with these nodes later.
@@ -72,6 +77,7 @@ treeToDF <- function (tree, tree_type="object") {
       i = i + 1
     }
   }
+
   
   for(i in 1:length(tree[["tip.label"]])){
     clades = rbind(clades, data.frame("node"=i, "clade"=tree[["tip.label"]][i], "node.type"="tip"))
@@ -96,7 +102,7 @@ treeToDF <- function (tree, tree_type="object") {
     if(tree_info[i,]$node.type == "tip"){
       tree_info[i,]$label = tree_info[i,]$clade
     }else{
-      tree_info[i,]$label = tree$node.label[tree_info[i,]$node - Ntip(tree)]
+      tree_info[i,]$label = tree$orig.label[tree_info[i,]$node - Ntip(tree)]
     }
   }
 
@@ -125,6 +131,10 @@ if(opt[["treefile"]] == "FALSE" || !file.exists(opt[["treefile"]])){
 if(file.exists(opt[["outfile"]]) && !opt[["overwrite"]]){
   stop(" * ERROR 1: Output file (-o) already exists! Explicity specify --overwrite to overwrite it.")
 }
+
+#opt[["treefile"]] = "C:/bin/murinae-seq/docs/data/trees/full_coding_iqtree_astral.cf.rooted.tree"
+# opt[["treefile"]] = "C:/bin/murinae-seq/docs/data/trees/full_coding_iqtree_concat.cf.branch.rooted"
+# opt[["quiet"]] = TRUE
 
 read_tinfo = FALSE
 if(opt[["treefile"]] != "FALSE"){

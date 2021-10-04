@@ -41,6 +41,7 @@ def remBranchLength(treestring):
 
 	treestring = re.sub('[)][\d\w<>/.eE_:-]+', ')', treestring);
 	treestring = re.sub(':[\d.eE-]+', '', treestring);
+	#treestring = re.sub(':NaN', '', treestring);
 	#treestring = re.sub('[)][_\d\w<>.eE-]+:[\d.eE-]+', ')', treestring);
 	#treestring = re.sub(':[\d.eE-]+', '', treestring);
 	#treestring = re.sub('<[\d\w]+>[\d_]+', '', treestring);
