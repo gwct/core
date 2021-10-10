@@ -84,15 +84,18 @@ treeToDF <- function (tree, tree_type="object") {
   }
   # Add the tip labels as their own clades
   
-  
-  blens = data.frame("node"=c(), "branch.length"=c())
-  for(i in 1:length(tree[["edge.length"]])){
-    blens = rbind(blens, data.frame("node"=tree[["edge"]][i,2], "branch.length"=tree[["edge.length"]][i]))
+  if ("edge.length" %in% names(tree) ){
+    blens = data.frame("node"=c(), "branch.length"=c())
+    for(i in 1:length(tree[["edge.length"]])){
+      blens = rbind(blens, data.frame("node"=tree[["edge"]][i,2], "branch.length"=tree[["edge.length"]][i]))
+    }
+    
+    tree_info = merge(clades, blens, by="node", all=T)
+    # Combine the clade and branch length data frames
+  # If the tree has branch lengths, extract them for all nodes except the root
+  }else{
+    tree_info = clades
   }
-  # Extract the branch lengths for all nodes except the root
-  
-  tree_info = merge(clades, blens, by="node", all=T)
-  # Combine the clade and branch length data frames
   
   tree_info$label = NA
   for(i in 1:nrow(tree_info)){
@@ -122,6 +125,8 @@ option_list = list(
 )
 opt = parse_args(OptionParser(option_list=option_list))
 
+#opt[["treefile"]] = "C:/Users/grt814/bin/turtle-genomics/data/tree/turtle-samples-topo.tre"
+
 if(opt[["treefile"]] == "FALSE" && opt[["outfile"]] == "FALSE" && opt[["help"]] == FALSE){
   warning(" * WARNING 1: Provide arguments. Use -h for options.")
 }
@@ -131,6 +136,7 @@ if(opt[["treefile"]] == "FALSE" || !file.exists(opt[["treefile"]])){
 if(file.exists(opt[["outfile"]]) && !opt[["overwrite"]]){
   stop(" * ERROR 1: Output file (-o) already exists! Explicity specify --overwrite to overwrite it.")
 }
+
 
 #opt[["treefile"]] = "C:/bin/murinae-seq/docs/data/trees/full_coding_iqtree_astral.cf.rooted.tree"
 # opt[["treefile"]] = "C:/bin/murinae-seq/docs/data/trees/full_coding_iqtree_concat.cf.branch.rooted"
