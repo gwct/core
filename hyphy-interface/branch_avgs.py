@@ -283,6 +283,7 @@ headers = headers + new_headers;
 core.PWS("# " + core.getDateTime() + " Counting branches from each gene: " + args.ratesdir);
 branch_num = str(branch_num);
 
+ncores = int(args.num_cores)
 counter = 1;
 # for branch in branches:
 #     result = branchSum(branches, branch, ratesdir, branch_num);
@@ -290,7 +291,7 @@ counter = 1;
 #     if counter > 5:
 #         break;
 new_branches = {}
-with mp.Pool(processes=args.num_cores) as pool:
+with mp.Pool(processes=ncores) as pool:
     for result in pool.starmap(branchSum, ((branches, branch, args.ratesdir, branch_num, filter_files, subset_files) for branch in branches)):
         core.PWS("# " + core.getDateTime() + " Finished branch " + str(counter) + " / " + branch_num);
         #print(result[0], result[1]);
