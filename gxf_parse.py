@@ -1,4 +1,4 @@
-#!/home/gt156213e/anaconda3/envs/main/bin/python
+#!/usr/bin/env python3
 ########################################################################################
 # This script converts GFF or GTF files to a more sensible tab delimited file.
 #
@@ -48,17 +48,21 @@ elif os.path.isfile(args.output) and not args.overwrite:
    sys.exit(core.errorOut(5, "Output file (-o) already exists! Explicity specify --overwrite to overwrite it."));
 # I/O parsing and error checking.
 
-if args.source not in ["maker", "ensembl"]:
+if args.source not in ["maker", "maker2", "ensembl"]:
     sys.exit(core.errorOut(6, "Source (-s) of file must be: 'maker' or 'ensembl'"));
+
+gene_str = "gene";
+if args.source == "maker2":
+    gene_str = "mRNA";
+
+if args.source in ["maker", "maker2"]:
+    transcript_str = "mRNA";
+elif args.source == "ensembl":
+    transcript_str = "transcript";
 
 exon_str = "exon";
 if args.cds_flag:
     exon_str = "CDS";
-
-if args.source == "maker":
-    transcript_str = "mRNA";
-elif args.source == "ensembl":
-    transcript_str = "transcript";
 
 pad = 25;
 with open(args.output, "w") as outfile:
@@ -99,9 +103,15 @@ with open(args.output, "w") as outfile:
             continue;
         feature_type, chrome, start, end, strand, feature_info = line[2], line[0], line[3], line[4], line[6], line[8];
 
-        if feature_type == "gene":
+        if feature_type == gene_str:
             if args.source == "maker":
                 gid = re.findall(args.prefix + '_G[\d]+', feature_info)[0];
+            # For phodopus
+            elif args.source == "maker2":
+                feature_info = feature_info.split(";");
+                feature_id = feature_info[0].split("=")[1];
+                gid = feature_id[:feature_id.index("-mRNA-1")];
+            # For phyllotis
             elif args.source == "ensembl":
                 gid = re.findall(args.prefix + 'G[\d]+', feature_info)[0];
             genes[gid] = { 'chr' : chrome, 'start' : start, 'end' : end, 'strand' : strand, 'transcripts' : {} };
@@ -127,6 +137,19 @@ with open(args.output, "w") as outfile:
                     gid = re.findall(args.prefix + '_G[\d]+', feature_info)[0];
                     tid = re.findall(args.prefix + '_T[\d]+_mRNA-[\d]+', feature_info)[0];
                     transcript_type = "";
+                # For phodopus
+                elif args.source == "maker2":
+                    feature_info = feature_info.split(";");
+                    feature_id = feature_info[0].split("=")[1];
+                    gid = feature_id[:feature_id.index("-mRNA-1")];
+                    
+                    if feature_type == "mRNA":
+                        tid = feature_id;
+                    else:
+                        tid = feature_id[:feature_id.index(":")];
+
+                    transcript_type = "";
+                # For phyllotis
                 elif args.source == "ensembl":
                     gid = re.findall(args.prefix + 'G[\d]+', feature_info)[0];
                     tid = re.findall(args.prefix + 'T[\d]+', feature_info)[0];
@@ -162,6 +185,18 @@ with open(args.output, "w") as outfile:
                     exon_num = str(len(genes[gid]['transcripts'][tid]['exons']) + 1);
                     eid = tid + "-" + exon_num
                     exon_type = "";
+                # For phodopus
+                elif args.source == "maker2":
+                    feature_info = feature_info.split(";");
+                    feature_id = feature_info[0].split("=")[1];
+                    tid = feature_id[:feature_id.index(":")];
+                    for gid in genes:
+                        if tid in genes[gid]['transcripts']:
+                            break; 
+                    exon_num = str(len(genes[gid]['transcripts'][tid]['exons']) + 1);
+                    eid = tid + "-" + exon_num
+                    exon_type = "";                    
+                # For phyllotis
                 elif args.source == "ensembl":
                     #print(line);
                     gid = re.findall(args.prefix + 'G[\d]+', feature_info)[0];

@@ -82,7 +82,7 @@ with open(args.output, "w") as outfile:
 
     core.PWS("# " + core.getDateTime() + " Writing output...", outfile);
     core.PWS("# ----------------", outfile);
-    headers = "feature type\tcount\tavg length";
+    headers = "feature type,count,avg length";
     outfile.write(headers + "\n");
     # Output headers.
 

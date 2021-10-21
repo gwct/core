@@ -1,14 +1,13 @@
 ############################################################
-# Functions for the free-ratio (MG94) model from Hyphy.
-# 11.2020
+# Functions for the SLAC model from Hyphy.
+# 08.2021
 ############################################################
 
 import sys, os, json, re, lib.hpcore as hpcore, lib.hpseq as hpseq, lib.hptree as tp
 from collections import defaultdict
 
 ############################################################
-
-def generate(indir, tree_input, model_file, gt_opt, hyphy_path, outdir, logdir, outfile):
+def generate(indir, tree_input, testbranch_file, refbranch_file, gt_opt, hyphy_path, outdir, logdir, outfile):
     aligns = { os.path.splitext(f)[0] : { "aln-file" : os.path.join(indir, f), "tree" : False } for f in os.listdir(indir) if f.endswith(".fa") };
     # Read and sort the alignment file names
 
@@ -56,7 +55,7 @@ def generate(indir, tree_input, model_file, gt_opt, hyphy_path, outdir, logdir, 
         cur_logfile = os.path.join(logdir, aln + ".log");
         # Get the control and output file names
 
-        hyphy_cmd = "hyphy " + model_file + " --alignment " + aligns[aln]['aln-file'] + " --tree " +  aligns[aln]['tree'] + " --type local --output " + cur_jsonfile + " &> " + cur_logfile 
+        hyphy_cmd = "hyphy relax --alignment " + aligns[aln]['aln-file'] + " --tree " +  aligns[aln]['tree'] + " --test " + testbranch_file + " --reference " + refbranch_file + " --output " + cur_jsonfile + " &> " + cur_logfile 
         outfile.write(hyphy_cmd + "\n");
         # Construct and write the hyphy command
 
@@ -77,16 +76,20 @@ def parse(indir, features, outfile, pad):
 
     if features:
         if out_mode == "splits":
-            headers = ["file","id","chr","start","end","branch","split1","split2","dn","ds","dn/ds","nonsynonymous bl","synonymous bl"];
+            headers = ["file","id","chr","start","end","branch","split1","split2","ES","EN","S","N"];
         elif out_mode == "clades":
-            headers = ["file","id","chr","start","end","branch","clade","dn","ds","dn/ds","nonsynonymous bl","synonymous bl"];
+            headers = ["file","id","chr","start","end","branch","clade","ES","EN","S","N"];
     else:
         if out_mode == "splits":
-            headers = ["file","branch","split1","split2","dn","ds","dn/ds","nonsynonymous bl","synonymous bl"];
+            headers = ["file","branch","split1","split2","ES","EN","S","N"];
         elif out_mode == "clades":
-            headers = ["file","branch","clade","dn","ds","dn/ds","nonsynonymous bl","synonymous bl"];
+            headers = ["file","branch","clade","ES","EN","S","N"];
     outfile.write(",".join(headers) + "\n");
     # Write the output headers 
+    # ES = Expected synonymous sites
+    # EN = Expected non-synonymous sites
+    # S = Inferred synonymous substitutions
+    # N = Inferred non-synonymous substitutions
 
     hyphy_files = os.listdir(indir);
     num_files = len(hyphy_files);
@@ -119,7 +122,7 @@ def parse(indir, features, outfile, pad):
         with open(gene_outfile, "w") as goutfile:
             goutfile.write(",".join(headers) + "\n");
 
-            #print(f);
+            print(f);
             if features:
                 if "-" in f:
                     fid = f.split("-")[0];
@@ -158,27 +161,35 @@ def parse(indir, features, outfile, pad):
                 # For unrooted trees there is no directionality, so get clades from both sides of each branch.
             # For each node/branch in the tree, save the tip species that make up the clade.
 
+            node_names0 = list(cur_data["MLE"]["content"]["0"]["by-branch"]["NAMES"]);
+            node_names = [''.join(n) for n in node_names0];
+            #Get list of node names; will be used later to get index numbers for each node for json parsing
+
             for node in splits:
+                #print("node: " + node)
                 if features:
                     if out_mode == "splits":
                         branch_info = { 'id' : fid, 'chr' : cur_feature['chrome'], 'start' : cur_feature['start'], 'end' : cur_feature['end'],
-                            "branch" : node, "split1" : "NA", "split2" : "NA", "dn" : "NA" ,"ds" : "NA" ,"dn/ds" : "NA", "nonsynonymous bl" : "NA", "synonymous bl" : "NA" };
+                            "branch" : node, "split1" : "NA", "split2" : "NA", "ES" : "NA" ,"EN" : "NA" ,"S" : "NA", "N" : "NA" };
                     elif out_mode == "clades":
                         branch_info = { 'id' : fid, 'chr' : cur_feature['chrome'], 'start' : cur_feature['start'], 'end' : cur_feature['end'],
-                            "branch" : node, "clade" : "NA", "dn" : "NA" ,"ds" : "NA" ,"dn/ds" : "NA", "nonsynonymous bl" : "NA", "synonymous bl" : "NA" };                        
+                            "branch" : node, "clade" : "NA", "ES" : "NA" ,"EN" : "NA" ,"S" : "NA", "N" : "NA" };                        
                 else:
                     if out_mode == "splits":
-                        branch_info = { "branch" : node ,"split1" : "NA", "split2" : "NA", "dn" : "NA" ,"ds" : "NA" ,"dn/ds" : "NA", "nonsynonymous bl" : "NA", "synonymous bl" : "NA" };   
+                        branch_info = { "branch" : node ,"split1" : "NA", "split2" : "NA", "ES" : "NA" ,"EN" : "NA" ,"S" : "NA", "N" : "NA" };   
                     elif out_mode == "clades":
-                        branch_info = { "branch" : node ,"clades" : "NA", "dn" : "NA" ,"ds" : "NA" ,"dn/ds" : "NA", "nonsynonymous bl" : "NA", "synonymous bl" : "NA" };   
+                        branch_info = { "branch" : node ,"clades" : "NA", "ES" : "NA" ,"EN" : "NA" ,"S" : "NA", "N" : "NA" };   
                 # Initialize the output dictionary for the current branch.
 
-                branch_info["dn/ds"] = str(cur_data["branch attributes"]["0"][node]["Confidence Intervals"]["MLE"]);
-                branch_info["dn"] = str(cur_data["branch attributes"]["0"][node]["dN"]);
-                branch_info["ds"] = str(cur_data["branch attributes"]["0"][node]["dS"]);
-                branch_info["nonsynonymous bl"] = str(cur_data["branch attributes"]["0"][node]["nonsynonymous"]);
-                branch_info["synonymous bl"] = str(cur_data["branch attributes"]["0"][node]["synonymous"]);
-                # Retrieve the rate estimates from the json data.
+                node_num = node_names.index(node);
+                # Get index number for this node to parse json
+                #print(node_num);
+
+                branch_info["ES"] = str(cur_data["MLE"]["content"]["0"]["by-branch"]["AVERAGED"][node_num][0]);
+                branch_info["EN"] = str(cur_data["MLE"]["content"]["0"]["by-branch"]["AVERAGED"][node_num][1]);
+                branch_info["S"] = str(cur_data["MLE"]["content"]["0"]["by-branch"]["AVERAGED"][node_num][2]);
+                branch_info["N"] = str(cur_data["MLE"]["content"]["0"]["by-branch"]["AVERAGED"][node_num][3]);
+                # Retrieve the raw counts from the json data.
 
                 if out_mode == "splits":
                     branch_info["split1"] = splits[node][0];

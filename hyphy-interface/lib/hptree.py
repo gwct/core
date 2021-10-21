@@ -8,8 +8,8 @@ import re
 ############################################################
 
 def getDesc(d_spec, d_treedict):
-# This function takes a species in the current tree and the dictionary of the current tree
-# returned by treeparse and finds the direct descendants of the species.
+# This function takes a node in the current tree and the dictionary of the current tree
+# returned by treeparse and finds the direct descendants of the node.
 	d_list = [];
 	for node in d_treedict:
 		if d_treedict[node][1] == d_spec:
@@ -23,7 +23,7 @@ def getDesc(d_spec, d_treedict):
 ############################################################
 
 def getClade(c_spec, c_treedict):
-# This function takes a species in the current tree and the dictionary of the current tree
+# This function takes a node in the current tree and the dictionary of the current tree
 # returned by treeparse and finds all tip labels that are descendants of the current node.
 # This is done by getting the direct descendants of the current node with getDesc and then
 # recursively calling itself on those descendants.
@@ -262,5 +262,14 @@ def treeParse(tree, debug=0):
 		print()
 
 	return nofo, topo, rootnode;
+
+############################################################
+
+def readTips(tree_file):
+# Reads a tree and returns the tip labels
+	info, tree, root = treeParse(open(tree_file, "r").read());
+	#print(info);
+	#sys.exit();
+	return sorted([ n.replace(":NaN", "") for n in info if info[n][2] == 'tip' ]);
 
 ############################################################

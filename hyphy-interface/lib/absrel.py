@@ -8,66 +8,164 @@ from collections import defaultdict
 
 ############################################################
 
-def assignTargetClade(tree_str, targs):
+def assignTargetClade(aln, tree_file, targets, target_summary_dict, target_gene_dict):
 # Function that reads a tree into a dictionary and determines the target branch from a set of tip labels
 
+    tree_str = open(tree_file, "r").read().strip();
     tinfo, t, root = tp.treeParse(tree_str);
     # Parse tree into dictionary
+    
+    target_labels = [];
+    # A list of internal node labels that correspond to target clades
 
-    target_found, repl_nodes = False, [];
-    for n in tinfo:
-        cur_clade = tp.getClade(n, tinfo);
-        # Get the clade that defines each node
+    targets_found = False;
+    # A boolean to tell whether any targets were found in the current gene tree
 
-        if all(c_nodes in targs for c_nodes in cur_clade):
-            repl_nodes.append(n);
-            target_found = True;
-        # If the clade matches the specified targets, set as a target branch
+    for target in targets:
+        max_split1 = [];
+        max_split2 = [];
+        max_node = "";
+        # Variables to store the information for the maximal subset clade
 
-    if target_found:
-        for n in repl_nodes:
-            t = t.replace(n, n + " #1");
-        t = re.sub('<[\d]+>', '', t) + ";";
-    # Add target labels and remove node labels
+        for node in tinfo:
+            split1 = tp.getClade(node, tinfo);
+            split1.sort();
+            split2 = [ n2 for n2 in tinfo if tinfo[n2][2] == 'tip' and n2 not in split1 ];
+            split2.sort();
 
-    return target_found, t;
+            splits = [split1, split2];
+            # Get the splits from the current branch in the gene's gene tree
+
+            for s in range(len(splits)):
+            # For each split, we want to check whether it is a subset of the current branch
+
+                if set(splits[s]) == set(targets[target]) or set(splits[s]) <= set(targets[target]):
+                # Check if the current split is an equivalent set or subset of the targets
+
+                    if len(splits[s]) > len(max_split1):
+                    # Check if the current split that is a subset of the targets contains more species
+                    # than the current maximal subset. If so, it becomes the maximal subset.
+
+                        max_split1 = splits[s];
+                        max_node = node;
+                        if s == 0:
+                            max_split2 = splits[1];
+                        else:
+                            max_split2 = splits[0];
+                        # Assign the maximal subset to max_split1 and the other split to max_split2
+        # Check every node in the tree for target species
+
+        if max_split1 == [] or any(spec in max_split2 for spec in targets[target]):
+            target_summary_dict[target] += 1;
+        # If no species from the current branch are found then this clade doesn't exist in this gene OR
+        # If species from the branch are present in the second split (not the maximal subset), then this is a case of
+        # discordance and the clade truly doesn't exist in this gene as a monophyly. Do not add to the target labels
+        # dictionary, but rather increment the summary dict that counts how many genes DON'T contain a clade.
+
+        else:
+            target_gene_dict[target][aln] = { 'node' : max_node, 'num-species' : str(len(max_split1)), 'species' : max_split1 };
+            # Add this node for this target to the target_gene dict.
+
+            target_labels.append(max_node);
+            targets_found = True;
+        # Otherwise save the internal node that label that corresponds to the clade and switch targets_found to True
+
+    return t, target_labels, targets_found, target_summary_dict, target_gene_dict;
 
 ############################################################
 
-def generate(indir, tree_input, gt_opt, aln_id_delim, hyphy_path, outdir, logdir, outfile):
+def generate(indir, tree_input, gt_opt, aln_id_delim, target_clades, hyphy_path, outdir, target_tree_dir, logdir, outfile):
     if aln_id_delim:
-        aligns = { os.path.splitext(f)[0] : { "aln-file" : os.path.join(indir, f), "id" : f.split(aln_id_delim)[0], "tree" : False } for f in os.listdir(indir) if f.endswith(".fa") };
+        aligns = { os.path.splitext(f)[0] : { "aln-file" : os.path.join(indir, f), "id" : f.split(aln_id_delim)[0], "tree" : False, "targets" : [] } for f in os.listdir(indir) if f.endswith(".fa") };
     else:
-        aligns = { os.path.splitext(f)[0] : { "aln-file" : os.path.join(indir, f), "id" : "NA", "tree" : False } for f in os.listdir(indir) if f.endswith(".fa") };
+        aligns = { os.path.splitext(f)[0] : { "aln-file" : os.path.join(indir, f), "id" : "NA", "tree" : False, "targets" : [] } for f in os.listdir(indir) if f.endswith(".fa") };
     # Read and sort the alignment file names
 
+    target_summary = { t : 0 for t in target_clades };
+    target_gene_key = { t : {} for t in target_clades };
+    # Two dictionaries to keep track of target stats:
+    # target_summary is just a count of how many genes DON'T have each target branch: <input target subtree filename> : <# of genes without subtree>
+    # target_gene_dict keeps track of which node corresponds to each target branch in each clade: <input target subtree filename> : { <alignment id> : { <node that corresponds to target clade>, <# of species in target clade found> < list of species in target clade found> }}
+
+    if target_clades and not gt_opt:
+        target_tree, target_labels, targets_found, target_summary, target_gene_key = assignTargetClade("all", tree_input, target_clades, target_summary, target_gene_key);
+        # Assign the target labels for the input tree
+        if not targets_found:
+            sys.exit(" * ERROR: None of the provided target clades exist in the input tree.");
+        # If the target branch doesn't exist in the single input tree, exit
+        else:
+            tree_input = os.path.basename(tree_input);
+            tree_input = os.path.join(target_tree_dir, tree_input);
+        # Write the labeled input tree for the run
+    # This block handles the target branch identification for a single input tree
+
+    no_target_trees = 0;
+    # A count of the number of trees that don't have the target branch, for gene tree input
+    i = 0;
+    tree_skipped, stop_skipped = 0, 0;
     for aln in aligns:
+        # if i == 10:
+        #     break;
+        i += 1;
+        print(str(i) + "\t" + aln);
+
         if gt_opt:
             if aln_id_delim:
                 tree_dir = os.path.join(tree_input, aln);
                 if os.path.isdir(tree_dir):
                     tree_dir_files = os.listdir(tree_dir);
                     tree_file = "".join([ f for f in tree_dir_files if re.findall(aligns[aln]['id'] + '(.*).treefile', f) != [] and "rooted" not in f ]);
+                    if not tree_file:
+                        continue;
                     tree_file = os.path.join(tree_dir, tree_file);
                 else:
                     tree_file = False;
+            # If we need to split the input alignment directory to get the tree file name
             else:
                 tree_file = os.path.join(tree_input, aln, aln + ".treefile");
+            # Get the tree file name
+            
+            if os.path.isfile(tree_file):
+                aligns[aln]['tree'] = tree_file;
+            # Assign the current tree file to the alignment
+            if not aligns[aln]['tree']:
+                print(aligns[aln]['tree'])
+                outfile.write(" # Tree file not found. Skipping: " + aln + "\n");
+                tree_skipped += 1;
+                continue;
+            # Check the tree file.
+
+            if target_clades:
+                target_tree, target_labels, targets_found, target_summary, target_gene_key = assignTargetClade(aln, tree_file, target_clades, target_summary, target_gene_key);
+                # Identify the target nodes in the current gene tree
+
+                if not targets_found:
+                    outfile.write(" # No target branches found in input tree. Skipping: " + tree_file + "\n");
+                    no_target_trees += 1;
+                    continue;
+                # Count the tree if none of the target clades are found
+                else:
+                    tree_file = os.path.basename(tree_file).replace(".treefile", "-labeled.treefile");
+                    tree_file = os.path.join(target_tree_dir, tree_file);
+                    for target_label in target_labels:
+                        target_tree = target_tree.replace(target_label, target_label + "{Foreground}");
+                    # Add the "{Foreground}" label to the test branches
+                    with open(tree_file, "w") as tout:
+                        tout.write(target_tree);
+                    aligns[aln]['tree'] = tree_file;
+                    aligns[aln]['targets'] = target_labels;
+                # Re-write the labeled tree file if any target clades are found
+            # If target clades are provided, check if they are in the current tree
+        # This handles individual gene trees for each alignment
+
         else:
-            tree_file = tree_input;
+            aligns[aln]['tree'] = tree_input;
+            aligns[aln]['targets'] = target_labels;
+        # If a single tree is input, we need to set the tree and targets to whatever was determined above in the
+        # single tree block.
 
-        if os.path.isfile(tree_file):
-            aligns[aln]['tree'] = tree_file;
-        # Read the tree and remove any bootstrap node labels.1
-    # Read the appropriate tree depending on the -tree and -genetree options.
-
-    tree_skipped, stop_skipped = 0, 0;
-    for aln in aligns:
-        if not aligns[aln]['tree']:
-            outfile.write(" # Tree file not found. Skipping: " + aln + "\n");
-            tree_skipped += 1;
-            continue;
-        # Check the tree file.          
+        # print(target_gene_key);
+        # sys.exit();
 
         seq_dict = hpseq.fastaGetDict(aligns[aln]['aln-file']);
         prem_stop_flag = False
@@ -75,31 +173,51 @@ def generate(indir, tree_input, gt_opt, aln_id_delim, hyphy_path, outdir, logdir
             prem_stop, new_seq = hpseq.premStopCheck(seq_dict[title], allowlastcodon=True, rmlast=True);
             if prem_stop:
                 prem_stop_flag = True;
-            seq_dict[title] = new_seq;
-        # Read the sequence and check for premature stop codons.
+                seq_dict[title] = new_seq;
+            # Read the sequence and check for premature stop codons.
 
-        if prem_stop_flag:
-            outfile.write(" # Premature stop found. Skipping: " + aln + "\n");
-            stop_skipped += 1;
-            continue;
+            if prem_stop_flag:
+                outfile.write(" # Premature stop found. Skipping: " + aln + "\n");
+                stop_skipped += 1;
+                continue;
         # Check the alignment for premature stop codons (which PAML hangs on)
-
-        # cur_outdir = os.path.join(outdir, aln);
-        # if not os.path.isdir(cur_outdir):
-        #     os.system("mkdir " + cur_outdir);
-        # Make the output directory for this alignment
 
         cur_jsonfile = os.path.join(outdir, aln + ".json");
         #cur_outfile = os.path.join(cur_outdir, align + "-out.txt");
         cur_logfile = os.path.join(logdir, aln + ".log");
         # Get the control and output file names
 
-        hyphy_cmd = "hyphy absrel --alignment " + aligns[aln]['aln-file'] + " --tree " +  aligns[aln]['tree'] + " --output " + cur_jsonfile + " &> " + cur_logfile 
+        hyphy_cmd = "hyphy absrel --alignment " + aligns[aln]['aln-file'] + " --tree " +  aligns[aln]['tree'];
+        if aligns[aln]['targets']:
+            hyphy_cmd += " --branches Foreground";
+        # Add the target node if specified and found
+        hyphy_cmd += " --output " + cur_jsonfile + " &> " + cur_logfile 
         outfile.write(hyphy_cmd + "\n");
         # Construct and write the hyphy command
 
+    hpcore.PWS("# END CMDS", outfile);
+    hpcore.PWS("# ----------------", outfile);
     hpcore.PWS("# Num skipped because tree file not found     : " + str(tree_skipped), outfile);
     hpcore.PWS("# Num skipped because of premature stop codons: " + str(stop_skipped), outfile);
+    if target_clades:
+        hpcore.PWS("# TARGET SUMMARY", outfile);
+        hpcore.PWS("# Num trees with no target branches           : " + str(no_target_trees), outfile);
+        summary_pad = 18;
+
+        hpcore.PWS(hpcore.spacedOut("# Clade num", summary_pad) + hpcore.spacedOut("trees not found", summary_pad) + "clade list", outfile);
+        for clade in target_clades:
+            outline = hpcore.spacedOut("# " + str(clade), summary_pad) + hpcore.spacedOut(str(target_summary[clade]), summary_pad) + ",".join(target_clades[clade]);
+            hpcore.PWS(outline, outfile);
+
+        target_key_file = os.path.join(logdir, "target-gene-keys.tab");
+        hpcore.PWS(hpcore.spacedOut("# Writing target gene key file: ", summary_pad) + target_key_file, outfile);
+        with open(target_key_file, "w") as keyfile:
+            for target in target_gene_key:
+                for aln in target_gene_key[target]:
+                    outline = "\t".join([target, aln, target_gene_key[target][aln]['node'], target_gene_key[target][aln]['num-species'], ",".join(target_gene_key[target][aln]['species'])]);
+                    keyfile.write(outline + "\n");
+        # This block writes the target_gene_dict info to a file.
+    # Report some stats
 
 ############################################################
 
@@ -108,7 +226,7 @@ def parse(indir, features, outfile, pad):
     if features:
         headers = ["file","id","chr","start","end","num ps branches", "ps pvals"];
     else:
-        headers = ["file","branch","num ps branches"];
+        headers = ["file","branches","num ps branches","ps pvals"];
     outfile.write(",".join(headers) + "\n");
     # Write the output headers 
 
@@ -160,16 +278,18 @@ def parse(indir, features, outfile, pad):
             gene_info = { 'id' : fid, 'chr' : cur_feature['chrome'], 'start' : cur_feature['start'], 'end' : cur_feature['end'],
                 "num ps branches" : 0, "ps pvals" : [] };
         else:
-            gene_info = { "num ps branches" : 0, "ps pvals" : [] };   
+            gene_info = { "branches" : [], "num ps branches" : 0, "ps pvals" : [] };   
         # Initialize the output dictionary for the current branch.
 
         #gene_info["dn/ds"] = str(cur_data["fits"]["Standard MG94"]["Rate Distributions"]["non-synonymous/synonymous rate ratio"]);
         for node in cur_data["branch attributes"]["0"]:
             if float(cur_data["branch attributes"]["0"][node]["Corrected P-value"]) < 0.01:
+                gene_info["branches"].append(str(node)); 
                 gene_info["num ps branches"] += 1;
                 gene_info["ps pvals"].append(str(cur_data["branch attributes"]["0"][node]["Corrected P-value"]));
         # Retrieve the rate estimates from the json data.
 
+        gene_info["branches"] = ";".join(gene_info["branches"]);
         gene_info["ps pvals"] = ";".join(gene_info["ps pvals"]);
         gene_info["num ps branches"] = str(gene_info["num ps branches"]);
         gene_outline = [f] + [ gene_info[h] for h in headers if h not in ["file"] ];
