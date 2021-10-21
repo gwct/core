@@ -8,27 +8,13 @@ from collections import defaultdict
 
 ############################################################
 
-def generate(indir, tree_input, gt_opt, aln_id_delim, hyphy_path, outdir, logdir, outfile):
-    model_file = os.path.abspath("hyphy-analyses/FitMG94/FitMG94.bf");
-
-    if aln_id_delim:
-        aligns = { os.path.splitext(f)[0] : { "aln-file" : os.path.join(indir, f), "id" : f.split(aln_id_delim)[0], "tree" : False } for f in os.listdir(indir) if f.endswith(".fa") };
-    else:
-        aligns = { os.path.splitext(f)[0] : { "aln-file" : os.path.join(indir, f), "id" : "NA", "tree" : False } for f in os.listdir(indir) if f.endswith(".fa") };
+def generate(indir, tree_input, model_file, gt_opt, aln_id_delim, hyphy_path, outdir, logdir, outfile):
+    aligns = { os.path.splitext(f)[0] : { "aln-file" : os.path.join(indir, f), "tree" : False } for f in os.listdir(indir) if f.endswith(".fa") };
     # Read and sort the alignment file names
 
     for aln in aligns:
         if gt_opt:
-            if aln_id_delim:
-                tree_dir = os.path.join(tree_input, aligns[aln]['id']);
-                if os.path.isdir(tree_dir):
-                    tree_dir_files = os.listdir(tree_dir);
-                    tree_file = "".join([ f for f in tree_dir_files if re.findall(aligns[aln]['id'] + '(.*).treefile', f) != [] and "rooted" not in f ]);
-                    tree_file = os.path.join(tree_input, aligns[aln]['id'], tree_file);
-                else:
-                    tree_file = False;
-            else:
-                tree_file = os.path.join(tree_input, aln, aln + ".treefile");
+            tree_file = os.path.join(tree_input, aln, aln + ".treefile");
         else:
             tree_file = tree_input;
 
@@ -82,9 +68,9 @@ def generate(indir, tree_input, gt_opt, aln_id_delim, hyphy_path, outdir, logdir
 def parse(indir, features, outfile, pad):
 
     if features:
-        headers = ["file","id","chr","start","end","dn/ds","lrt","pval"];
+        headers = ["file","id","chr","start","end","dn","ds","dn/ds","lrt","pval"];
     else:
-        headers = ["file","branch","dn/ds","lrt","pval"];
+        headers = ["file","branch","dn","ds","dn/ds","lrt","pval"];
     outfile.write(",".join(headers) + "\n");
     # Write the output headers 
 
@@ -134,10 +120,17 @@ def parse(indir, features, outfile, pad):
 
         if features:
             gene_info = { 'id' : fid, 'chr' : cur_feature['chrome'], 'start' : cur_feature['start'], 'end' : cur_feature['end'],
-                "dn/ds" : "NA", "lrt" : "NA", "pval" : "NA" };
+                "dn" : 0.0, "ds": 0.0, "dn/ds" : "NA", "lrt" : "NA", "pval" : "NA" };
         else:
-            gene_info = { "dn/ds" : "NA", "lrt" : "NA", "pval" : "NA" };   
+            gene_info = { "dn" : 0.0, "ds": 0.0, "dn/ds" : "NA", "lrt" : "NA", "pval" : "NA" };   
         # Initialize the output dictionary for the current branch.
+
+        for b, bl in cur_data["branch attributes"]["0"].items():
+            gene_info["ds"] += bl["dS"];
+            gene_info["dn"] += bl["dN"];
+        gene_info["ds"] = str(gene_info["ds"]);
+        gene_info["dn"] = str(gene_info["dn"]);
+        # Sum up dN and dS from each branch to get a gene-wide value -- sum since denominator is same between branches
 
         gene_info["dn/ds"] = str(cur_data["fits"]["Standard MG94"]["Rate Distributions"]["non-synonymous/synonymous rate ratio"]);
         gene_info["lrt"] = str(cur_data["test results"]["non-synonymous/synonymous rate ratio"]["LRT"]);
