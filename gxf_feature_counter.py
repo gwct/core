@@ -1,4 +1,4 @@
-#!/home/gt156213e/anaconda3/envs/main/bin/python
+#!/usr/bin/env python3
 ########################################################################################
 # This script converts GFF or GTF files to a more sensible tab delimited file.
 #
@@ -22,6 +22,7 @@ import core
 parser = argparse.ArgumentParser(description="GTF/GFF to generic tab conversion.");
 parser.add_argument("-i", dest="input", help="The input GTF or GFF formatted file.", default=False);
 parser.add_argument("-o", dest="output", help="The output tab delmited file.", default=False);
+parser.add_argument("--lens", dest="lens_opt", help="Output a file that contains the length of each feature for generating distributions.", action="store_true", default=False);
 parser.add_argument("--overwrite", dest="overwrite", help="Set this to indicate you wish to overwrite files specified by -outcsv and -outtxt if they already exist. WARNING: This means the original contents of the file will be deleted.", default=False, action="store_true");
 #parser.add_argument("--header", dest="header", help="Set to extract the header info for each file.", default=False, action="store_true");
 args = parser.parse_args();
@@ -41,6 +42,10 @@ with open(args.output, "w") as outfile:
     core.runTime("# GFF/GTF feature counting.", outfile);
     core.PWS(core.spacedOut("# Input file:", pad) + args.input, outfile);
     core.PWS(core.spacedOut("# Output file:", pad) + args.output, outfile);
+    if args.lens_opt:
+        lens_outfile = os.path.splitext(args.output)[0] + "-lens" + os.path.splitext(args.output)[1];
+        core.PWS(core.spacedOut("# Length output file:", pad) + lens_outfile, outfile);
+
     core.PWS("# ----------------", outfile);
 
     core.PWS("# " + core.getDateTime() + " Detecting compression...", outfile);
@@ -82,6 +87,22 @@ with open(args.output, "w") as outfile:
     # Output headers.
 
     for f in features:
-        outline = f + "," + str(features[f]['count']) + "," + str( float(sum(features[f]['lens'])) / float(len(features[f]['lens'])) );
+        outline = f + "\t" + str(features[f]['count']) + "\t" + str( float(sum(features[f]['lens'])) / float(len(features[f]['lens'])) );
         outfile.write(outline + "\n");
-    print("Done!");
+        
+    if args.lens_opt:
+        core.PWS("# " + core.getDateTime() + " Writing lens...", outfile);
+        with open(lens_outfile, "w") as loutfile:
+            loutfile.write("feature\tlength\n");
+            features_to_write = ['gene'];
+            if 'transcript' in features:
+                features_to_write.append('transcript');
+            if 'mRNA' in features:
+                features_to_write.append('mRNA');
+
+            for f in features_to_write:
+                for l in features[f]['lens']:
+                    loutfile.write(f + "\t" + str(l) + "\n");
+
+print("Done!");
+
