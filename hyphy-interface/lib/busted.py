@@ -82,7 +82,7 @@ def parse(indir, features, outfile, pad):
     if features:
         headers = ["file","id","chr","start","end","lrt","pval"];
     else:
-        headers = ["file","branch","lrt","pval"];
+        headers = ["file","lrt","pval"];
     outfile.write(",".join(headers) + "\n");
     # Write the output headers 
 
