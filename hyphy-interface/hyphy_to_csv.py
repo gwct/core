@@ -42,7 +42,7 @@ if args.model in site_models:
 pad = 25;
 
 with open(args.output, "w") as outfile:
-    hpcore.runTime("# codeml m1 output parser", outfile);
+    hpcore.runTime("# HyPhy output parser", outfile);
     hpcore.PWS("# IO OPTIONS", outfile);
     hpcore.PWS(hpcore.spacedOut("# Input directory:", pad) + args.input, outfile);
     hpcore.PWS(hpcore.spacedOut("# Hyphy model:", pad) + args.model, outfile);
