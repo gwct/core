@@ -67,7 +67,7 @@ def generate(indir, tree_input, model_file, gt_opt, hyphy_path, outdir, logdir, 
 
 def parse(indir, features, outfile, pad):
 
-    out_mode = "splits";
+    out_mode = "clades";
     print("out mode: " + out_mode);
     # clades or splits
 

@@ -10,7 +10,7 @@ def branchSum(branch_sum_item):
 # Retrieve rates/counts for each branch in the species tree for each gene, if that branch exists
 # in the gene
 
-    cur_branch_dict, cur_branch, rates_dir, filter_files, subset_files = branch_sum_item;
+    cur_branch_dict, cur_branch, rates_dir, csv_files, filter_files, subset_files = branch_sum_item;
 
     # print(cur_branch);
     #core.PWS("# " + core.getDateTime() + " Starting branch " + cur_branch);
@@ -22,7 +22,7 @@ def branchSum(branch_sum_item):
     branch_list = cur_branch.split(";");
     # Make a list of the species descendant from the current branch
 
-    num_genes = len(os.listdir(rates_dir));
+    num_genes = len(csv_files);
     num_genes_str = str(num_genes);
     # The number of branches and genes, for progress updates, str here to minimize calls to str
 
@@ -30,7 +30,7 @@ def branchSum(branch_sum_item):
     # The gene counter for progress updates, the branch counter is also converted to string here to 
     # minimize calls to str
 
-    for f in os.listdir(rates_dir):
+    for f in csv_files:
     # For the current branch, go through every gene and get the maximal subset clade
 
         if f in filter_files:

@@ -123,7 +123,6 @@ def parse(indir, features, outfile, pad):
         with open(gene_outfile, "w") as goutfile:
             goutfile.write(",".join(headers) + "\n");
 
-            print(f);
             if features:
                 if "-" in f:
                     fid = f.split("-")[0];
@@ -209,3 +208,69 @@ def parse(indir, features, outfile, pad):
                 # Ouput rate estimates for both clades of the current branch.
     hpcore.PWS("# ----------------", outfile);
     hpcore.PWS(hpcore.spacedOut("# Number unfinished:", pad) + str(num_unfinished), outfile);
+
+############################################################
+
+def parseAnc(indir, outdir, outgroups, logfile, pad):
+
+    hyphy_files = os.listdir(indir);
+    num_files = len(hyphy_files);
+    num_files_str = str(num_files);
+    num_files_len = len(num_files_str);
+    # Read align file names from input directory
+
+    num_unfinished = 0;
+    # A count of the number of unfinished hyphy runs as determined by empty output files
+
+    counter = 0;
+    for f in os.listdir(indir):
+        if counter % 500 == 0:
+            counter_str = str(counter);
+            while len(counter_str) != num_files_len:
+                counter_str = "0" + counter_str;
+            print ("> " + hpcore.getDateTime() + " " + counter_str + " / " + num_files_str);
+        counter += 1;
+        # Track progress
+
+        print(f);
+
+        cur_json_file = os.path.join(indir, f);
+        if not os.path.isfile(cur_json_file) or not cur_json_file.endswith(".json"):
+            continue;
+        if os.stat(cur_json_file).st_size == 0:
+            num_unfinished +=1 ;
+            continue;
+        # Get the current output file.
+
+        with open(cur_json_file) as json_data:
+            cur_data = json.load(json_data);
+        # Read the Hyphy json file.
+
+        cur_tree = cur_data['input']['trees']['0'];
+        tinfo, tree, root = tp.treeParse(cur_tree);
+        # Read the tree from the json data.
+
+        og_found = [];
+        for node in tinfo:
+            if tinfo[node][2] != "tip":
+                continue;
+
+            if node in outgroups:
+                og_found.append(node);
+
+        if len(og_found) == 0:
+            print("NO OUTGROUPS FOUND, SKIPPING: " + f);
+        ## CHECK IF OUTGROUPS IN TREE
+
+        anc, mono = tp.LCA(og_found, tinfo)
+
+        print(anc, mono);
+        print(tp.getClade(anc, tinfo));
+
+        sys.exit();
+        # get lca
+        # get descendants of lca
+        # compare
+        ## CHECK IF OUTGROUPS PRESENT FORM MONOPHYLETIC CLADE
+
+        ## ROOT THE TREE BY THE OUTGROUPS

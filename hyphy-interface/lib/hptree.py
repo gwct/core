@@ -47,6 +47,43 @@ def getClade(c_spec, c_treedict):
 
 ############################################################
 
+def LCA(spec_list, treedict):
+	#print treedict;
+	#print spec_list;
+	#if spec_list.count(spec_list[0]) == len(spec_list):
+	#	return treedict[spec_list[0]][1], 1;
+
+	ancs = {};
+	for spec in spec_list:
+		ancs[spec] = [spec];
+
+	for spec in spec_list:
+		if treedict[spec][2] == 'root':
+			continue;
+		curanc = treedict[spec][1];
+		ancs[spec].append(curanc);
+		while treedict[curanc][2] != 'root':
+			curanc = treedict[curanc][1];
+			ancs[spec].append(curanc);
+	#print ancs;
+
+	intersect_anc = set.intersection(*list(map(set, list(ancs.values()))))
+	lcp = [t for t in list(ancs.values())[0] if t in intersect_anc]
+
+	#lcp = sorted(set.intersection(*map(set, ancs.values())), key=lambda x: ancs.values()[0].index(x))
+	monophyletic = False;
+	if set(getClade(lcp[0],treedict)) == set(spec_list):
+		monophyletic = True;
+
+	#print ancs;
+	#print ancs;
+	#print getClade(lcp[0],treedict);
+	#print monophyletic;
+	#sys.exit();
+	return lcp[0], monophyletic;
+
+############################################################
+
 def remBranchLength(treestring):
 # Removes branch lengths from a tree.
 

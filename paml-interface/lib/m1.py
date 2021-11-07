@@ -331,7 +331,7 @@ def parse(indir, features, outfile, pad):
                 dnds, dn, ds = line[4], line[5], line[6];
                 # Parse relevant info from line
 
-                cur_clade = ";".join(paml_ancs[node][3]);
+                cur_clade = ";".join(sorted(paml_ancs[node][3]));
                 anti_clade = ";".join(sorted([ s for s in orig_label_order if s not in paml_ancs[node][3] ]));
                 branch_info[cur_clade] = { 'dnds' : dnds, 'dn' : dn, 'ds' : ds };
                 branch_info[anti_clade] = { 'dnds' : dnds, 'dn' : dn, 'ds' : ds };
@@ -370,7 +370,7 @@ def parse(indir, features, outfile, pad):
                 num_unfinished += 1;
         # Try to calculate average dN and dS for all branches. If this fails, codeml likely didn't finish
 
-        gene_outline = [d] + [ gene_info[h] for h in headers if h not in ["file","clade","clade dn/ds","clade dn","clade ds"] ];
+        gene_outline = [d] + [ gene_info[h] for h in headers if h not in ["file","clade","dn/ds","dn","ds"] ];
 
         # gene_outline = [ gene_info['gid'], gene_info['mtid'], gene_info['mchr'], gene_info['mstart'], gene_info['mend'],
         #             gene_info['ptid'], gene_info['pchr'], gene_info['pscaff'], gene_info['pstart'], gene_info['pend'],

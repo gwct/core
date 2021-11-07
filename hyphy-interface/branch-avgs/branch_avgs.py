@@ -52,13 +52,28 @@ if __name__ == '__main__':
 
     ##########################
 
+    step = "Reading files in input directory";
+    step_start_time = CORE.report_step(globs, step, False, "In progress...");
+    # Status update
+
+    globs['csv-files'] = [ f for f in os.listdir(globs['csv-rate-dir']) if f.endswith(".csv") ];
+    # Read the filtered genes to skip them for averaging
+
+    step_start_time = CORE.report_step(globs, step, step_start_time, "SUCCESS: " + str(len(globs['csv-files'])) + " files read");
+    # Status update
+
+    ##########################
+
     if globs['filter-file']:
         step = "Reading filter file";
         step_start_time = CORE.report_step(globs, step, False, "In progress...");
         # Status update
 
-        globs['filter-files'] = [ line.replace(".json", ".csv") for line in open(globs['filter-file']) ];
+        globs['filter-files'] = [ line.replace("\"", "").replace(".json", ".csv") for line in open(globs['filter-file']) ];
         # Read the filtered genes to skip them for averaging
+
+        globs['csv-files'] = list( set(globs['csv-files']) - set(globs['filter-files']) );
+        # Remove the files to filter from the list of input files
 
         step_start_time = CORE.report_step(globs, step, step_start_time, "SUCCESS: " + str(len(globs['filter-files'])) + " loci will be excluded");
         # Status update
@@ -66,14 +81,18 @@ if __name__ == '__main__':
     ##########################
 
     if globs['subset-file']:
-        step = "Reading filter file";
+        step = "Reading subset file";
         step_start_time = CORE.report_step(globs, step, False, "In progress...");
         # Status update
 
         globs['subset-files'] = [ line.replace("\n","-mafft-cds.filter.csv") for line in open(globs['subset-file']) ];
         # Read in a subset of genes to include in analysis
 
+        globs['csv-files'] = list( set(globs['csv-files']) & set(globs['subset-files']) );
+        # Only take files in both lists
+
         step_start_time = CORE.report_step(globs, step, step_start_time, "SUCCESS: " + str(len(globs['subset-files'])) + " loci will be included");
+        print(len(globs['csv-files']));
         # Status update
 
     ########################## 
@@ -169,7 +188,7 @@ if __name__ == '__main__':
     with mp.Pool(processes=globs['num-procs']) as pool:
         branch_num = 1;
         new_branches = {};
-        for result in pool.imap_unordered(BRANCHES.branchSum, ((globs['branches'][branch], branch, globs['csv-rate-dir'], globs['filter-files'], globs['subset-files']) for branch in branches)):
+        for result in pool.imap_unordered(BRANCHES.branchSum, ((globs['branches'][branch], branch, globs['csv-rate-dir'], globs['csv-files'], globs['filter-files'], globs['subset-files']) for branch in branches)):
             #print(result[0], result[1]);
             
             new_branches[result[0]] = result[1];
@@ -233,7 +252,7 @@ if __name__ == '__main__':
             outfile.write(outline + "\n");
             # Compile the output line and write it out to the file.
 
-    step_start_time = CORE.report_step(globs, step, step_start_time, "Success", full_update=True);
+    step_start_time = CORE.report_step(globs, step, step_start_time, "Success");
     # Status update
 
     # Output the tree table with the new columns

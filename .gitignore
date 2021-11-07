@@ -3,5 +3,6 @@
 *.pyc
 gp.sh
 .gitignore
+hyphy-interface/test*
 .vscode
 core.code-workspace

@@ -49,6 +49,7 @@ def init():
         'output-file' : False,
         # Input options
 
+        'csv-files' : [],
         'filter-files' : [],
         'subset-files' : [],
         # Gene lists
