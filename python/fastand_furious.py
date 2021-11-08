@@ -8,8 +8,9 @@
 ########################################################################################
 
 import sys, os, random, argparse
-sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
+sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/lib/"));
 import core, fastalib as fa
+import seqparse as seq
 
 ####################
 parser = argparse.ArgumentParser(description="A general purpose FASTA editing script.");

@@ -8,7 +8,7 @@
 ########################################################################################
 
 import sys, os, random, argparse
-sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
+sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/lib/"))
 import core, treeparse as tp, treelib as tree
 
 ####################

@@ -6,3 +6,4 @@ gp.sh
 hyphy-interface/test*
 .vscode
 core.code-workspace
+test-data/

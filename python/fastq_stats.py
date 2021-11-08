@@ -8,7 +8,7 @@
 ########################################################################################
 
 import sys, os, random, argparse
-sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/corelib/"))
+sys.path.append(sys.path.append(os.path.dirname(os.path.realpath(__file__)) + "/lib/"))
 import core, fastqlib as fql
 
 ####################
@@ -109,7 +109,7 @@ if __name__ == '__main__':
         args.reads, args.lens, args.base_comp, args.qual = True, True, True, True;
 
     if args.summary and not dirflag:
-        print(" #" + core.getTime() + " * MESSAGE: The --summaryonly and --nosummary flags only work when input is a directory with multip fastq files. Ignoring for this run.");
+        print(" #" + core.getTime() + " * MESSAGE: The --summaryonly and --nosummary flags only work when input is a directory with multiple fastq files. Ignoring for this run.");
         args.summary = False;
 
     globs = {

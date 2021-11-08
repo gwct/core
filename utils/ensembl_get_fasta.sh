@@ -1,10 +1,7 @@
 #!/bin/bash
 
 ############################################################
-# For sungorous project, 09.19
-# This takes a pseudo-it reference genome and intermediate
-# bam file and softmasks the reference genome (converts sites
-# with not enough info to call to lower case).
+# Retrieves fasta files from Ensembl
 ############################################################
 
 display_usage() {

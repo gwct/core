@@ -6,6 +6,19 @@
 #############################################################################
 
 import core, sys, os
+import seqparse as seq
+
+#############################################################################
+
+def getOutFile(fasta_file, file_flag, out_dest, label):
+	if file_flag:
+		if out_dest:
+			outfilename = out_dest;
+		else:
+			outfilename = os.path.splitext(fasta_file)[0] + "." + label + os.path.splitext(fasta_file)[1];
+	else:
+		outfilename = os.path.join(out_dest, os.path.splitext(os.path.basename(fasta_file))[0] + "." + label + os.path.splitext(fasta_file)[1]);
+	return outfilename;
 
 #############################################################################
 
@@ -14,7 +27,7 @@ def countPos(fasta_files, disp_file=0):
 	total_files, total_seq, total_pos = 0,0,0;
 	fa_skip = [];
 	for fasta_file in fasta_files:
-		seqs, skip = core.fastaReader(fasta_file);
+		seqs, skip = seq.fastaReader(fasta_file);
 		if skip:
 			fa_skip.append(fasta_file);
 			continue;
@@ -50,13 +63,13 @@ def countAln(fasta_files, spec_opt):
 	aln_skip = [];
 	# seqlens = [];
 	for fasta_file in fasta_files:
-		seqs, skip = core.fastaReader(fasta_file);
+		seqs, skip = seq.fastaReader(fasta_file);
 		if skip:
 			fa_skip.append(fasta_file);
 			continue;
 		# Reads the file if it ends with .fa or .fa.gz
 
-		if not core.checkAlign(seqs):
+		if not seq.checkAlign(seqs):
 			aln_skip.append(fasta_file);
 			continue;
 		# Basic check that all the sequences in the file are the same length.
@@ -176,11 +189,11 @@ def concat(fasta_files, header_delim, outfilename):
 	fa_skip = [];
 	aln_skip = [];
 	for fasta_file in fasta_files:
-		seqs, skip = core.fastaReader(fasta_file);
+		seqs, skip = seq.fastaReader(fasta_file);
 		if skip:
 			fa_skip.append(fasta_file);
 			continue;
-		if not core.checkAlign(seqs):
+		if not seq.checkAlign(seqs):
 			aln_skip.append(fasta_file);
 			continue;
 
@@ -220,7 +233,7 @@ def concat(fasta_files, header_delim, outfilename):
 	for fasta_file in fasta_files:
 		#numbars, donepercent = core.loadingBar(i, len(filelist), donepercent, numbars);
 		#i = i + 1;
-		seqs, skip = core.fastaReader(fasta_file);
+		seqs, skip = seq.fastaReader(fasta_file);
 		seqlen = len(seqs[list(seqs.keys())[0]]);
 		pfile.write(fasta_file + " = " + str(total_pos+1) + "-" + str(total_pos+seqlen) + "\n");
 		total_pos = total_pos + seqlen;
@@ -303,7 +316,7 @@ def split(fasta_files, header_delim, outdir):
 		os.system("mkdir " + outdir);
 
 	total_seq = 0;
-	seqs, skip = core.fastaReader(fasta_file);
+	seqs, skip = seq.fastaReader(fasta_file);
 	if skip:
 		sys.exit(core.errorOut(6, "Something went wrong when reading your input file! Does it have the .fa extension? Is it a properly formatted FASTA file?"))
 
@@ -330,12 +343,12 @@ def trim(fasta_files, header_delim, file_flag, out_dest):
 	fa_skip = [];
 	header_skip = [];
 	for fasta_file in fasta_files:
-		seqs, skip = core.fastaReader(fasta_file);
+		seqs, skip = seq.fastaReader(fasta_file);
 		if skip:
 			fa_skip.append(fasta_file);
 			continue;
 
-		outfilename = core.getOutFile(fasta_file, file_flag, out_dest, "trim");
+		outfilename = getOutFile(fasta_file, file_flag, out_dest, "trim");
 		outfile = open(outfilename, "w");
 		for title in seqs:
 			new_title = title;
@@ -389,11 +402,11 @@ def relabel(fasta_files, ropt, header_delim, new_labels, file_flag, out_dest):
 			continue;
 
 		total_files += 1;
-		outfilename = core.getOutFile(fasta_file, file_flag, out_dest, "relab");
+		outfilename = getOutFile(fasta_file, file_flag, out_dest, "relab");
 		outfile = open(outfilename, "w");
 		for title in seqs:
 			if not sep_labels:
-				new_title = core.relabelHeader(title, new_label, header_delim, ropt);
+				new_title = seq.relabelHeader(title, new_label, header_delim, ropt);
 				outfile.write(new_title + "\n");
 
 			elif sep_labels:
@@ -402,7 +415,7 @@ def relabel(fasta_files, ropt, header_delim, new_labels, file_flag, out_dest):
 					if old_label in title:
 						label_found = True;
 						new_label = label_dict[old_label];
-						new_title = core.relabelHeader(title, new_label, header_delim, ropt);
+						new_title = seq.relabelHeader(title, new_label, header_delim, ropt);
 						outfile.write(new_title + "\n");
 						break;
 				if label_found == False:
@@ -436,7 +449,7 @@ def removeSeq(fasta_files, labels, file_flag, out_dest):
 			continue;
 
 		total_files += 1;
-		outfilename = core.getOutFile(fasta_file, file_flag, out_dest, "rmseq");
+		outfilename = getOutFile(fasta_file, file_flag, out_dest, "rmseq");
 		outfile = open(outfilename, "w");
 		for title in seqs:
 			total_seq += 1;
@@ -470,7 +483,7 @@ def removeStarts(fasta_files, seqtype, file_flag, out_dest):
 			continue;
 
 		total_files += 1;
-		outfilename = core.getOutFile(fasta_file, file_flag, out_dest, "rmstart");
+		outfilename = getOutFile(fasta_file, file_flag, out_dest, "rmstart");
 		outfile = open(outfilename, "w");
 		for title in seqs:
 			seq = seqs[title];
@@ -509,7 +522,7 @@ def removeStops(fasta_files, seqtype, file_flag, out_dest):
 			continue;
 
 		total_files += 1;
-		outfilename = core.getOutFile(fasta_file, file_flag, out_dest, "rmstop");
+		outfilename = getOutFile(fasta_file, file_flag, out_dest, "rmstop");
 		outfile = open(outfilename, "w");
 		for title in seqs:
 			seq = seqs[title];
@@ -548,9 +561,9 @@ def replaceBase(fasta_files, replacements, file_flag, out_dest):
 
 		total_files += 1;
 		if any("*" in r for r in replacements) or any(" " in r for r in replacements):
-			outfilename = core.getOutFile(fasta_file, file_flag, out_dest, "repl");
+			outfilename = getOutFile(fasta_file, file_flag, out_dest, "repl");
 		else:
-			outfilename = core.getOutFile(fasta_file, file_flag, out_dest, "repl." + ".".join(replacements));
+			outfilename = getOutFile(fasta_file, file_flag, out_dest, "repl." + ".".join(replacements));
 		outfile = open(outfilename, "w");
 		for title in seqs:
 			seq = seqs[title].upper();
