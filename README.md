@@ -1,15 +1,9 @@
 # CORE: COde for Romps in Evolutionary data
 ### A mixture of scripts and libraries to help with sequence data manipulation, tree parsing, and other things.
 
-## Author
-#### Gregg Thomas
-
 ## About
- These scripts can be used for many tasks including sequence handling, tree making, and sequence alignment.
+These scripts can be used for many tasks including sequence handling, tree making, and sequence alignment.
 Some of these programs are mainly used as wrappers to easily run other genomics or phylogenetics programs on a bunch of files. 
-
-###### Almost all of these scripts are written in Python 3.4+ (https://www.python.org/downloads/).
-###### For any script, use the -h flag for specific usage details.
 
 ## CORE
 
