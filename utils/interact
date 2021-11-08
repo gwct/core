@@ -1,0 +1,85 @@
+#!/bin/bash
+
+############################################################
+# Command line tool for SLURM clusters to request interactive
+# node allocations
+# Calls:    salloc
+# Usage:
+#       interact -p <partition> -t <tasks> -c <cpus> -m <mem>
+#
+# May, 2020, gwct
+############################################################
+
+display_usage() {
+# Usage message for -h
+    echo
+    echo " Usage:"
+    echo
+    echo "     interact -p <partition> -t <tasks> -c <cpus> -m <mem> -n <job name>"
+    echo
+    echo " Options:"
+    echo "     -p: The SLURM partition to use. Default: good_lab_cpu"
+    echo "     -n: OPTIONAL: The specific node to login to."
+    echo "     -t: The number of tasks to allocate. Default: 1"
+    echo "     -c: The number of CPUs to allocate. Default: 8"
+    echo "     -m: The minimum amount of memory to allocate. Default: 0 (no minimum)"
+    echo "     -h: Display this help message."
+    echo
+    exit 0
+}
+
+##########
+# Invalid input option message
+invalid_opt() {
+    echo "    Error 1: Invalid option: -$1"
+    echo
+    exit 1
+}
+
+############################################################
+
+echo
+echo " interact -- Request interactive session in SLURM via salloc"
+
+part="good_lab_cpu"
+node="none"
+nodestr=""
+tasks=1
+cpus=8
+mem=0
+name="interact_session"
+# Defaults
+
+while getopts ":p:n:t:c:m:j:h" arg; do
+    case $arg in
+        h) display_usage;;
+        p) part=$OPTARG;;
+        n) node=$OPTARG;;
+        t) tasks=$OPTARG;;
+        c) cpus=$OPTARG;;
+        m) mem=$OPTARG;;
+        j) name=$OPTARG;;
+        \?) invalid_opt $OPTARG ;;
+    esac
+done
+# Parse input options
+
+echo "    Partition:  $part"
+if [ $node != "none" ]
+then
+    echo "    Node:       $node"
+    nodestr="--nodelist=$node"
+fi
+echo "    Tasks:      $tasks"
+echo "    CPUs:       $cpus"
+echo "    Min memory: $mem"
+echo "    Job name:   $name"
+echo
+
+echo "EXECUTING: salloc $nodestr -p $part -n $tasks -c $cpus --mem $mem -J $name srun --pty bash"
+echo "----------"
+salloc $nodestr -p $part -n $tasks -c $cpus --mem $mem -J $name srun --pty bash
+echo "----------"
+echo "interact complete!"
+
+############################################################
