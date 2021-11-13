@@ -123,9 +123,9 @@ def generate(indir, tree_input, gt_opt, recon_setting, paml_path, outdir, outfil
 def parse(indir, features, outfile, pad):
 
     if features:
-        headers = ["file","id","chr","start","end","lnl","k","dn sum","ds sum","dn avg","ds avg","clade","clade dn/ds","clade dn","clade ds"];
+        headers = ["file","id","chr","start","end","lnl","k","dn sum","ds sum","dn avg","ds avg","dn/ds"];
     else:
-        headers = ["file","lnl","k","dn sum","ds sum","dn avg","ds avg","clade","clade dn/ds","clade dn","clade ds"];
+        headers = ["file","lnl","k","dn sum","ds sum","dn avg","ds avg","dn/ds"];
     outfile.write(",".join(headers) + "\n");
     # Write the output headers 
 
@@ -165,149 +165,19 @@ def parse(indir, features, outfile, pad):
             # Look up transcript/gene info for current gene to save in output
 
             gene_info = { 'id' : fid, 'chr' : cur_feature['chrome'], 'start' : cur_feature['start'], 'end' : cur_feature['end'],
-                'lnl' : "NA", 'k' : "NA", 'dnds' : "NA", 'dn sum' : "NA", 'ds sum' : "NA", 'dn avg' : "NA", 'ds avg' : "NA" };
+                'lnl' : "NA", 'k' : "NA", 'dn sum' : 0.0, 'ds sum' : 0.0, 'dn avg' : 0.0, 'ds avg' : 0.0, "dn/ds" : "NA" };
         else:
-            gene_info = { 'lnl' : "NA", 'k' : "NA", 'dnds' : "NA", 'dn sum' : "NA", 'ds sum' : "NA", 'dn avg' : "NA", 'ds avg' : "NA" }
+            gene_info = { 'lnl' : "NA", 'k' : "NA", 'dn sum' : 0.0, 'ds sum' : 0.0, 'dn avg' : 0.0, 'ds avg' : 0.0, "dn/ds" : "NA" }
         # Add meta headers to the output dict if metadata is provided
-
-        branch_info = {};
-        # Initialize the output dictionary for the current gene
-
-        read_paml_ancs = False;
-        read_paml_tree = False;
-        read_orig_tree = False;
-        # Flags to indicate when we've reached certain points in the PAML output
 
         num_branches = 0.0;
         # Count the number of branches in the tree to calculate per branch averages
-
-        paml_ancs = {};
-        # This will be the main tree info dictionary, akin to the treeParse dictionary
-        # <PAML node label> : [<branch length>, <ancestral node>, <node type>, <original tip node label>]
-
-        mono_skipped = False;
 
         cur_codeml_file = os.path.join(cur_dir, "codeml.out");
         for line in open(cur_codeml_file):
             if line.startswith("lnL"):
                 line = list(filter(None, line.strip().split(" ")));
                 gene_info['lnl'] = line[4];
-
-                read_paml_ancs = True;
-                continue;
-            # This line indicates that the next line will contain the PAML ancestral relationship labels (ANC..DESC)
-
-            if read_paml_ancs:
-            # PAML ancestral relationship labels line.
-
-                nodes = list(filter(None, line.strip().split(" ")));
-                # Get the relationships into a list
-
-                for node in nodes:
-                    anc, n = node.split("..");
-                    paml_ancs[n] = ['', anc, '', ''];
-                # Read through every PAML ANC..DESC relationship and add it to the main dictionary.
-
-                for node in nodes:
-                    anc, n = node.split("..");
-                    if anc not in paml_ancs:
-                        paml_ancs[anc] = ['NA', "NA", 'root', ''];
-                        root = anc;
-                # The trifurcating 'root' node will not be included in the loop above (since it has no ancestor). Add it to the
-                # dictionary as 'root' here.
-
-                read_paml_ancs = False;
-                # Need to indicate that we don't want to run this block on the subsequent lines
-
-
-            if line.startswith("tree length ="):
-                read_paml_tree = True;
-                continue;
-            # This line indicates that the next line will contain the tree with PAML tip labels
-
-            if read_paml_tree and line != "\n":
-            # Line with tree with PAML tip labels
-
-                for node in paml_ancs:
-                # Parse every node in the main dictionary
-
-                    if node + ": " in line:
-                    # If the node has a branch length in the tree string, do the following
-
-                        paml_ancs[node][2] = 'tip'
-                        # Add this node as a tip in the main dictionary
-
-                        #node_ind = line.index(node + ": ");
-
-                        bl_match = re.findall(node + ': [\d.]+\)', line);
-                        if bl_match == []:
-                            bl_match = re.findall(node + ': [\d.]+,', line);
-                        # Retrieve the branch length for this node based on pattern "<NODE> :<BL>)" OR "<NODE> :<BL>,"
-                        
-                        cur_bl = bl_match[0];
-                        cur_bl = cur_bl[cur_bl.index(" ")+1:-1];
-                        paml_ancs[node][0] = cur_bl;
-                        # Parse the branch length retrieved and add it to the dictionary
-
-                    elif paml_ancs[node][2] != 'root':
-                        paml_ancs[node][2] = 'internal'
-                    # If the node isn't a tip or the trifurcating 'root', add it as internal with no branch length saved
-
-                paml_label_order = [ l[:l.index(":")] for l in re.findall('[\d]+: ', line) ];
-                # Get all the tip node labels in the order they appear in the tree string
-
-                read_paml_tree = False;
-                read_orig_tree = True;
-                continue;
-                # Indicate that we don't want to run this block again, and that the next line contains the tree with 
-                # the original tip labels
-                
-            if read_orig_tree and line != "\n":
-            # Line with the tree with the original tip labels
-                #print(line);
-                orig_label_order = [ l[:l.index(":")] for l in re.findall('[\w]+: ', line) ];
-                # Get the tip node labels in the order they appear in the tree string
-
-                assert len(paml_label_order) == len(orig_label_order), "\nUnequal number of labels: " + d + "\nPAML: " + ",".join(paml_label_order) + "\nOrig:" + ",".join(orig_label_order)
-                # Make sure we have the same number of labels in the PAML and original trees
-
-                for n in range(len(paml_label_order)):
-                    node = paml_label_order[n];
-                    paml_ancs[node][3] = orig_label_order[n];
-                # Add the original label into the label field of the main dictionary
-
-                max_clade_node, max_clade_count = "", 0;
-                for n in paml_ancs:
-                    if paml_ancs[n][2] != 'tip':
-                        cur_clade_paml = ptree.getClade(n, paml_ancs);
-                        cur_clade_orig = sorted([ paml_ancs[tip][3] for tip in cur_clade_paml ]);
-                        paml_ancs[n][3] = cur_clade_orig;
-
-                        if paml_ancs[n][2] != 'root' and len(cur_clade_paml) > max_clade_count:
-                            max_clade_node, max_clade_count = n, len(cur_clade_paml);
-                        # Get the longest clade other than the "root" clade
-                # Get the clades for each node
-
-                for n in paml_ancs:
-                    if paml_ancs[n][2] == 'tip':
-                        paml_ancs[n][3] = [paml_ancs[n][3]];
-                # Convert the tip labels into lists    
-
-                # clade_len_counts = [ len(paml_ancs[n][3]) for n in paml_ancs ];
-                # if clade_len_counts.count(max_clade_count) != 1:
-                #     print("More than one max clade length found: ");
-                #     print(tid);
-                #     print(paml_ancs);
-                #     print(max_clade_node);
-                #     sys.exit(1);
-                #assert clade_len_counts.count(max_clade_count) == 1, "\nMore than one max clade length found: " + gid + "\n" + paml_ancs;
-
-                root_clade = sorted(list(set(paml_ancs[root][3]) - set(paml_ancs[max_clade_node][3])));
-                paml_ancs[root][3] = root_clade;
-                # Subtract out the longest clade from the 'root' clade to get the remaining clade.
-
-                read_orig_tree = False;
-                # Indicate that we don't need to run this block again
                 continue;
 
             if line.startswith("kappa (ts/tv)"):
@@ -316,6 +186,14 @@ def parse(indir, features, outfile, pad):
                 gene_info['k'] = line[-1];
                 continue;
             # Get the kappa value for the gene
+            
+            if line.startswith("omega (dN/dS"):
+                line = line.strip().split(" ");
+                #print(line);
+                gene_info['dn/ds'] = line[-1];
+                continue;
+            # Get the kappa value for the gene
+
 
             if line.count("..") == 1 and "check convergence" not in line:
             # These lines report the brance specific results
@@ -325,63 +203,38 @@ def parse(indir, features, outfile, pad):
 
                 nodes = line[0].split("..")
 
-                node = nodes[1];
-                anc = nodes[0];
-
-                dnds, dn, ds = line[4], line[5], line[6];
+                dnds, dn, ds = float(line[4]), float(line[5]), float(line[6]);
                 # Parse relevant info from line
 
-                cur_clade = ";".join(sorted(paml_ancs[node][3]));
-                anti_clade = ";".join(sorted([ s for s in orig_label_order if s not in paml_ancs[node][3] ]));
-                branch_info[cur_clade] = { 'dnds' : dnds, 'dn' : dn, 'ds' : ds };
-                branch_info[anti_clade] = { 'dnds' : dnds, 'dn' : dn, 'ds' : ds };
-                # Since unrooted trees lack directionality, get both clades on both sides of the branch
-
-                # if node == max_clade_node and anc == root:
-                #     anc = max_clade_node;
-                #     node = root;
-                #     cur_clade = ";".join(paml_ancs[node][3]);
-                #     branch_info[cur_clade] = { 'dnds' : dnds, 'dn' : dn, 'ds' : ds };
-                # For the branch between the 'root' and its opposite, max clade node, reverse the directonality and output that clade as well
+                gene_info['dn sum'] += dn;
+                gene_info['ds sum'] += ds;
 
                 num_branches += 1;
                 continue;
 
-            if line.startswith("tree length for dN:"):
-                line = line.strip().split(" ");
-                #print(line);
-                gene_info['dn sum'] = line[-1];
-                continue;
-            # Sum of dN for all branches
+            # if line.startswith("tree length for dN:"):
+            #     line = line.strip().split(" ");
+            #     #print(line);
+            #     gene_info['dn sum'] = line[-1];
+            #     continue;
+            # # Sum of dN for all branches
 
-            if line.startswith("tree length for dS:"):
-                line = line.strip().split(" ");
-                #print(line);
-                gene_info['ds sum'] = line[-1];
-                continue;
+            # if line.startswith("tree length for dS:"):
+            #     line = line.strip().split(" ");
+            #     #print(line);
+            #     gene_info['ds sum'] = line[-1];
+            #     continue;
             # Sum of dS for all branches
 
         try:
             gene_info['dn avg'] = str(float(gene_info['dn sum']) / num_branches);
             gene_info['ds avg'] = str(float(gene_info['ds sum']) / num_branches);   
         except:
-            #print(gid);
-            if not mono_skipped:
-                num_unfinished += 1;
+            num_unfinished += 1;
         # Try to calculate average dN and dS for all branches. If this fails, codeml likely didn't finish
 
-        gene_outline = [d] + [ gene_info[h] for h in headers if h not in ["file","clade","dn/ds","dn","ds"] ];
-
-        # gene_outline = [ gene_info['gid'], gene_info['mtid'], gene_info['mchr'], gene_info['mstart'], gene_info['mend'],
-        #             gene_info['ptid'], gene_info['pchr'], gene_info['pscaff'], gene_info['pstart'], gene_info['pend'],
-        #             gene_info['lnl'], gene_info['k'], 
-        #             gene_info['dn-sum'], gene_info['ds-sum'], gene_info['dn-avg'], gene_info['ds-avg'] ];
-
-        for branch in branch_info:
-            branch_outline = [ branch, branch_info[branch]['dnds'], branch_info[branch]['dn'], branch_info[branch]['ds'] ];
-            outline = gene_outline + branch_outline;
-            outfile.write(",".join(outline) + "\n");
-        # Output all info for each branch for current gene
+        gene_outline = [d] + [ str(gene_info[h]) for h in headers if h != "file" ];
+        outfile.write(",".join(gene_outline) + "\n");
 
     pcore.PWS("# ----------------", outfile);
     pcore.PWS(pcore.spacedOut("# Number unfinished:", pad) + str(num_unfinished), outfile);

@@ -20,8 +20,8 @@ args = parser.parse_args();
 if not args.input or not os.path.isdir(args.input):
     sys.exit(" * Error 1: Please provide a valid input directory (-i).");
 
-if args.model not in ["m1", "m1a", "m2", "m2a", "cmc"]:
-    sys.exit(" * Error 2: Model (-m) must be one of: m1, m1a, m2, m2a, cmc");
+if args.model not in ["m0", "m1", "m1a", "m2", "m2a", "cmc"]:
+    sys.exit(" * Error 2: Model (-m) must be one of: m0, m1, m1a, m2, m2a, cmc");
 
 if args.meta and not os.path.isfile(args.meta):
     sys.exit(" * Error 3: Cannot find meta data file: " + args.meta);
@@ -35,7 +35,7 @@ if os.path.isfile(args.output) and not args.overwrite:
 pad = 25;
 
 with open(args.output, "w") as outfile:
-    pcore.runTime("# codeml m1 output parser", outfile);
+    pcore.runTime("# codeml output parser", outfile);
     pcore.PWS("# IO OPTIONS", outfile);
     pcore.PWS(pcore.spacedOut("# Input directory:", pad) + args.input, outfile);
     pcore.PWS(pcore.spacedOut("# PAML model:", pad) + args.model, outfile);
@@ -55,6 +55,10 @@ with open(args.output, "w") as outfile:
     # Read the feature metadata.
 
     pcore.PWS("# " + pcore.getDateTime() + " Begin parsing PAML output...", outfile);
+    if args.model == "m0":
+        import lib.m0 as m0;
+        m0.parse(args.input, features, outfile, pad);
+
     if args.model == "m1":
         import lib.m1 as m1;
         m1.parse(args.input, features, outfile, pad);
