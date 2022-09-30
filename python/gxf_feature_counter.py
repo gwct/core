@@ -82,7 +82,7 @@ with open(args.output, "w") as outfile:
 
     core.PWS("# " + core.getDateTime() + " Writing output...", outfile);
     core.PWS("# ----------------", outfile);
-    headers = "feature type,count,avg length";
+    headers = "feature type\tcount\tavg length";
     outfile.write(headers + "\n");
     # Output headers.
 
@@ -94,7 +94,7 @@ with open(args.output, "w") as outfile:
         core.PWS("# " + core.getDateTime() + " Writing lens...", outfile);
         with open(lens_outfile, "w") as loutfile:
             loutfile.write("feature\tlength\n");
-            features_to_write = ['gene'];
+            features_to_write = ['gene', 'CDS'];
             if 'transcript' in features:
                 features_to_write.append('transcript');
             if 'mRNA' in features:

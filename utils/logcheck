@@ -55,6 +55,7 @@ grep Error $prefix*.$ext
 grep ERROR $prefix*.$ext
 grep error $prefix*.$ext
 grep Exception $prefix*.$ext
+grep exception $prefix*.$ext
 grep AssertionError $prefix*.$ext
 grep "java.lang.RuntimeException:" $prefix*.$ext
 grep "java.lang.AssertionError:" $prefix*.$ext

@@ -75,6 +75,14 @@ def premStopCheck(seq, frame=1, allowlastcodon=False, rmlast=False):
 
 #############################################################################
 
+def ntToCodon(nt_seq):
+# Splits a nucleotide sequence into a list of codons
+    #assert len(nt_seq) % 3 == 0, "\nOUT OF FRAME NUCLEOTIDE SEQUENCE! " + str(len(nt_seq));
+    codon_seq = [(nt_seq[i:i+3]) for i in range(0, len(nt_seq), 3)];
+    return codon_seq;
+
+#############################################################################
+
 def revComp(seq, iupac=True):
 # Returns the reverse complement of a nucleotide sequence.
     if iupac:
@@ -169,6 +177,48 @@ def newbioTranslator(seq):
             k = k + 3;
 
     return aaSeq;
+
+#############################################################################
+
+def yabt(codon_seq):
+# Yet another biotranslator with a more logical way to store the genetic code
+
+    standard_code = {
+            'ATA':'I', 'ATC':'I', 'ATT':'I', 'ATG':'M',
+            'ACA':'T', 'ACC':'T', 'ACG':'T', 'ACT':'T',
+            'AAC':'N', 'AAT':'N', 'AAA':'K', 'AAG':'K',
+            'AGC':'S', 'AGT':'S', 'AGA':'R', 'AGG':'R',
+            'CTA':'L', 'CTC':'L', 'CTG':'L', 'CTT':'L',
+            'CCA':'P', 'CCC':'P', 'CCG':'P', 'CCT':'P',
+            'CAC':'H', 'CAT':'H', 'CAA':'Q', 'CAG':'Q',
+            'CGA':'R', 'CGC':'R', 'CGG':'R', 'CGT':'R',
+            'GTA':'V', 'GTC':'V', 'GTG':'V', 'GTT':'V',
+            'GCA':'A', 'GCC':'A', 'GCG':'A', 'GCT':'A',
+            'GAC':'D', 'GAT':'D', 'GAA':'E', 'GAG':'E',
+            'GGA':'G', 'GGC':'G', 'GGG':'G', 'GGT':'G',
+            'TCA':'S', 'TCC':'S', 'TCG':'S', 'TCT':'S',
+            'TTC':'F', 'TTT':'F', 'TTA':'L', 'TTG':'L',
+            'TAC':'Y', 'TAT':'Y', 'TAA':'X', 'TAG':'X',
+            'TGC':'C', 'TGT':'C', 'TGA':'X', 'TGG':'W',
+            '---':'-', 'NNN':'N'
+        }
+    # From: https://www.geeksforgeeks.org/dna-protein-python-3/
+
+    aa_seq = "";
+    for codon in codon_seq:
+        codon = codon.upper();
+        if len(codon) != 3:
+            aa_seq += "X";
+        elif "N" in codon:
+            aa_seq += "X";
+        else:
+            aa_seq += standard_code[codon];
+
+    return aa_seq;
+
+    #aa_seq = [ "N" if "N" in codon else standard_code[codon] for codon in codon_seq ];
+
+    #return "".join(aa_seq);
 
 #############################################################################
 
@@ -280,7 +330,7 @@ def fastaGetDictCompressed(i_name):
 
 #############################################################################
 
-def fastaReadSeqs(filename):
+def fastaReadSeqs(filename, header_sep=False):
 # Read a FASTA formatted sequence file
 # Great iterator and groupby code from: https://www.biostars.org/p/710/ 
 # Returns dictionary with the key:value format as title:sequence.
@@ -317,6 +367,9 @@ def fastaReadSeqs(filename):
 
         curkey = header[1:];
         # This removes the ">" character from the header string to act as the key in seqdict
+
+        if header_sep:
+            curkey = curkey.split(header_sep)[0];
 
         seq = "".join(readstr(s) for s in fa_iter.__next__());
         # The current header should correspond to the current iterator in fa_iter. This gets all those
