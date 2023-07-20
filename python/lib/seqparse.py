@@ -43,7 +43,8 @@ def checkAlign(seqdict):
 
 def premStopCheck(seq, frame=1, allowlastcodon=False, rmlast=False):
 # Checks a coding sequence for premature stop codons. Default is first frame.
-    stop_codons = ["TAG", "TAA", "TGA", "UAG", "UAA", "UGA"];
+    #stop_codons = ["TAG", "TAA", "TGA", "UAG", "UAA", "UGA"];
+    stop_codons = ["TAG", "TAA", "TAR", "TGA", "TRA"];
     seq = seq.upper();
 
     if frame not in [1,2,3]:
@@ -205,11 +206,14 @@ def yabt(codon_seq):
     # From: https://www.geeksforgeeks.org/dna-protein-python-3/
 
     aa_seq = "";
+
     for codon in codon_seq:
         codon = codon.upper();
         if len(codon) != 3:
             aa_seq += "X";
         elif "N" in codon:
+            aa_seq += "X";
+        elif "-" in codon and codon != "---":
             aa_seq += "X";
         else:
             aa_seq += standard_code[codon];

@@ -51,19 +51,14 @@ echo
 echo " logcheck -- Checking: $prefix logfiles with extension .$ext"
 echo
 
-grep Error $prefix*.$ext
-grep ERROR $prefix*.$ext
-grep error $prefix*.$ext
-grep Exception $prefix*.$ext
-grep exception $prefix*.$ext
+grep -i error $prefix*.$ext
+grep -i exception $prefix*.$ext
 grep AssertionError $prefix*.$ext
 grep "java.lang.RuntimeException:" $prefix*.$ext
 grep "java.lang.AssertionError:" $prefix*.$ext
 grep "Can't read file" $prefix*.$ext
 if [ "$warn" = true ] ; then
-    grep Warning $prefix*.$ext
-    grep WARNING $prefix*.$ext
-    grep warning $prefix*.$ext
+    grep -i warning $prefix*.$ext
 fi
 
 echo

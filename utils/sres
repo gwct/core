@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 ############################################################
 # Command line tool for SLURM clusters to check relevant
 # resource usage on nodes.
@@ -83,7 +83,7 @@ for node in nodes:
         n = n.split("=");
         if n[0] in ordered_cols:
             if n[0] == 'Partitions':
-                parts = ",".join([ p for p in n[1].split(",") if "good_lab" in p ]);
+                parts = ",".join([ p for p in n[1].split(",") ]);
                 node_info[n[0]] = parts;
             else:
                 node_info[n[0]] = n[1];

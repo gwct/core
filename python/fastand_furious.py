@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 ########################################################################################
 # A general purpose batch FASTA editing script.
 #

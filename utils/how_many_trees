@@ -1,9 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 ########################################################################################
-#A little script to tell you how many rooted tree topologies are possible for a given
-#number of species.
+# A little script to tell you how many rooted tree topologies are possible for a given
+# number of species.
 #
-#Gregg Thomas, Fall 2014
+# Gregg Thomas, Fall 2014
 ########################################################################################
 
 import sys, math

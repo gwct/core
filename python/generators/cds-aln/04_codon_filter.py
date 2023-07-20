@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 ############################################################
 # For Penn genomes, 06.2020
 # Takes a log file from a clipkit run on amino acid sequence
 # and removes corresponding sites from codon alignment.
 ############################################################
 
-import sys, os, core, coreseq, argparse
+import sys, os, core, seqparse, argparse
 
 ############################################################
 # Options
@@ -140,7 +140,7 @@ with open(log_file, "w") as logfile:
         #print(cur_outfile);
         #sys.exit();
 
-        seqs = core.fastaGetDict(cur_infile);
+        seqs = seqparse.fastaGetDict(cur_infile);
         num_seqs = float(len(seqs));
         # Read the sequences
 
@@ -207,7 +207,7 @@ with open(log_file, "w") as logfile:
             # Count the number of gappy/uncalled sites for this sequence
 
             if mode == "codon":
-                stop, seqs[title] = coreseq.premStopCheck(seqs[title], allowlastcodon=True, rmlast=True);
+                stop, seqs[title] = seqparse.premStopCheck(seqs[title], allowlastcodon=True, rmlast=True);
                 if stop:
                     spec_high[short_title]['prem-stop'] += 1;
                     spec_out[short_title]['prem-stop'] = "TRUE";
@@ -220,7 +220,7 @@ with open(log_file, "w") as logfile:
         uniq_seqs = [];
         for t1 in seqs:
             cur_seq = seqs[t1]
-            seq_count = seqs.values().count(cur_seq);
+            seq_count = list(seqs.values()).count(cur_seq);
             if seq_count > 1 and cur_seq not in ident_seqs:
                 for i in range(seq_count):
                     ident_seqs.append(cur_seq);

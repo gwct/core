@@ -15,14 +15,15 @@ display_usage() {
     echo
     echo " Usage:"
     echo
-    echo "     interact -p <partition> -t <tasks> -c <cpus> -m <mem> -n <job name>"
+    echo "     interact -p <partition> -t <tasks> -c <cpus> -m <mem> -j <job name>"
     echo
     echo " Options:"
     echo "     -p: The SLURM partition to use. Default: good_lab_cpu"
-    echo "     -n: OPTIONAL: The specific node to login to."
+    echo "     -n: OPTIONAL: The specific node to login to"
     echo "     -t: The number of tasks to allocate. Default: 1"
     echo "     -c: The number of CPUs to allocate. Default: 8"
     echo "     -m: The minimum amount of memory to allocate. Default: 0 (no minimum)"
+    echo "     -j: The name of the interactive job"
     echo "     -h: Display this help message."
     echo
     exit 0
