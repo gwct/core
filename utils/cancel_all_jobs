@@ -61,13 +61,13 @@ echo
 user=$(whoami)
 
 if [[ $(squeue | grep ${user}) ]]; then
-    echo "The following jobs for $user will be CANCELLED."
+    echo "The following jobs for $user are currently running:"
     echo
     squeue -o "%.10i%.15P%.70j%.15u%.8T%.16M%.16L%.6D%.5C%.16m%.20R" --all | grep $user
 
     echo
     while true; do
-        read -p "This action cannot be undone and you will lose progress on all of these jobs. Are you sure you want to CANCEL all of these jobs? (yes/no): " answer
+        read -p "Do you want to CANCEL all of these jobs? This action cannot be undone and you will lose all progress on these jobs? (yes/no): " answer
         case $answer in
             [Yy]es ) squeue | grep $user | tr -s " " | cut -d " " -f 2 | xargs -i scancel {}; break;;
             [Nn]o ) echo "Exiting without cancelling..."; exit;; 
