@@ -533,8 +533,8 @@ class Tree:
     ##########
 
     def getDesc(self, node):
-        # This function takes a node in the current tree object
-        # and returns a list of the two direct descendant nodes of it.
+    # This function takes a node in the current tree object
+    # and returns a list of the two direct descendant nodes of it.
 
         if node in self.tips:
             return [node];
@@ -544,13 +544,28 @@ class Tree:
     ##########
 
     def getSister(self, node):
-        # This function takes a node in the current tree object
-        # and returns the other direct descendant of its ancestral node
+    # This function takes a node in the current tree object
+    # and returns the other direct descendant of its ancestral node
 
         if node == self.root:
             return "NA";
         anc_desc = self.getDesc(self.anc[node]);
         return [ n for n in anc_desc if n != node ];
+
+    ##########
+
+    def getSisPairs(self):
+
+        sister_pairs = [];
+        for tip in self.tips:
+            sis = self.getSister(tip)[0];
+            if self.type[sis] == "tip":
+                sister_pairs.append(frozenset([tip, sis]));
+
+        sister_pairs = list(set(sister_pairs));
+        sister_pairs = [ sorted(pair) for pair in sister_pairs ];
+
+        return sister_pairs;
 
     ##########
 
