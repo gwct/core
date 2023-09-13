@@ -1,0 +1,84 @@
+#!/bin/bash
+
+############################################################
+# Command line tool for SLURM clusters to cancel all currently
+# running jobs for the current user
+# Calls:    scancel
+# Usage:
+#       cancel_all_jobs
+#
+# Sep 2023, gwct
+############################################################
+
+display_usage() {
+# Usage message for -h
+    echo
+    echo " Usage:"
+    echo
+    echo "     cancel_all_jobs"
+    # echo
+    # echo " Options:"
+    # echo "     -p: The SLURM partition to use. Default: good_lab_cpu"
+    # echo "     -n: OPTIONAL: The specific node to login to"
+    # echo "     -t: The number of tasks to allocate. Default: 1"
+    # echo "     -c: The number of CPUs to allocate. Default: 8"
+    # echo "     -m: The minimum amount of memory to allocate. Default: 0 (no minimum)"
+    # echo "     -j: The name of the interactive job"
+    # echo "     -h: Display this help message."
+    echo
+    exit 0
+}
+
+##########
+# Invalid input option message
+invalid_opt() {
+    echo "    Error 1: Invalid option: -$1"
+    echo
+    exit 1
+}
+
+############################################################
+
+while getopts ":p:n:t:c:m:j:h" arg; do
+    case $arg in
+        h) display_usage;;
+        # p) part=$OPTARG;;
+        # n) node=$OPTARG;;
+        # t) tasks=$OPTARG;;
+        # c) cpus=$OPTARG;;
+        # m) mem=$OPTARG;;
+        # j) name=$OPTARG;;
+        \?) invalid_opt $OPTARG ;;
+    esac
+done
+# Parse input options
+## TODO: Could add options for pending jobs only, or running jobs only, etc.
+
+echo
+echo " cancel_all_jobs -- Cancel all currently running or pending jobs for the current user"
+echo
+
+user=$(whoami)
+
+if [[ $(squeue | grep ${user}) ]]; then
+    echo "The following jobs for $user will be CANCELLED."
+    echo
+    squeue -o "%.10i%.15P%.70j%.15u%.8T%.16M%.16L%.6D%.5C%.16m%.20R" --all | grep $user
+
+    echo
+    while true; do
+        read -p "This action cannot be undone and you will lose progress on all of these jobs. Are you sure you want to CANCEL all of these jobs? (yes/no): " answer
+        case $answer in
+            [Yy]es ) squeue | grep $user | tr -s " " | cut -d " " -f 2 | xargs -i scancel {}; break;;
+            [Nn]o ) echo "Exiting without cancelling..."; exit;; 
+            * ) echo "Please answer yes or no.";;
+        esac
+    done
+
+    echo
+    echo "Job's done!"
+else
+    echo "No jobs currently submitted for $user. Exiting."
+fi
+
+############################################################
