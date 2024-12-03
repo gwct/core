@@ -1,0 +1,80 @@
+#!/bin/bash
+
+# This script is a wrapper around `git add` that checks for oversized files
+# before staging them. If any files exceed the specified size limit, the script
+# will exit with an error and display a message for each oversized file.
+# Used to prevent staging and committing large files only to be thrown an
+# error during pushing and having to undo the commit and unstage the files
+# to deal with the large files and try again (a common issue for the author
+# of this script).
+#
+# Usage: git_add [ <file>...]
+# If no files are provided, the script will mimic `git add -A`.
+# If files are provided, the script will only stage those files.
+
+# The script will exit with status 1 if any oversized files are found.
+# If no oversized files are found, the script will proceed with `git add`.
+
+# Note: This script assumes that `git` is installed and available in the system PATH.
+# It also uses `stat` to check file sizes, which may vary in syntax on different systems.
+
+
+# Maximum file size allowed (in bytes)
+max_size=100000000
+
+# Initialize a flag to track oversized files
+oversized_found=false
+
+# Check if we're inside a Git repository
+if ! git rev-parse --show-toplevel > /dev/null 2>&1; then
+  echo "Error: This script must be run within a Git repository."
+  exit 1
+fi
+
+# Store the original directory
+original_dir=$(pwd)
+
+# Change to the repository root
+repo_root=$(git rev-parse --show-toplevel)
+cd "$repo_root" || exit
+
+# Determine files to check
+if [ "$#" -eq 0 ]; then
+  # No arguments provided, mimic `git add -A`
+  files_to_check=$(git ls-files --others --modified --exclude-standard)
+else
+  # Arguments provided, check given files
+  files_to_check="$@"
+fi
+
+# Iterate through each file and check its size
+for file in $files_to_check; do
+  if [ -f "$file" ]; then
+    file_size=$(stat -c %s "$file")
+    if [[ $file_size -gt $max_size ]]; then
+      echo "Error: '$file' exceeds the 100MB size limit."
+      oversized_found=true
+    fi
+  fi
+done
+
+# Change back to the original directory
+cd "$original_dir" || exit
+
+# If any oversized files were found, exit with an error
+if [ "$oversized_found" = true ]; then
+  exit 1
+fi
+
+# Change back to the repository root for the git add operation
+cd "$repo_root" || exit
+
+# If file arguments were provided, stage those specifically; otherwise, use `git add -A`
+if [ "$#" -eq 0 ]; then
+  git add -A
+else
+  git add "$@"
+fi
+
+# Change back to the original directory once more (optional, for subsequent operations)
+cd "$original_dir" || exit

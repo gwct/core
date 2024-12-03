@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# This script creates a backup of a file or directory.
+# The backup is created in the same location with a timestamp appended to the name.
+
+# Usage: backup <filename_or_directory>
+
+# Check if a file/directory name has been provided
+if [ -z "$1" ]; then
+  echo "Usage: backup <filename_or_directory>"
+  exit 1
+fi
+
+# Get the source item (file or directory)
+src="$1"
+
+# Check if the source file or directory exists
+if [ ! -e "$src" ]; then
+  echo "Error: File or directory '$src' does not exist."
+  exit 1
+fi
+
+# Get the current timestamp
+timestamp=$(date +%Y%m%d%H%M%S)
+
+# Create the backup
+if [ -f "$src" ]; then
+  cp "$src" "$src.bak.$timestamp"
+  echo "Backup of file '$src' created as '$src.bak.$timestamp'."
+elif [ -d "$src" ]; then
+  cp -r "$src" "$src.bak.$timestamp"
+  echo "Backup of directory '$src' created as '$src.bak.$timestamp'."
+else
+  echo "Error: Unsupported file type for '$src'."
+  exit 1
+fi
