@@ -1,9 +1,13 @@
 #!/bin/bash
 
+################################################################################
 # This script creates a backup of a file or directory.
 # The backup is created in the same location with a timestamp appended to the name.
 
 # Usage: backup <filename_or_directory>
+#
+# Dec 2024, gwct
+################################################################################
 
 # Check if a file/directory name has been provided
 if [ -z "$1" ]; then

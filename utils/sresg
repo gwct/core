@@ -1,0 +1,50 @@
+#!/bin/bash
+
+################################################################################
+# This script displays the GPU information for particular partitions on a SLURM cluster.
+# 
+# Usage: sresg
+#
+# Dec 2024, gwct
+################################################################################
+
+# Define the list of partitions you are interested in
+partitions=("gpu" "gpu_test")
+
+# Print the header
+printf "%-15s %-15s %-20s\n" "Partition" "Total GPUs" "Available GPUs"
+printf "%-15s %-15s %-20s\n" "---------" "---------" "--------------"
+
+# Iterate over each specified partition
+for partition_name in "${partitions[@]}"; do
+    # Variables to hold total and available GPUs across all nodes
+    total_gpus=0
+    available_gpus=0
+
+    # Get a list of nodes in the current partition
+    node_list=$(sinfo -h -p "$partition_name" -N --format="%N")
+    
+    # Check if the partition has nodes
+    if [ -z "$node_list" ]; then
+        echo "No nodes found for partition '$partition_name'."
+        continue
+    fi
+    
+    # Iterate over each node to calculate the total and available GPUs
+    for node in $node_list; do
+        # Extract GPU information for each node
+        total_gpus_node=$(scontrol show node "$node" | grep -oP 'gres/gpu=\K\d+' | head -n 1)
+        alloc_gpus_node=$(scontrol show node "$node" | grep -oP 'AllocTRES=.*gres/gpu=\K\d+' | head -n 1)
+
+        # Handle cases where grep might not find a match
+        total_gpus_node=${total_gpus_node:-0}
+        alloc_gpus_node=${alloc_gpus_node:-0}
+
+        # Accumulate GPU counts
+        total_gpus=$((total_gpus + total_gpus_node))
+        available_gpus=$((available_gpus + total_gpus_node - alloc_gpus_node))
+    done
+
+    # Print the summary for each partition
+    printf "%-15s %-15d %-20d\n" "$partition_name" "$total_gpus" "$available_gpus"
+done

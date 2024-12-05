@@ -1,0 +1,75 @@
+#!/bin/bash
+
+################################################################################
+# This script displays the partition information for a SLURM cluster.
+# 
+# Usage: sres2 [--features]
+#        --features : Include node features in the output
+#
+# Dec 2024, gwct
+################################################################################
+
+# Check for optional argument for node features
+show_features=false
+if [[ "$1" == "--features" ]]; then
+    show_features=true
+fi
+
+# Print the header
+if [ "$show_features" = true ]; then
+    printf "%-20s %-15s %-20s %-20s %-20s %-30s\n" "Partition" "Nodes" "CPUs Per Node" "Available CPUs" "Memory Per Node (GB)" "Node Features"
+    printf "%-20s %-15s %-20s %-20s %-20s %-30s\n" "---------" "-----" "-------------" "--------------" "--------------------" "-------------"
+else
+    printf "%-20s %-15s %-20s %-20s %-20s\n" "Partition" "Nodes" "CPUs Per Node" "Available CPUs" "Memory Per Node (GB)"
+    printf "%-20s %-15s %-20s %-20s %-20s\n" "---------" "-----" "-------------" "--------------" "--------------------"
+fi
+
+# Determine the sinfo format based on the argument
+if [ "$show_features" = true ]; then
+    sinfo_format="%P %D %c %C %m %f"  # Include node features
+else
+    sinfo_format="%P %D %c %C %m"
+fi
+
+# Get information from sinfo and process the output
+sinfo -h --format="$sinfo_format" | awk -v show_features="$show_features" '
+{
+    partition=$1;          # Partition name
+    total_nodes=$2;        # Total nodes in partition
+    cpus_per_node=$3;      # CPUs per node
+    cpu_states=$4;         # CPU states
+    mem_per_node_mb=$5;    # Memory per node in MB
+    node_features="";
+
+    if (show_features == "true" && NF >= 6) {
+        node_features = $6; # Node features if included
+    }
+
+    # Convert memory per node to GB
+    mem_per_node_gb = mem_per_node_mb / 1024;
+
+    # Extract available CPUs from CPU states
+    split(cpu_states, state_parts, "/");
+    available_cpus = state_parts[2];
+
+    # Ensure unique partitions
+    if (!unique_partitions[partition]++) {
+        partitions[partition]=partition;
+        nodes[partition]=total_nodes;
+        cpus[partition]=cpus_per_node;
+        available_cpus_partition[partition]=available_cpus;
+        memory[partition]=mem_per_node_gb;
+        features[partition]=node_features;
+    }
+}
+END {
+    if (show_features == "true") {
+        for (partition in partitions) {
+            printf "%-20s %-15s %-20s %-20s %-20.2f %-30s\n", partitions[partition], nodes[partition], cpus[partition], available_cpus_partition[partition], memory[partition], features[partition];
+        }
+    } else {
+        for (partition in partitions) {
+            printf "%-20s %-15s %-20s %-20s %-20.2f\n", partitions[partition], nodes[partition], cpus[partition], available_cpus_partition[partition], memory[partition];
+        }
+    }
+}'

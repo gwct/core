@@ -1,5 +1,7 @@
 #!/bin/bash
 
+################################################################################
+
 # This script is a wrapper around `git add` that checks for oversized files
 # before staging them. If any files exceed the specified size limit, the script
 # will exit with an error and display a message for each oversized file.
@@ -18,6 +20,7 @@
 # Note: This script assumes that `git` is installed and available in the system PATH.
 # It also uses `stat` to check file sizes, which may vary in syntax on different systems.
 
+################################################################################
 
 # Maximum file size allowed (in bytes)
 max_size=100000000
