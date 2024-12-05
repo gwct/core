@@ -1,0 +1,7 @@
+#!/bin/bash
+
+# Calculate the size of the FASTA file in megabases
+file="/n/holylfs05/LABS/informatics/Users/gthomas/turtles/genomes/Amarmorata/GCA_009430475.1_Amar_v1/GCA_009430475.1_Amar_v1_genomic.fna"
+bases=$(grep -v "^>" "$file" | tr -d '\n' | wc -c)
+megabases=$(echo "scale=2; $bases / 1000000" | bc)
+echo "Size of $file in megabases: $megabases Mb"
