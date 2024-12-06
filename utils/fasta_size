@@ -1,7 +1,131 @@
 #!/bin/bash
 
-# Calculate the size of the FASTA file in megabases
-file="/n/holylfs05/LABS/informatics/Users/gthomas/turtles/genomes/Amarmorata/GCA_009430475.1_Amar_v1/GCA_009430475.1_Amar_v1_genomic.fna"
-bases=$(grep -v "^>" "$file" | tr -d '\n' | wc -c)
-megabases=$(echo "scale=2; $bases / 1000000" | bc)
-echo "Size of $file in megabases: $megabases Mb"
+################################################################################
+# fasta_size
+# 
+# This script calculates the size of a FASTA file in terms of the number of
+# bases. It can also provide a more detailed analysis of the base composition
+# and GC content.
+#
+# Usage:
+#   fasta_size [options] <file>
+#   --detailed  Perform a detailed analysis of the base composition and GC content
+#   <file>  The path to the FASTA file to analyze
+#
+# Examples:
+#   fasta_size genome.fa
+#   fasta_size genome.fa.gz
+#   fasta_size --detailed genome.fa
+#   fasta_size --detailed genome.fa.gz
+#
+# Dec 2024, gwct
+################################################################################
+
+# Function to display usage message
+usage() {
+  echo "Usage: $(basename "$0") [--detailed] <file>"
+  exit 1
+}
+
+# Check if no file argument is given
+if [[ $# -eq 0 ]]; then
+    usage
+fi
+
+# Default file path
+#file="/n/holylfs05/LABS/informatics/Users/gthomas/turtles/genomes/Amarmorata/GCA_009430475.1_Amar_v1/GCA_009430475.1_Amar_v1_genomic.fna"
+detailed=false
+
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --detailed)
+      detailed=true
+      shift # past argument
+      ;;
+    *)
+      file="$1"
+      shift # past value
+      ;;
+  esac
+done
+
+# Check if the file argument was provided
+if [[ -z "$file" ]]; then
+  echo "Error: You must specify a FASTA file to process."
+  usage
+fi
+
+# Check if the specified file exists
+if [[ ! -f "$file" ]]; then
+  echo "Error: File not found: $file"
+  exit 1
+fi
+# Determine if the file is compressed
+if [[ $file == *.gz ]]; then
+  reader="zcat"
+else
+  reader="cat"
+fi
+
+echo "Processing $file"
+
+# AWK script for detailed analysis
+awk_detailed_script='
+BEGIN {
+    num_A = num_T = num_G = num_C = num_N = 0;
+    num_a = num_t = num_g = num_c = total_bases = 0;
+}
+!/^>/ {
+    total_bases += length($0);
+
+    # Upper case counts
+    num_A += gsub(/A/, "A", $0);
+    num_T += gsub(/T/, "T", $0);
+    num_G += gsub(/G/, "G", $0);
+    num_C += gsub(/C/, "C", $0);
+    num_N += gsub(/N/, "N", $0);
+
+    # Lower case counts
+    num_a += gsub(/a/, "a", $0);
+    num_t += gsub(/t/, "t", $0);
+    num_g += gsub(/g/, "g", $0);
+    num_c += gsub(/c/, "c", $0);
+}
+END {
+    # Combine upper and lower case counts
+    num_A += num_a;
+    num_T += num_t;
+    num_G += num_g;
+    num_C += num_c;
+    
+    if (total_bases > 0) {
+        megabases = total_bases / 1000000;
+        total_softmasked = num_a + num_t + num_g + num_c;
+        softmasked_megabases = total_softmasked / 1000000;
+        gc_content = (num_G + num_C) / total_bases * 100;
+
+        printf "Total bases: %d (%.2f Mb)\n", total_bases, megabases;
+        printf "A: %d (%.2f%%), T: %d (%.2f%%), G: %d (%.2f%%), C: %d (%.2f%%), N: %d (%.2f%%)\n",
+            num_A, num_A / total_bases * 100, num_T, num_T / total_bases * 100,
+            num_G, num_G / total_bases * 100, num_C, num_C / total_bases * 100,
+            num_N, num_N / total_bases * 100;
+        
+        printf "GC Content: %.2f%%\n", gc_content;
+
+        printf "Soft-masked bases: a: %d, t: %d, g: %d, c: %d\n", num_a, num_t, num_g, num_c;
+        printf "Total soft-masked bases: %d (%.2f Mb)\n", total_softmasked, softmasked_megabases;
+    } else {
+        print "No base data found."
+    }
+}
+'
+
+# Execute the appropriate operation
+if $detailed; then
+  $reader "$file" | awk "$awk_detailed_script"
+else
+  bases=$($reader "$file" | grep -v "^>" | tr -d '\n' | wc -c)
+  megabases=$(echo "scale=2; $bases / 1000000" | bc)
+  echo "$bases bases ($megabases Mb)"
+fi
