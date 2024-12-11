@@ -1,0 +1,232 @@
+#!/bin/bash
+
+################################################################################
+# fasize
+# 
+# This script calculates the size of one or more FASTA files in terms of the
+# number of bases. It can also provide a more detailed analysis of the base
+# composition and GC content. If a FASTA index file (.fai) is provided, it
+# calculates the genome size based on the index (but cannot do further 
+# counts of base composition).
+#
+# Usage:
+#   fasize [options] <file> [<file> ...]
+# Options:
+#   --detailed [level]   Perform a detailed analysis of the base composition and GC content if given a FASTA file
+#                        Levels:
+#                        - Default or 1: Includes base counts and GC content
+#                        - 2: Adds soft-masked base details
+#   --tab                Output the result in a tabular format
+#   -h, --h, -help, --help
+#                        Display this help message
+# <file>                 The paths to one or more FASTA or .fai files to analyze
+#
+# Examples:
+#   fasize genome.fa
+#   fasize --tab genome.fa
+#   fasize genome1.fa genome2.fai
+#   fasize --detailed genome.fa _OR_ fasize --detailed 1 genome.fa
+#   fasize --detailed 2 --tab genome1.fa genome2.fa
+#
+# Dec 2024, gwct
+################################################################################
+
+# Function to display usage message
+usage() {
+  echo "Usage: $(basename "$0") [--detailed [level]] [--tab] <file> [<file> ...]"
+  echo "Options:"
+  echo "  --detailed [level]  Perform a detailed analysis of the base composition and GC content if given a FASTA file"
+  echo "                      Levels:"
+  echo "                      - Default: Genome size only"
+  echo "                      - 1: Includes base counts and GC content"
+  echo "                      - 2: Adds soft-masked base details"
+  echo "  --tab               Output the result in a tabular format"
+  echo "  -h, --h, -help, --help"
+  echo "                      Display this help message"
+  echo "<file>                The paths to one or more FASTA or .fai files to analyze"
+  exit 1
+}
+
+# Function to check if the given file is a FASTA file
+is_fasta() {
+  local first_line
+  first_line=$($1 "$2" | grep -m 1 -v '^$' | head -n 1)
+  if [[ ! $first_line == '>'* ]]; then
+    echo "Error: $2 does not appear to be a FASTA file."
+    exit 1
+  fi
+}
+
+# Check if no file argument is given
+if [[ $# -eq 0 ]]; then
+  usage
+fi
+
+detailed=0
+tabular=false
+files=()
+
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --detailed)
+      detailed=1 # Default detailed level
+      if [[ $# -gt 1 && "$2" =~ ^[2]$ ]]; then
+        detailed="$2"
+        shift
+      fi
+      shift # past argument
+      ;;
+    --tab)
+      tabular=true
+      shift # past argument
+      ;;
+    -h|--h|-help|--help)
+      usage
+      ;;
+    *)
+      files+=("$1")
+      shift # past value
+      ;;
+  esac
+done
+
+if [ ${#files[@]} -eq 0 ]; then
+  echo "Error: You must specify at least one FASTA or .fai file to process."
+  usage
+fi
+
+# Print the header for tabular output once, if needed
+if $tabular; then
+  printf "# file\ttotal.bp\ttotal.mb\ttotal.gb"
+  if [ "$detailed" -ge 1 ]; then
+    printf "\tGC.content\tA\tA.prop\tT\tT.prop\tG\tG.prop\tC\tC.prop\tN\tN.prop"
+  fi
+  if [ "$detailed" -eq 2 ]; then
+    printf "\tsoftmasked.bp\tsoftmasked.mb\tsoftmasked.gb\ta\ta.prop\tt\tt.prop\tg\tg.prop\tc\tc.prop"
+  fi
+  echo ""
+fi
+
+# Iterate over each file
+for file in "${files[@]}"; do
+  # Check if the specified file exists
+  if [[ ! -f "$file" ]]; then
+    echo "Error: File not found: $file"
+    continue
+  fi
+
+  # Determine if the file is a FASTA index file
+  if [[ $file == *.fai ]]; then
+    if [ "$detailed" -gt 0 ]; then
+      echo "# Warning: --detailed option is ignored for .fai files."
+    fi
+    if ! $tabular; then
+      echo "# Calculating genome size using FASTA index file $file"
+    fi
+    awk_script='{sum += $2} END {print sum, sum / 1000000, sum / 1000000000}'
+    result=$(awk "$awk_script" "$file")
+    if $tabular; then
+      echo -n -e "$file\t$result"
+      if [ "$detailed" -ge 1 ]; then
+        printf "\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA"
+      fi
+      if [ "$detailed" -eq 2 ]; then
+        printf "\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA"
+      fi
+      echo ""
+    else
+      echo "$result" | awk '{printf "%s bases (%.2f Mb, %.2f Gb)\n", $1, $2, $3}'
+    fi
+    [[ ! $tabular && ${files[((${#files[@]}-1))]} != $file ]] && echo "--------------------------"
+    continue
+  fi
+
+  # Determine if the file is compressed
+  if [[ $file == *.gz ]]; then
+    reader="zcat"
+  else
+    reader="cat"
+  fi
+
+  # Check if the file is a FASTA file
+  is_fasta "$reader" "$file"
+
+  if ! $tabular; then
+    echo "Processing $file"
+  fi
+
+  # AWK script for detailed analysis
+  awk_detailed_script='
+  BEGIN {
+      num_A = num_T = num_G = num_C = num_N = 0;
+      num_a = num_t = num_g = num_c = total_bases = 0;
+  }
+  !/^>/ {
+      total_bases += length($0);
+
+      # Upper case counts
+      num_A += gsub(/A/, "A", $0);
+      num_T += gsub(/T/, "T", $0);
+      num_G += gsub(/G/, "G", $0);
+      num_C += gsub(/C/, "C", $0);
+      num_N += gsub(/N/, "N", $0);
+
+      # Lower case counts
+      num_a += gsub(/a/, "a", $0);
+      num_t += gsub(/t/, "t", $0);
+      num_g += gsub(/g/, "g", $0);
+      num_c += gsub(/c/, "c", $0);
+  }
+  END {
+      # Calculate totals
+      total_softmasked = num_a + num_t + num_g + num_c;
+      megabases = total_bases / 1000000;
+      gigabases = total_bases / 1000000000;
+      soft_mask_mb = total_softmasked / 1000000;
+      soft_mask_gb = total_softmasked / 1000000000;
+      gc_content = (num_G + num_C) / total_bases;
+
+      # Output
+      printf "%s\t%d\t%.2f\t%.2f", filename, total_bases, megabases, gigabases;
+      
+      if (detailed >= 1) {
+          printf "\t%.4f\t%d\t%.4f\t%d\t%.4f\t%d\t%.4f\t%d\t%.4f\t%d\t%.4f", 
+          gc_content,
+          num_A, num_A / total_bases, 
+          num_T, num_T / total_bases, 
+          num_G, num_G / total_bases, 
+          num_C, num_C / total_bases, 
+          num_N, num_N / total_bases;
+      }
+
+      if (detailed == 2) {
+          printf "\t%d\t%.2f\t%.2f\t%d\t%.4f\t%d\t%.4f\t%d\t%.4f\t%d\t%.4f",
+          total_softmasked, soft_mask_mb, soft_mask_gb,
+          num_a, num_a / total_bases,
+          num_t, num_t / total_bases,
+          num_g, num_g / total_bases,
+          num_c, num_c / total_bases;
+      }
+      print "";
+  }
+  '
+
+  # Execute the appropriate operation
+  if [ "$detailed" -ge 1 ]; then
+    $reader "$file" | awk -v detailed="$detailed" -v tabular="$tabular" -v filename="$file" "$awk_detailed_script"
+  else
+    # Default operation
+    bases=$($reader "$file" | grep -v "^>" | tr -d '\n' | wc -c)
+    megabases=$(echo "scale=2; $bases / 1000000" | bc)
+    gigabases=$(echo "scale=2; $bases / 1000000000" | bc)
+    if $tabular && [ "$detailed" -eq 0 ]; then
+      # Only print header once, already done above
+      echo -e "$file\t$bases\t$megabases\t$gigabases"
+    elif ! $tabular; then
+      echo "$file: $bases bases ($megabases Mb, $gigabases Gb)"
+    fi
+  fi
+
+  [[ ! $tabular && ${files[((${#files[@]}-1))]} != $file ]] && echo "--------------------------"
+done
