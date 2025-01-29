@@ -52,6 +52,8 @@ class Tree:
 
         self.num_polytomies = 0;
 
+        self.binary = "NA";
+
         self.rooted = "NA";
         self.root = "";
         # Node lists and counts
@@ -59,8 +61,8 @@ class Tree:
         ## Class attributes
         #####
 
-        self.topo_str = re.sub('[)][\d\w<>/.eE_:-]+', ')', tree);
-        self.topo_str = re.sub(':[\d.eE-]+', '', self.topo_str);
+        self.topo_str = re.sub(r'[)][\d\w<>/.eE_:-]+', ')', tree);
+        self.topo_str = re.sub(r':[\d.eE-]+', '', self.topo_str);
         ## Remove the branch lengths and node labels from the input tree string
         #####     
 
@@ -100,7 +102,7 @@ class Tree:
 
         subtrees = {};
 
-        pairs = re.findall("\([\d\w/.,:_<>-]+\)", tree);
+        pairs = re.findall(r"\([\d\w/.,:_<>-]+\)", tree);
         node_count = 1;
         while pairs:
         # Loop over all pairs of opening an closing parens at each
@@ -151,8 +153,8 @@ class Tree:
                     ## Tips
 
                     else:
-                        cur_label = re.sub("<[\d]+>", "", node);
-                        node = re.findall("<[\d]+>", node)[0];
+                        cur_label = re.sub(r"<[\d]+>", "", node);
+                        node = re.findall(r"<[\d]+>", node)[0];
                         # Parse out the provided labels in the tree from
                         # the ones generated here for all internal nodes
 
@@ -193,7 +195,7 @@ class Tree:
                 # Replace the current pair with the ancestral label in the tree
             ## End pairs loop
 
-            pairs = re.findall("\([\d\w/.,:_<>-]+\)", tree);
+            pairs = re.findall(r"\([\d\w/.,:_<>-]+\)", tree);
             # Find all new pairs in the tree
         # If there are no pairs left, we've reached the root of the tree
         ## End tree level loop
@@ -210,6 +212,12 @@ class Tree:
         self.anc[anc_label] = "NA";
         self.sis[anc_label] = "NA";
         # Add the final anc label as the root
+
+        if self.num_polytomies > 0:
+            self.binary = False;
+        else:
+            self.binary = True;
+        # Check if the tree is binary or not
 
         if num_nodes > 2:
             self.rooted = False;
@@ -1090,7 +1098,7 @@ class Tree:
         ## Make the final tree by combining the subtrees descending from the last (root) node
         #####
 
-        pruned_tree = re.sub("<[\d]+>", "", pruned_tree);
+        pruned_tree = re.sub(r"<[\d]+>", "", pruned_tree);
         # Remove the added node labels
 
         # pruned_tree = Tree(pruned_tree);
@@ -1199,7 +1207,7 @@ class Tree:
         ## Make the final tree by combining the subtrees descending from the last (root) node
         #####
 
-        pruned_tree = re.sub("<[\d]+>", "", pruned_tree);
+        pruned_tree = re.sub(r"<[\d]+>", "", pruned_tree);
         # Remove the added node labels
 
         return pruned_tree;
@@ -1458,8 +1466,8 @@ class Tree:
 def remBranchLength(tree_str):
 # Removes branch lengths and labels from a tree string
 
-    tree_str = re.sub('[)][\d\w<>/.eE_:-]+', ')', tree_str);
-    tree_str = re.sub(':[\d.eE-]+', '', tree_str);
+    tree_str = re.sub(r'[)][\d\w<>/.eE_:-]+', ')', tree_str);
+    tree_str = re.sub(r':[\d.eE-]+', '', tree_str);
 
     return tree_str;
 
