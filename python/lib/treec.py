@@ -1355,7 +1355,7 @@ class Tree:
         print("-" * 60);
         ## Seperator
 
-        pad = 60;
+        pad = 40;
         ## Width of columns
 
         valid_attribs = ["type", "length", "label", "desc", "anc", "sis", "clade", "split", "quartet"];

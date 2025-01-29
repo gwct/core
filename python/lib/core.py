@@ -4,7 +4,7 @@
 # August 2013-present
 #############################################################################
 
-import string, sys, os, re, subprocess, datetime, gzip, random
+import string, sys, os, math, re, subprocess, datetime, gzip, random
 from collections import defaultdict
 import timeit
 
@@ -115,6 +115,26 @@ def variance(data):
         var = var + (float(d) - mean)**2;
     var = var / ((float(len(data)) - 1.0));
     return var;
+
+#############################################################################
+
+def median(data):
+# Calculates the median of a list of numbers    
+    data = sorted(data);
+    count = len(data);
+    if count % 2 == 0:
+        half_count = int(count / 2);
+        data1 = data[:half_count];
+        data2 = data[half_count:];
+
+        median = mean([data1[-1], data2[0]]);
+    else:
+        half_count = math.floor(count / 2);
+
+        data2 = data[half_count:];
+        median = data2[0];
+
+    return median;
 
 #############################################################################
 
