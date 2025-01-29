@@ -59,9 +59,9 @@ def addBranchLength(tree, treedict):
 		if treedict[node][0] != "NA":
 			tree = tree.replace(node, node + ":" + treedict[node][0]);
 			if treedict[node][3] != "NA":
-				tree = tree.replace(node + ":" + treedict[node][0], node + "_" + treedict[node][3] + ":" + treedict[node][0]);
+				tree = tree.replace(node + ":" + treedict[node][0], node + "/" + treedict[node][3] + ":" + treedict[node][0]);
 		elif treedict[node][3] != "NA":
-			tree = tree.replace(node, node + "_" + treedict[node][3]);
+			tree = tree.replace(node, node + "/" + treedict[node][3]);
 	return tree;
 
 #############################################################################
