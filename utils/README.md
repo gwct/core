@@ -13,6 +13,6 @@ General purpose bash scripts.
 | interact | A bash command to start an interactive session on a SLURM partition. |
 | jobres | This script wraps sacct to display job resource usage for a given user and/or job IDs. It parses the sacct output, which provides multiple records for each job ID, and calculates the maximum elapsed time and memory usage for each job.
 | logcheck | Checks all files in a directory with a given extentsion (.log by default) for error and warning messages. |
-| sres | (DEFUNCT) A Python script that parses the output of the SLURM `scontrol` command to print out available resources in a more user-friendly format. |
 | sres2 | This script displays the partition information for a SLURM cluster. |
 | sresg | (SLOW, partitions hardcoded) This script displays the GPU information for particular partitions on a SLURM cluster. |
+| sstart | Prints expected start times for all jobs of a given user stuck in a SLURM queue. |

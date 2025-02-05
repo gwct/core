@@ -1,0 +1,32 @@
+#!/bin/bash
+
+# Default to the current user
+USER=$(whoami)
+
+# Parse command line options
+while getopts "u:" opt; do
+  case $opt in
+    u)
+      USER=$OPTARG
+      ;;
+    *)
+      echo "Usage: $0 [-u username]"
+      exit 1
+      ;;
+  esac
+done
+
+# Get the list of jobs with their estimated start time, pending reason, resources requested, and time requested
+job_info=$(squeue --user=$USER --states=PENDING \
+                   --format="%.18i %.10T %.20V %.30r %.8D %.8C %.10m %.10l" --noheader --sort=+i)
+
+# Print header
+printf "%-18s %-10s %-20s %-30s %-8s %-8s %-10s %-10s\n" "JOBID" "STATE" "EST. START TIME" "PENDING REASON" "NODES" "CPUS" "MEMORY" "TIME"
+
+# Process each line
+while IFS= read -r line; do
+    # If line is not empty, print job info
+    if [[ -n "$line" ]]; then
+        printf "%-18s %-10s %-20s %-30s %-8s %-8s %-10s %-10s\n" $line
+    fi
+done <<< "$job_info"

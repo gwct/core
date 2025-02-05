@@ -37,8 +37,7 @@ usage() {
   echo "Options:"
   echo "  --detailed [level]  Perform a detailed analysis of the base composition and GC content if given a FASTA file"
   echo "                      Levels:"
-  echo "                      - Default: Genome size only"
-  echo "                      - 1: Includes base counts and GC content"
+  echo "                      - Default or 1: Includes base counts and GC content"
   echo "                      - 2: Adds soft-masked base details"
   echo "  --tab               Output the result in a tabular format"
   echo "  -h, --h, -help, --help"
@@ -49,116 +48,61 @@ usage() {
 
 # Function to check if the given file is a FASTA file
 is_fasta() {
+  local reader="$1"
+  local file="$2"
   local first_line
-  first_line=$($1 "$2" | grep -m 1 -v '^$' | head -n 1)
+  first_line=$($reader "$file" | grep -m 1 -v '^$' | head -n 1)
   if [[ ! $first_line == '>'* ]]; then
-    echo "Error: $2 does not appear to be a FASTA file."
+    echo "Error: $file does not appear to be a FASTA file." >&2
     exit 1
   fi
 }
 
-# Check if no file argument is given
-if [[ $# -eq 0 ]]; then
-  usage
-fi
+# Function to process a single file
+process_file() {
+  local file="$1"
+  local detailed="$2"
+  local tabular="$3"
+  local result=""
+  local reader="cat"
 
-detailed=0
-tabular=false
-files=()
-
-# Parse command-line arguments
-while [[ $# -gt 0 ]]; do
-  case $1 in
-    --detailed)
-      # Check if there's a number parameter immediately following the --detailed option
-      if [[ $# -gt 1 && "$2" =~ ^[1-2]$ ]]; then
-        detailed="$2"
-        shift # Shift past the number
-      else
-        detailed=1 # Default detailed level
-      fi
-      shift # Shift past --detailed
-      ;;
-    --tab)
-      tabular=true
-      shift # Shift past --tab
-      ;;
-    -h|--h|-help|--help)
-      usage
-      ;;
-    *)
-      files+=("$1")
-      shift # Shift past the file name
-      ;;
-  esac
-done
-
-if [ ${#files[@]} -eq 0 ]; then
-  echo "Error: You must specify at least one FASTA or .fai file to process."
-  usage
-fi
-
-# Print the header for tabular output once, if needed
-if $tabular; then
-  printf "# file\ttotal.bp\ttotal.mb\ttotal.gb"
-  if [ "$detailed" -ge 1 ]; then
-    printf "\tGC.content\tA\tA.prop\tT\tT.prop\tG\tG.prop\tC\tC.prop\tN\tN.prop"
-  fi
-  if [ "$detailed" -eq 2 ]; then
-    printf "\tsoftmasked.bp\tsoftmasked.mb\tsoftmasked.gb\ta\ta.prop\tt\tt.prop\tg\tg.prop\tc\tc.prop"
-  fi
-  echo ""
-fi
-
-# Iterate over each file
-for file in "${files[@]}"; do
   # Check if the specified file exists
   if [[ ! -f "$file" ]]; then
-    echo "Error: File not found: $file"
-    continue
+    echo "Error: File not found: $file" >&2
+    exit 1
   fi
 
   # Determine if the file is a FASTA index file
   if [[ $file == *.fai ]]; then
-    if [ "$detailed" -gt 0 ]; then
+    if [[ "$detailed" -gt 0 ]]; then
       echo "# Warning: --detailed option is ignored for .fai files."
-    fi
-    if ! $tabular; then
-      echo "# Calculating genome size using FASTA index file $file"
     fi
     awk_script='{sum += $2} END {print sum, sum / 1000000, sum / 1000000000}'
     result=$(awk "$awk_script" "$file")
-    if $tabular; then
+    if [[ "$tabular" == "true" ]]; then
       echo -n -e "$file\t$result"
-      if [ "$detailed" -ge 1 ]; then
+      if [[ "$detailed" -ge 1 ]]; then
         printf "\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA"
       fi
-      if [ "$detailed" -eq 2 ]; then
+      if [[ "$detailed" -eq 2 ]]; then
         printf "\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA\tNA"
       fi
       echo ""
     else
       echo "$result" | awk '{printf "%s bases (%.2f Mb, %.2f Gb)\n", $1, $2, $3}'
     fi
-    [[ ! $tabular && ${files[((${#files[@]}-1))]} != $file ]] && echo "--------------------------"
-    continue
+    exit 0
   fi
 
   # Determine if the file is compressed
   if [[ $file == *.gz ]]; then
     reader="zcat"
-  else
-    reader="cat"
   fi
 
   # Check if the file is a FASTA file
   is_fasta "$reader" "$file"
 
-  if ! $tabular; then
-    echo "Processing $file"
-  fi
-
-  # AWK script for detailed analysis
+  # Processing logic for detailed levels
   awk_detailed_script='
   BEGIN {
       num_A = num_T = num_G = num_C = num_N = 0;
@@ -192,7 +136,7 @@ for file in "${files[@]}"; do
       # Output
       printf "%s\t%d\t%.2f\t%.2f", filename, total_bases, megabases, gigabases;
       
-      if (detailed >= 1) {
+      if (detail_level >= 1) {
           printf "\t%.4f\t%d\t%.4f\t%d\t%.4f\t%d\t%.4f\t%d\t%.4f\t%d\t%.4f", 
           gc_content,
           num_A, num_A / total_bases, 
@@ -202,7 +146,7 @@ for file in "${files[@]}"; do
           num_N, num_N / total_bases;
       }
 
-      if (detailed == 2) {
+      if (detail_level == 2) {
           printf "\t%d\t%.2f\t%.2f\t%d\t%.4f\t%d\t%.4f\t%d\t%.4f\t%d\t%.4f",
           total_softmasked, soft_mask_mb, soft_mask_gb,
           num_a, num_a / total_bases,
@@ -214,21 +158,64 @@ for file in "${files[@]}"; do
   }
   '
 
-  # Execute the appropriate operation
-  if [ "$detailed" -ge 1 ]; then
-    $reader "$file" | awk -v detailed="$detailed" -v tabular="$tabular" -v filename="$file" "$awk_detailed_script"
-  else
-    # Default operation
-    bases=$($reader "$file" | grep -v "^>" | tr -d '\n' | wc -c)
-    megabases=$(echo "scale=2; $bases / 1000000" | bc)
-    gigabases=$(echo "scale=2; $bases / 1000000000" | bc)
-    if $tabular && [ "$detailed" -eq 0 ]; then
-      # Only print header once, already done above
-      echo -e "$file\t$bases\t$megabases\t$gigabases"
-    elif ! $tabular; then
-      echo "$file: $bases bases ($megabases Mb, $gigabases Gb)"
-    fi
-  fi
+  "$reader" "$file" | awk -v detail_level="$detailed" -v tabular="$tabular" -v filename="$file" \
+    "$awk_detailed_script"
+}
 
-  [[ ! $tabular && ${files[((${#files[@]}-1))]} != $file ]] && echo "--------------------------"
+# Check if no file argument is given
+if [[ $# -eq 0 ]]; then
+  usage
+fi
+
+detailed=0
+tabular=false
+files=()
+
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --detailed)
+      detailed=1
+      if [[ $# -gt 1 && "$2" =~ ^[2]$ ]]; then
+        detailed="$2"
+        shift
+      fi
+      shift # past argument
+      ;;
+    --tab)
+      tabular=true
+      shift # past argument
+      ;;
+    -h|--h|-help|--help)
+      usage
+      ;;
+    *)
+      files+=("$1")
+      shift # past value
+      ;;
+  esac
 done
+
+if [ ${#files[@]} -eq 0 ]; then
+  echo "Error: You must specify at least one FASTA or .fai file to process."
+  usage
+fi
+
+# Print the header for tabular output once, if needed
+if $tabular; then
+  printf "# file\ttotal.bp\ttotal.mb\ttotal.gb"
+  if [ "$detailed" -ge 1 ]; then
+    printf "\tGC.content\tA\tA.prop\tT\tT.prop\tG\tG.prop\tC\tC.prop\tN\tN.prop"
+  fi
+  if [ "$detailed" -eq 2 ]; then
+    printf "\tsoftmasked.bp\tsoftmasked.mb\tsoftmasked.gb\ta\ta.prop\tt\tt.prop\tg\tg.prop\tc\tc.prop"
+  fi
+  echo ""
+fi
+
+# Export functions and variables for parallel execution
+export -f process_file
+export -f is_fasta
+
+# Execute file processing in parallel
+parallel process_file ::: "${files[@]}" ::: "$detailed" ::: "$tabular"
