@@ -1,7 +1,6 @@
 #!/bin/bash
 
 ################################################################################
-
 # This script wraps sacct to display job resource usage for a given user and/or job IDs.
 # It parses the sacct output, which provides multiple records for each job ID, and
 # calculates the maximum elapsed time and memory usage for each job.
@@ -10,10 +9,13 @@
 #       -u username   : SLURM account username (default: <current user>)
 #       -n hours      : Look back this many hours for jobs (default: 24, but the default is ignored if job IDs are provided)
 #       job_id        : One or more job IDs
-# 
-# If only job IDs are provided, the script will look up the job information for the given jobs regardless of the time range (default is ignored).
-# If only a time range is provided with -n (or the default), the script will search for all jobs going back that many hours.
-# If both job IDs and a time range are provided with -n, the script will only give information for the jobs that fall within the time range.
+#
+# If only job IDs are provided, the script will look up the job information for the
+# given jobs regardless of the time range (default is ignored).
+# If only a time range is provided with -n (or the default), the script will search
+# for all jobs going back that many hours.
+# If both job IDs and a time range are provided with -n, the script will only give
+# information for the jobs that fall within the time range.
 #
 # Example usage:
 #   jobres : This will look up all jobs for the current user that occurred within the last 24 hours.
@@ -58,12 +60,12 @@ if ! id -u "$USERNAME" >/dev/null 2>&1; then
 fi
 
 # Determine the jobs to process
-USER_JOBS=""
-OUT_OF_RANGE_JOBS=""
+USER_JOBS=()
+OUT_OF_RANGE_JOBS=()
 if [ $# -eq 0 ]; then
     # No job IDs provided, search by time range only
     START_TIME=$(date --date="$HOURS hours ago" +"%Y-%m-%dT%H:%M:%S")
-    USER_JOBS=$(sacct -u "$USERNAME" --starttime="$START_TIME" --format=JobID --noheader | awk '!/\./ {print $1}' | uniq)
+    mapfile -t USER_JOBS < <(sacct -u "$USERNAME" --starttime="$START_TIME" --format=JobID --noheader | awk '!/\./ {print $1}' | uniq)
     echo "Jobs for user '$USERNAME' in the past $HOURS hours:"
 else
     # Job IDs are provided
@@ -73,84 +75,68 @@ else
         START_TIME=$(date --date="$HOURS hours ago" +"%Y-%m-%dT%H:%M:%S")
         for JOB_ID in "${JOB_IDS[@]}"; do
             if sacct -u "$USERNAME" --starttime="$START_TIME" --format=JobID --noheader | grep -qw "$JOB_ID"; then
-                USER_JOBS+="$JOB_ID"$'\n'
+                USER_JOBS+=("$JOB_ID")
             else
-                OUT_OF_RANGE_JOBS+="$JOB_ID"$'\n'
+                OUT_OF_RANGE_JOBS+=("$JOB_ID")
             fi
         done
         echo "Searching provided job IDs within the past $HOURS hours:"
     else
         # Just the provided job IDs, no time filtering
-        for JOB_ID in "${JOB_IDS[@]}"; do
-            USER_JOBS+="$JOB_ID"$'\n'
-        done
+        USER_JOBS=("${JOB_IDS[@]}")
         echo "Processing provided job IDs:"
     fi
 fi
 
 # Ensure USER_JOBS is not empty
-if [ -z "$USER_JOBS" ]; then
+if [ ${#USER_JOBS[@]} -eq 0 ]; then
     echo "No jobs found for the given criteria."
     exit 0
 fi
 
-# Print header with alignment
-printf "%-12s %-12s %-14s %-14s %-s\n" "JobID" "ElapsedTime" "MaxMemory(MB)" "MaxMemory(GB)" "JobName"
-printf "%-12s %-12s %-14s %-14s %-s\n" "------" "-----------" "-------------" "-------------" "-------"
+# Ensure that this file and jobname header are aligned
+printf "%-12s %-12s %-14s %-14s %-40s %-s\n" "JobID" "ElapsedTime" "MaxMemory(MB)" "MaxMemory(GB)" "JobName" "Comment"
+printf "%-12s %-12s %-14s %-14s %-40s %-s\n" "------" "-----------" "-------------" "-------------" "-------" "-------"
 
 # Process each job ID
-echo "$USER_JOBS" | while read -r JOB_ID; do
-    sacct -u "$USERNAME" -j "$JOB_ID" --format=JobID,JobName%100,Elapsed,MaxRSS --noheader | \
-    awk '
-    BEGIN {
-        FS="[[:space:]]+";
-        OFS="\t";
-    }
+for JOB_ID in "${USER_JOBS[@]}"; do
+    sacct -P -n -j "$JOB_ID" --format=JobID,JobName%100,Elapsed,MaxRSS,Comment | \
+    awk -v target_jobid="$JOB_ID" -F '|' '
     {
         split($1, jobid_parts, "\\.");
-        jobid = jobid_parts[1];
+        root_jobid = jobid_parts[1];
 
-        # Capture job name from the first record
-        if (!(jobid in jobname_map)) {
-            jobname_map[jobid] = $2;
-        }
+        # Only process if the root jobid matches the target ID explicitly
+        if (root_jobid == target_jobid) {
+            if (!(root_jobid in job_data)) {
+                job_data[root_jobid]["name"] = $2;
+                job_data[root_jobid]["comment"] = $5;
+                job_data[root_jobid]["elapsed"] = $3;
+            }
 
-        # Convert elapsed time to total seconds
-        split($3, a, "[:-]");
-        if (length(a) == 4) {
-            elapsed_secs = a[1] * 86400 + a[2] * 3600 + a[3] * 60 + a[4];
-        } else if (length(a) == 3) {
-            elapsed_secs = a[1] * 3600 + a[2] * 60 + a[3];
-        }
+            split($4, mem_parts, "K");
+            mem_kb = (mem_parts[1] == "" ? 0 : mem_parts[1]);
 
-        gsub("K", "", $4);
-        maxrss = ($4 == "" ? 0 : $4);
-
-        if (elapsed_secs > max_elapsed_secs) {
-            max_elapsed_secs = elapsed_secs;
-        }
-        if (maxrss > max_memory) {
-            max_memory = maxrss;
+            if (mem_kb > job_data[root_jobid]["maxrss"]) {
+                job_data[root_jobid]["maxrss"] = mem_kb;
+            }
         }
     }
     END {
-        if (max_elapsed_secs > 0 && max_memory > 0) {
-            elapsed_hours = int(max_elapsed_secs / 3600);
-            elapsed_minutes = int((max_elapsed_secs % 3600) / 60);
-            elapsed_seconds = max_elapsed_secs % 60;
-            elapsed_str = sprintf("%02d:%02d:%02d", elapsed_hours, elapsed_minutes, elapsed_seconds);
-            
-            # Convert memory to MB and GB
-            max_memory_mb = max_memory / 1024;
-            max_memory_gb = max_memory_mb / 1024;
-
-            printf "%-12s %-12s %-14.2f %-14.2f %-s\n", jobid, elapsed_str, max_memory_mb, max_memory_gb, jobname_map[jobid];
+        for (jobid in job_data) {
+            maxrss_mb = job_data[jobid]["maxrss"] / 1024;
+            maxrss_gb = maxrss_mb / 1024;
+            printf "%-12s %-12s %-14.2f %-14.2f %-40s %-s\n",
+                   jobid, job_data[jobid]["elapsed"], maxrss_mb,
+                   maxrss_gb, job_data[jobid]["name"], job_data[jobid]["comment"];
         }
     }'
 done
 
 # Report job IDs out of range
-if [ -n "$OUT_OF_RANGE_JOBS" ]; then
+if [ ${#OUT_OF_RANGE_JOBS[@]} -gt 0 ]; then
     echo "The following job IDs are outside the specified time range:"
-    echo "$OUT_OF_RANGE_JOBS"
+    for job in "${OUT_OF_RANGE_JOBS[@]}"; do
+        echo "$job"
+    done
 fi

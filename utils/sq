@@ -1,0 +1,76 @@
+#!/bin/bash
+
+################################################################################
+# This script displays jobs from SLURM's job queue for the current user's group, 
+# with options to show only the current user's jobs.
+# It includes job comments by querying both `squeue` and `sacct`.
+
+# Usage:
+#   ./script_name.sh [-m|--me] [-h|--help]
+#
+# Options:
+#   -m, --me      Display only the jobs submitted by the current user.
+#   -h, --help    Show this usage message.
+################################################################################
+
+# Set the default mode to 'all'
+mode="all"
+
+# Function to display usage message
+usage() {
+  echo "Display SLURM jobs in the queue from the user's current group."
+  echo "Usage: $0 [-m|--me] [-h|--help]"
+  echo
+  echo "Options:"
+  echo "  -m, --me     Display only the jobs submitted by the current user."
+  echo "  -h, --help   Show this usage message."
+  exit 0
+}
+
+# Parse command-line options
+while [[ "$#" -gt 0 ]]; do
+  case $1 in
+    -m|--me) mode="me"; shift ;;
+    -h|--help) usage ;;
+    *) echo "Unknown parameter passed: $1"; exit 1 ;;
+  esac
+  shift
+done
+
+# Get your user information
+user_name=$(id -un)
+
+# Get your user's primary group
+group_name=$(id -gn)
+
+if [[ "$mode" == "me" ]]; then
+  # List jobs for only the current user
+  squeue_output=$(squeue -o "%.10i %.15P %.50j %.15u %.8T %.16M %.16L %.6D %.5C %.16m %.20R" --all -u "$user_name")
+else
+  # List all users in your primary group
+  group_users=$(getent group "$group_name" | awk -F: '{print $4}' | tr ',' '\n' | tr '\n' ',' | sed 's/,$//')
+  
+  # Check if group_users is non-empty
+  if [[ -z "$group_users" ]]; then
+    echo "No users found in group: $group_name"
+    exit 1
+  fi
+
+  # Fetch jobs for all users in your primary group
+  squeue_output=$(squeue -o "%.10i %.15P %.50j %.15u %.8T %.16M %.16L %.6D %.5C %.16m %.20R" --all -u "$group_users")
+fi
+
+# Print headers with adjusted alignment, matching the new name length
+printf "%-10s %-15s %-50s %-15s %-8s %-16s %-16s %-6s %-5s %-16s %-20s %s\n" \
+  "JOBID" "PARTITION" "NAME" "USER" "STATE" "TIME" "TIME-LIMIT" "NODES" "CPUS" "MIN-MEM" "NODELIST(REASON)" "COMMENTS"
+
+# Process each line except the header
+echo "$squeue_output" | sed 1d | while read -r line; do
+  # Extract job ID to retrieve comments
+  jobid=$(echo "$line" | awk '{print $1}')
+  # Retrieve the comment for each job (if any)
+  comment=$(sacct -j "$jobid" --format=comment --noheader | tr -d '\n' | tr -d '\r')
+  # Align data to match specified column lengths
+  printf "%-10s %-15s %-50s %-15s %-8s %-16s %-16s %-6s %-5s %-16s %-20s %s\n" \
+    $(echo "$line") "$comment"
+done
