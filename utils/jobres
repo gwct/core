@@ -95,12 +95,12 @@ if [ ${#USER_JOBS[@]} -eq 0 ]; then
 fi
 
 # Ensure that this file and jobname header are aligned
-printf "%-12s %-12s %-14s %-14s %-40s %-s\n" "JobID" "ElapsedTime" "MaxMemory(MB)" "MaxMemory(GB)" "JobName" "Comment"
-printf "%-12s %-12s %-14s %-14s %-40s %-s\n" "------" "-----------" "-------------" "-------------" "-------" "-------"
+printf "%-12s %-12s %-14s %-14s %-40s %-20s %-s\n" "JobID" "ElapsedTime" "MaxMemory(MB)" "MaxMemory(GB)" "JobName" "Partition" "Comment"
+printf "%-12s %-12s %-14s %-14s %-40s %-20s %-s\n" "------" "-----------" "-------------" "-------------" "-------" "---------" "-------"
 
 # Process each job ID
 for JOB_ID in "${USER_JOBS[@]}"; do
-    sacct -P -n -j "$JOB_ID" --format=JobID,JobName%100,Elapsed,MaxRSS,Comment | \
+    sacct -P -n -j "$JOB_ID" --format=JobID,JobName%100,Elapsed,MaxRSS,Partition,Comment | \
     awk -v target_jobid="$JOB_ID" -F '|' '
     {
         split($1, jobid_parts, "\\.");
@@ -110,8 +110,9 @@ for JOB_ID in "${USER_JOBS[@]}"; do
         if (root_jobid == target_jobid) {
             if (!(root_jobid in job_data)) {
                 job_data[root_jobid]["name"] = $2;
-                job_data[root_jobid]["comment"] = $5;
+                job_data[root_jobid]["comment"] = $6;
                 job_data[root_jobid]["elapsed"] = $3;
+                job_data[root_jobid]["partition"] = $5;
             }
 
             split($4, mem_parts, "K");
@@ -126,12 +127,13 @@ for JOB_ID in "${USER_JOBS[@]}"; do
         for (jobid in job_data) {
             maxrss_mb = job_data[jobid]["maxrss"] / 1024;
             maxrss_gb = maxrss_mb / 1024;
-            printf "%-12s %-12s %-14.2f %-14.2f %-40s %-s\n",
+            printf "%-12s %-12s %-14.2f %-14.2f %-40s %-20s %-s\n",
                    jobid, job_data[jobid]["elapsed"], maxrss_mb,
-                   maxrss_gb, job_data[jobid]["name"], job_data[jobid]["comment"];
+                   maxrss_gb, job_data[jobid]["name"], job_data[jobid]["partition"], job_data[jobid]["comment"];
         }
     }'
 done
+
 
 # Report job IDs out of range
 if [ ${#OUT_OF_RANGE_JOBS[@]} -gt 0 ]; then
