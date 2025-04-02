@@ -2,10 +2,10 @@
 
 ################################################################################
 # fasum
-# 
+#
 # This script summarizes the sequences in a FASTA file by printing out each
-# sequence header followed by the length of that sequence. It can also sort
-# the sequences by length if requested.
+# sequence header followed by the length of that sequence and the number of
+# lines it occupies. It can also sort the sequences by length if requested.
 #
 # Usage:
 #   fasum [--sort] <file> [<file> ...]
@@ -92,24 +92,27 @@ for file in "${files[@]}"; do
   # Check if the file is a FASTA file
   is_fasta "$reader" "$file"
 
-  echo "Processing $file"
+  echo "# Processing $file"
+  printf "%-20s %10s %10s\n" "Sequence Header" "Length" "Lines"
 
-  # AWK script to summarize sequences with length
+  # AWK script to summarize sequences with length and line count
   awk_summary_script='
-  BEGIN { seq_len = 0 }
+  BEGIN { seq_len = 0; seq_lines = 0 }
   /^>/ {
       if (seq_len > 0) {
-          print header "\t" seq_len
+          printf "%-20s %10d %10d\n", header, seq_len, seq_lines
       }
       header = substr($0, 2)
       seq_len = 0
+      seq_lines = 0
   }
   !/^>/ {
       seq_len += length($0)
+      seq_lines++
   }
   END {
       if (seq_len > 0) {
-          print header "\t" seq_len
+          printf "%-20s %10d %10d\n", header, seq_len, seq_lines
       }
   }
   '
@@ -121,5 +124,5 @@ for file in "${files[@]}"; do
     $reader "$file" | awk "$awk_summary_script"
   fi
 
-  echo "--------------------------"
+  echo "# --------------------------"
 done
