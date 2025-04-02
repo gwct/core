@@ -1,0 +1,125 @@
+#!/bin/bash
+
+################################################################################
+# fasum
+# 
+# This script summarizes the sequences in a FASTA file by printing out each
+# sequence header followed by the length of that sequence. It can also sort
+# the sequences by length if requested.
+#
+# Usage:
+#   fasum [--sort] <file> [<file> ...]
+#
+# Options:
+#   --sort              Sort the sequences by length from longest to shortest
+#   -h, --help          Display this help message
+#
+# <file>                The paths to one or more FASTA files to analyze
+#
+# Examples:
+#   fasum genome.fa
+#   fasum --sort genome.fa
+#   fasum genome1.fa genome2.fa
+#
+# Dec 2024, gwct
+################################################################################
+
+# Function to display usage message
+usage() {
+  echo "Usage: $(basename "$0") [--sort] <file> [<file> ...]"
+  echo "Options:"
+  echo "  --sort             Sort the sequences by length from longest to shortest"
+  echo "  -h, --help         Display this help message"
+  echo "<file>               The paths to one or more FASTA files to analyze"
+  exit 1
+}
+
+# Check if any file arguments are given
+if [[ $# -eq 0 ]]; then
+  usage
+fi
+
+files=()
+sort=false
+
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --sort)
+      sort=true
+      shift # Shift past --sort
+      ;;
+    -h|--help)
+      usage
+      ;;
+    *)
+      files+=("$1")
+      shift # Shift past the file name
+      ;;
+  esac
+done
+
+if [ ${#files[@]} -eq 0 ]; then
+  echo "Error: You must specify at least one FASTA file to process."
+  usage
+fi
+
+# Function to check if the given file is a FASTA file
+is_fasta() {
+  local first_line
+  first_line=$($1 "$2" | grep -m 1 -v '^$' | head -n 1)
+  if [[ ! $first_line == '>'* ]]; then
+    echo "Error: $2 does not appear to be a FASTA file."
+    exit 1
+  fi
+}
+
+# Iterate over each file
+for file in "${files[@]}"; do
+  # Check if the specified file exists
+  if [[ ! -f "$file" ]]; then
+    echo "Error: File not found: $file"
+    continue
+  fi
+
+  # Determine if the file is compressed
+  if [[ $file == *.gz ]]; then
+    reader="zcat"
+  else
+    reader="cat"
+  fi
+
+  # Check if the file is a FASTA file
+  is_fasta "$reader" "$file"
+
+  echo "Processing $file"
+
+  # AWK script to summarize sequences with length
+  awk_summary_script='
+  BEGIN { seq_len = 0 }
+  /^>/ {
+      if (seq_len > 0) {
+          print header "\t" seq_len
+      }
+      header = substr($0, 2)
+      seq_len = 0
+  }
+  !/^>/ {
+      seq_len += length($0)
+  }
+  END {
+      if (seq_len > 0) {
+          print header "\t" seq_len
+      }
+  }
+  '
+
+  # Process the file and optionally sort the results
+  if $sort; then
+    $reader "$file" | awk "$awk_summary_script" | sort -k2,2nr -k1,1
+  else
+    $reader "$file" | awk "$awk_summary_script"
+  fi
+
+  echo "--------------------------"
+done

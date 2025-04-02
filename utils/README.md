@@ -8,6 +8,7 @@ General purpose bash scripts.
 | cancel_all_jobs | This script looks up all currently running SLURM jobs for the current user and prompts to cancel them all at their own risk. Useful for when a large workflow needs to be cancelled and nothing else is running. |
 | ensembl_get_fasta.sh | Takes a list of species and retrieves sequences from Ensembl. |
 | fasize | This script calculates the size of one or more FASTA files in terms of the number of bases. It can also provide a more detailed analysis of the base composition and GC content. If a FASTA index file (.fai) is provided, it calculates the genome size based on the index (but cannot do further  counts of base composition). |
+| fasum | Prints out the length of each sequence within a fASTA file. |
 | git_add | Wraps `git add` and checks the file sizes of the provided files (or all changed files if none provided) to make sure none are over github's 100MB file size limit. If any are, they are listed and no files are staged. Prevents the situation when files over the limit are staged and committed, only to get the error on pushing that some are over the file size limit and having to un-commit and un-stage all files to deal with them |
 | how_many_trees | A little script to show the number of possible rooted tree topologies for a given number of species. |
 | interact | A bash command to start an interactive session on a SLURM partition. |
