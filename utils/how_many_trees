@@ -18,7 +18,7 @@ if len(sys.argv) < 2:
 			num_rtrees[x] = 1;
 
 		else:
-			num_rtrees[x] = ((math.factorial(2.0*n - 3.0)) / (2.0**(n-2.0) * math.factorial(n-2.0)));
+			num_rtrees[x] = ((math.factorial(int(2.0*n - 3.0))) / (2.0**(n-2.0) * math.factorial(int(n-2.0))));
 
 	print("==============================================================");
 	print("Number of species\tNumber of rooted trees");
@@ -29,6 +29,6 @@ if len(sys.argv) < 2:
 else:
 	n = float(sys.argv[1]);
 
-	num_rtrees = ((math.factorial(2.0*n - 3.0)) / (2.0**(n-2.0) * math.factorial(n-2.0)));
+	num_rtrees = ((math.factorial(int(2.0*n - 3.0))) / (2.0**(n-2.0) * math.factorial(int(n-2.0))));
 
 	print("For", int(n), "species there are", int(num_rtrees), "rooted trees.");
