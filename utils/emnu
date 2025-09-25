@@ -1,0 +1,222 @@
+#!/usr/bin/env bash
+# emnu: EMUlate a New User environment
+# ---------------------------------------
+# Creates and manages temporary or named shell environments which emulate a new user login
+# using /etc/skel for home directory initialization. Environments can be listed, resumed, and deleted.
+
+# USAGE EXAMPLES:
+#   emnu -n myenv       # Create a named environment "myenv"
+#   emnu -r myenv       # Resume named environment "myenv" (if exists)
+#   emnu -r             # Resume the last environment you used/created
+#   emnu --list         # List all available environments (named or unnamed)
+#   emnu --clean foo    # Delete the environment "foo"
+#   emnu --clean        # Delete ALL emnu environments
+
+# -----------------------------------------------------
+# Usage message and help
+# -----------------------------------------------------
+# Usage message for incorrect option input
+usage() {
+    echo "emnu - EMulate a New User: create a clean, temporary home environment"
+    echo
+    echo "Usage: emnu [-r [NAME]] [-n NAME] [--list|-l] [--clean|-c [NAME]]"
+    echo
+    echo "Options:"
+    echo "  -n NAME         Create a new named environment"
+    echo "  -r [NAME]       Resume an environment (NAME optional, will use last if omitted)"
+    echo "  --list, -l      List all available environments"
+    echo "  --clean, -c     Delete all environments or named environment if NAME is supplied"
+    echo "  --help, -h      Show this help message"
+    exit 1
+}
+
+# Show help if requested
+for arg in "$@"; do
+    if [[ "$arg" == "--help" || "$arg" == "-h" ]]; then
+        usage
+    fi
+done
+
+# -----------------------------------------------------
+
+ENVLIST="${HOME}/.emnu_envlist"  # Global env/dir tracker for emnu
+
+# -----------------------------------------------------
+# Print a formatted list of all known environments
+# -----------------------------------------------------
+list_envs() {
+    if [[ ! -f "$ENVLIST" || ! -s "$ENVLIST" ]]; then
+        echo "No emnu environments found."
+        return 1
+    fi
+    echo "Available emnu environments:"
+    while IFS=: read -r name path; do
+        printf "  %-20s %s\n" "$name" "$path"
+    done < "$ENVLIST"
+    return 0
+}
+
+# -----------------------------------------------------
+# List mode: --list or -l
+# -----------------------------------------------------
+if [[ "$1" == "--list" || "$1" == "-l" ]]; then
+    list_envs
+    exit 0
+fi
+
+# -----------------------------------------------------
+# Clean mode: --clean or -c
+# -----------------------------------------------------
+if [[ "$1" == "--clean" || "$1" == "-c" ]]; then
+    NAME="$2"
+    if [[ -n "$NAME" ]]; then
+        # Clean specific environment by name
+        DIR=$(grep -E "^${NAME}:" "$ENVLIST" | tail -n 1 | cut -d: -f2-)
+        if [[ -z "$DIR" ]]; then
+            echo "No environment named '$NAME' found."
+            exit 1
+        fi
+        echo "Environment to delete:"
+        printf "  %-20s %s\n" "$NAME" "$DIR"
+        read -p "Are you sure you want to delete this environment? [y/N]: " REPLY
+        if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+            echo "Deleting environment '$NAME' at $DIR"
+            rm -rf -- "$DIR"
+            grep -vE "^${NAME}:" "$ENVLIST" > "${ENVLIST}.tmp" && mv "${ENVLIST}.tmp" "$ENVLIST"
+            echo "Environment '$NAME' deleted."
+        else
+            echo "Aborted."
+        fi
+    else
+        # No name given: Clean all environments (after confirmation)
+        if ! list_envs; then
+            exit 0
+        fi
+        echo
+        echo "You are about to delete ALL environments listed above."
+        read -p "Are you sure? [y/N]: " REPLY
+        if [[ "$REPLY" =~ ^[Yy]$ ]]; then
+            while IFS=: read -r name path; do
+                echo "Deleting environment '$name' at $path"
+                rm -rf -- "$path"
+            done < "$ENVLIST"
+            rm -f "$ENVLIST"
+            echo "All environments deleted."
+        else
+            echo "Aborted."
+        fi
+    fi
+    exit 0
+fi
+
+# -----------------------------------------------------
+# Main logic: resume and naming flags (-r and -n)
+# -----------------------------------------------------
+resume=0
+NAME=""
+
+# Parse -r and -n flags with getopts
+while getopts ":rn::" opt; do
+    case $opt in
+        r)
+            resume=1
+            NAME="${OPTARG}"
+            ;;
+        n)
+            NAME="$OPTARG"
+            ;;
+        \?)
+            usage
+            ;;
+    esac
+done
+
+# -----------------------------------------------------
+# Helper: find an environment's path by name
+# -----------------------------------------------------
+find_env() {
+    grep -E "^${1}:" "$ENVLIST" | tail -n1 | cut -d: -f2-
+}
+
+# -----------------------------------------------------
+# Helper: Store an env in ENVLIST (updating if needed)
+# -----------------------------------------------------
+store_env() {
+    local name="$1"
+    local path="$2"
+    # Remove any previous entry for same name, then append the new one
+    grep -vE "^${name}:" "$ENVLIST" 2>/dev/null > "${ENVLIST}.tmp" || true
+    mv "${ENVLIST}.tmp" "$ENVLIST" 2>/dev/null || true
+    echo "${name}:${path}" >> "$ENVLIST"
+}
+
+# -----------------------------------------------------
+# Helper: get the last environment in ENVLIST
+# -----------------------------------------------------
+get_last_env() {
+    tail -n1 "$ENVLIST"
+}
+
+# -----------------------------------------------------
+# Create a new environment (named or unnamed)
+# -----------------------------------------------------
+create_new_env() {
+    if [[ -n "$NAME" ]]; then
+        TMPHOME=$(mktemp -d "${TMPDIR:-/tmp}/emnu_${NAME}_XXXXXX")
+        store_env "$NAME" "$TMPHOME"
+    else
+        # For unnamed envs, generate a timestamp-based name
+        ANAME="unnamed_$(date +%s)"
+        TMPHOME=$(mktemp -d "${TMPDIR:-/tmp}/emnu_${ANAME}_XXXXXX")
+        store_env "$ANAME" "$TMPHOME"
+        NAME="$ANAME"
+    fi
+    find /etc/skel -type f -exec cp {} "${TMPHOME}" \;
+}
+
+# -----------------------------------------------------
+# Determine whether to resume or create new environment
+# -----------------------------------------------------
+if [[ $resume -eq 1 ]]; then
+    # If NAME provided, try to resume that named environment
+    if [[ -n "$NAME" ]]; then
+        TMPHOME=$(find_env "$NAME")
+        if [[ -z "$TMPHOME" || ! -d "$TMPHOME" ]]; then
+            echo "No environment named '$NAME' found or directory missing. Creating new."
+            create_new_env
+        else
+            echo "Resuming environment '$NAME' at $TMPHOME."
+        fi
+    else
+        # Resume last environment if any exists
+        if [[ ! -f "$ENVLIST" || ! -s "$ENVLIST" ]]; then
+            echo "No previous environments to resume."
+            create_new_env
+        else
+            LASTLINE=$(get_last_env)
+            NAME="${LASTLINE%%:*}"
+            TMPHOME="${LASTLINE#*:}"
+            if [[ ! -d "$TMPHOME" ]]; then
+                echo "Directory '$TMPHOME' missing. Creating new environment."
+                create_new_env
+            else
+                echo "Resuming last environment '$NAME' at $TMPHOME."
+            fi
+        fi
+    fi
+else
+    # Not resuming: always create new environment
+    create_new_env
+fi
+
+# -----------------------------------------------------
+# Launch bwrap shell with fresh environment and HOME
+# -----------------------------------------------------
+echo "Starting shell in clean home: ${TMPHOME}"
+env -i \
+    TERM="${TERM:-xterm-256color}" \
+    bwrap \
+    --dev-bind / / \
+    --bind "${TMPHOME}" "${HOME}" \
+    --setenv HOME "${HOME}" \
+    /bin/bash -l
