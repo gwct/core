@@ -1,0 +1,284 @@
+#!/usr/bin/env python3
+"""
+!!! UNTESTED RAW LLM CODE !!!
+
+sync_dirs.py
+
+One-way "add-only" folder sync, designed to work on both Linux and Windows.
+
+Behavior:
+- You give it two directories and a direction (1-2 or 2-1).
+- It treats one as SOURCE and the other as DESTINATION.
+- It scans the SOURCE and finds files that:
+    * exist in SOURCE
+    * do NOT yet exist at DESTINATION in the same relative path
+    * are not excluded by patterns (if provided)
+- It prints a DRY RUN (what would be copied).
+- Optionally lets you enter exclude patterns (e.g. '*.iso', 'temp/*').
+- Prints another DRY RUN with excludes applied.
+- Asks for confirmation.
+- If confirmed, copies those files (no overwrite, no delete).
+
+Key points:
+- It never deletes anything.
+- It never overwrites existing files at the destination.
+- It only adds missing files.
+"""
+
+import os
+import shutil
+import sys
+from fnmatch import fnmatch  # for glob-like pattern matching
+
+
+def usage():
+    """Print usage help and exit."""
+    print("Usage: python sync_dirs.py <dir1> <dir2> <direction>")
+    print("  direction: 1-2 or 2-1")
+    sys.exit(1)
+
+
+def normalize_path(p):
+    """
+    Expand '~' and make the path absolute.
+
+    This lets you use things like:
+        ~/Archive
+    and also ensures consistent comparison across OSes.
+    """
+    return os.path.abspath(os.path.expanduser(p))
+
+
+def build_file_list(src_root, dest_root, exclude_patterns=None):
+    """
+    Walk the source tree and build a list of files that should be copied.
+
+    Arguments:
+        src_root        - root directory to copy FROM
+        dest_root       - root directory to copy TO
+        exclude_patterns- list of glob-like patterns (e.g. '*.iso', 'temp/*')
+                          applied against the *relative* path from src_root
+
+    Returns:
+        A list of (src_path, dest_path) tuples for files that:
+            - exist in src_root
+            - do NOT yet exist in dest_root under the same relative path
+            - are not excluded by any pattern
+    """
+    if exclude_patterns is None:
+        exclude_patterns = []
+
+    to_copy = []
+
+    # Walk the source directory tree
+    for root, dirs, files in os.walk(src_root):
+        # root is an absolute path under src_root
+        # We want relative paths for pattern matching and for building dest paths.
+        rel_root = os.path.relpath(root, src_root)
+        if rel_root == ".":
+            # If os.path.relpath returns ".", that means "src_root itself"
+            rel_root = ""
+
+        # === Handle directory-level excludes ===
+        # We want to avoid descending into directories that match exclude patterns.
+        dirs_to_keep = []
+        for d in dirs:
+            # Build relative path for this directory, e.g. "Music", "temp", "foo/bar"
+            rel_path = os.path.join(rel_root, d) if rel_root else d
+
+            # If any exclude pattern matches this relative directory, skip it.
+            if any(fnmatch(rel_path, pat) for pat in exclude_patterns):
+                # Skipping means we do NOT add it to dirs_to_keep,
+                # and os.walk will not descend into it.
+                continue
+
+            dirs_to_keep.append(d)
+
+        # Modify dirs in-place so os.walk will only recurse into the dirs we keep.
+        dirs[:] = dirs_to_keep
+
+        # === Handle files ===
+        for f in files:
+            # Relative path for the file, e.g. "Music/song.mp3"
+            rel_path = os.path.join(rel_root, f) if rel_root else f
+
+            # Skip this file if any exclude pattern matches its relative path
+            if any(fnmatch(rel_path, pat) for pat in exclude_patterns):
+                continue
+
+            # Build absolute paths for source and destination
+            src_path = os.path.join(root, f)
+            dest_path = os.path.join(dest_root, rel_path)
+
+            # Only consider files that do NOT already exist at the destination
+            # (add-only behavior; no overwrite)
+            if not os.path.exists(dest_path):
+                to_copy.append((src_path, dest_path))
+
+    return to_copy
+
+
+def print_plan(plan, src_root, dest_root):
+    """
+    Print a summary of what would be copied, given a list of (src, dest) tuples.
+    """
+    print(f"\nSource:      {src_root}")
+    print(f"Destination: {dest_root}")
+    print(f"Files that would be copied: {len(plan)}\n")
+
+    # Print relative paths to keep output easy to read
+    for src, _dest in plan:
+        rel = os.path.relpath(src, src_root)
+        print(f"  {rel}")
+
+    print()  # extra blank line at the end
+
+
+def prompt_excludes():
+    """
+    Interactively prompt the user for exclude patterns.
+
+    - User enters one pattern per line.
+    - Patterns are matched against relative paths like 'Music/song.mp3'.
+    - Enter 'done' or 'done excluding' to finish.
+
+    Returns:
+        A list of patterns (strings).
+    """
+    print("\nEnter exclude patterns, one per line.")
+    print("They are matched against relative paths, e.g.:")
+    print("  '*.iso'          -> all .iso files")
+    print("  'temp/*'         -> everything under temp/")
+    print("  'Music/*.mp3'    -> all .mp3 directly under Music/")
+    print("Type 'done' or 'done excluding' on its own line when finished.\n")
+
+    patterns = []
+    while True:
+        line = input("> ").strip()
+        if line.lower() in ("done", "done excluding"):
+            # End of input
+            break
+        if line:
+            # Non-empty line: treat as a pattern
+            patterns.append(line)
+
+    print("\nExclude patterns:")
+    if patterns:
+        for p in patterns:
+            print(f"  {p}")
+    else:
+        print("  (none)")
+    print()
+
+    return patterns
+
+
+def confirm(prompt, default_no=True):
+    """
+    Ask a yes/no question and return True if user confirmed "yes".
+
+    Parameters:
+        prompt      - Question string, e.g. "Proceed? [y/N] "
+        default_no  - If True, treat empty input as "no".
+                      If False, treat empty input as "yes" (not used here).
+
+    Returns:
+        bool
+    """
+    ans = input(prompt).strip().lower()
+    if default_no:
+        # Only 'y' or 'yes' counts as True
+        return ans in ("y", "yes")
+    else:
+        # Everything except explicit 'n' or 'no' (or empty) is True
+        return ans not in ("n", "no", "")
+
+
+def ensure_parent_dir(path):
+    """
+    Ensure the parent directory of 'path' exists.
+
+    This is used before copying a file to 'path' to make sure that
+    all necessary directories are created.
+    """
+    parent = os.path.dirname(path)
+    if parent and not os.path.exists(parent):
+        os.makedirs(parent, exist_ok=True)
+
+
+def copy_plan(plan):
+    """
+    Given a list of (src, dest) tuples, copy each file.
+
+    Uses shutil.copy2 to preserve timestamps and some metadata.
+    """
+    for src, dest in plan:
+        ensure_parent_dir(dest)
+        shutil.copy2(src, dest)
+
+
+def main():
+    # Expect exactly 3 command-line arguments:
+    #   dir1, dir2, direction
+    if len(sys.argv) != 4:
+        usage()
+
+    sys.exit("THIS IS UNTESTED RAW LLM CODE. DO NOT USE WITHOUT TESTING.")
+
+    # Normalize the given paths to absolute paths
+    dir1 = normalize_path(sys.argv[1])
+    dir2 = normalize_path(sys.argv[2])
+    direction = sys.argv[3]
+
+    # Determine which directory is source and which is destination
+    if direction == "1-2":
+        src_root, dest_root = dir1, dir2
+    elif direction == "2-1":
+        src_root, dest_root = dir2, dir1
+    else:
+        print("Invalid direction. Use 1-2 or 2-1.")
+        sys.exit(1)
+
+    # Basic validation: both must exist and be directories
+    if not os.path.isdir(src_root):
+        print(f"Source directory does not exist or is not a directory: {src_root}")
+        sys.exit(1)
+
+    if not os.path.isdir(dest_root):
+        print(f"Destination directory does not exist or is not a directory: {dest_root}")
+        sys.exit(1)
+
+    # === First DRY RUN: no excludes ===
+    print("=== DRY RUN (no files will be copied) ===")
+    plan = build_file_list(src_root, dest_root)
+    print_plan(plan, src_root, dest_root)
+
+    # Optionally let the user refine the plan using exclude patterns
+    if not confirm("Do you want to add exclude patterns? [y/N] "):
+        # User said no: use the original plan
+        final_plan = plan
+    else:
+        # Prompt for excludes + run a second dry run
+        excludes = prompt_excludes()
+        print("=== DRY RUN WITH EXCLUDES (no files will be copied) ===")
+        final_plan = build_file_list(src_root, dest_root, excludes)
+        print_plan(final_plan, src_root, dest_root)
+
+    # If there is nothing to copy, we can safely exit
+    if not final_plan:
+        print("Nothing to copy. Exiting.")
+        sys.exit(0)
+
+    # Final confirmation before actually copying
+    if not confirm("Proceed with actual copy? [y/N] "):
+        print("Aborted. No files were copied.")
+        sys.exit(0)
+
+    # === Actual copy ===
+    print("\n=== COPYING FILES ===")
+    copy_plan(final_plan)
+    print("=== DONE ===")
+
+
+if __name__ == "__main__":
+    main()
