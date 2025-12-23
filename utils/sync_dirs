@@ -133,6 +133,11 @@ def print_plan(plan, src_root, dest_root):
 
     print()  # extra blank line at the end
 
+    print(f"\nSource:      {src_root}")
+    print(f"Destination: {dest_root}")
+    print(f"Files that would be copied: {len(plan)}\n")
+
+    print()
 
 def prompt_excludes():
     """
@@ -220,7 +225,9 @@ def copy_plan(plan):
 def main():
     # Expect exactly 3 command-line arguments:
     #   dir1, dir2, direction
-    if len(sys.argv) != 4:
+    if len(sys.argv) not in  [3,4]:
+        print(sys.argv)
+        print(len(sys.argv))
         usage()
 
     sys.exit("THIS IS UNTESTED RAW LLM CODE. DO NOT USE WITHOUT TESTING.")
@@ -228,7 +235,8 @@ def main():
     # Normalize the given paths to absolute paths
     dir1 = normalize_path(sys.argv[1])
     dir2 = normalize_path(sys.argv[2])
-    direction = sys.argv[3]
+    # default direction to "1-2" when not provided
+    direction = sys.argv[3] if len(sys.argv) > 3 else "1-2"
 
     # Determine which directory is source and which is destination
     if direction == "1-2":
